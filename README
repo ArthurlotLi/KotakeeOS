@@ -12,12 +12,22 @@ be hosted on a home local network (not exposed to the internet) as a
 centralized control panel. A platform with immense potential for future
 feature development. 
 
+Development Notes:
+Transpilied Typescript has been set up to run whenever npm start is run. To 
+avoid automatic transpiling (nothing changed), just run "node server.js"
+instead of npm start. To transpile only (i.e. server is already running), 
+use the following command in the software directory level:
+
+node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js && node server.js
+
 
 ------------------------------------------------------------------------------
  Setup - Web Application (webApp)
 ------------------------------------------------------------------------------
 
-1) <TO BE DETERMINED IN RELEASE 1.0>
+0) Navigate inside of software directory
+1) Execute "npm install"
+2) Execute "npm start"
 
 ------------------------------------------------------------------------------
  Setup - Lighting Modules (Switches)
@@ -43,4 +53,4 @@ documents (dir)         : Folder containing various documentation relating to
                           development.
 external (dir)          : Various external files that are crucial to operation
                           but are not software.
-software (dir)            : Primary directory of web/server files.
+software (dir)          : Primary directory of web server files.
