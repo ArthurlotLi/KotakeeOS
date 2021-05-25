@@ -12,13 +12,19 @@ var ReactDOM = require('react-dom');
 export class App extends React.Component {
   constructor(){
     super();
+
+    // Interval handles to clean up.
     this.updateTimeInverval = null;
+    
+    // State
     this.state = {
       currentHoursMinutes: null,
       currentSeconds: null,
       currentAmPm: null,
       currentDayMonthYear: null,
     };
+
+    // Binding functions to "this"
     this.updateTime = this.updateTime.bind(this);
   }
 
@@ -57,6 +63,18 @@ export class App extends React.Component {
     });
   }
 
+  moduleLightingBedroom(){
+    console.log("TODO: Bedroom lighting module activated.");
+  }
+
+  moduleCurtainsBedroom(){
+    console.log("TODO: Bedroom curtains module activated.");
+  }
+
+  moduleLightingLivingRoom(){
+    console.log("TODO: Living Room lighting module activated.");
+  }
+
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it. 
@@ -72,12 +90,27 @@ export class App extends React.Component {
   render() {
     return(
       <div>
-        <div id="App-clock">
-          <h1>{this.state.currentHoursMinutes}
+        <div id="app-location">
+          Location. 
+        </div>
+
+        <div id="app-clock">
+          <h1>
+            {this.state.currentHoursMinutes}
             <span style={{fontSize: '25px', verticalAlign: 'text-top'}}>{this.state.currentSeconds}</span>
             {this.state.currentAmPm}
-            </h1>
+          </h1>
           <h3>{this.state.currentDayMonthYear}</h3>
+        </div>
+
+        <div id="app-weather">
+          Weather. 
+        </div>
+
+        <div id="app-modules">
+          <button onClick={this.moduleLightingBedroom}>Bedroom Light</button>
+          <button onClick={this.moduleCurtainsBedroom}>Bedroom Curtains</button>
+          <button onClick={this.moduleLightingLivingRoom}>Living Room Light</button>
         </div>
       </div>
     );

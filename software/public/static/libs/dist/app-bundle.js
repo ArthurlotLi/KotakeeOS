@@ -29850,13 +29850,16 @@ var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App() {
         var _this = _super.call(this) || this;
+        // Interval handles to clean up.
         _this.updateTimeInverval = null;
+        // State
         _this.state = {
             currentHoursMinutes: null,
             currentSeconds: null,
             currentAmPm: null,
             currentDayMonthYear: null,
         };
+        // Binding functions to "this"
         _this.updateTime = _this.updateTime.bind(_this);
         return _this;
     }
@@ -29891,6 +29894,15 @@ var App = /** @class */ (function (_super) {
             currentDayMonthYear: currentDayMonthYear,
         });
     };
+    App.prototype.moduleLightingBedroom = function () {
+        console.log("TODO: Bedroom lighting module activated.");
+    };
+    App.prototype.moduleCurtainsBedroom = function () {
+        console.log("TODO: Bedroom curtains module activated.");
+    };
+    App.prototype.moduleLightingLivingRoom = function () {
+        console.log("TODO: Living Room lighting module activated.");
+    };
     // Executed only once upon startup.
     App.prototype.componentDidMount = function () {
         // Start the clock and the interval to update it. 
@@ -29903,12 +29915,18 @@ var App = /** @class */ (function (_super) {
     };
     App.prototype.render = function () {
         return (React.createElement("div", null,
-            React.createElement("div", { id: "App-clock" },
+            React.createElement("div", { id: "app-location" }, "Location."),
+            React.createElement("div", { id: "app-clock" },
                 React.createElement("h1", null,
                     this.state.currentHoursMinutes,
                     React.createElement("span", { style: { fontSize: '25px', verticalAlign: 'text-top' } }, this.state.currentSeconds),
                     this.state.currentAmPm),
-                React.createElement("h3", null, this.state.currentDayMonthYear))));
+                React.createElement("h3", null, this.state.currentDayMonthYear)),
+            React.createElement("div", { id: "app-weather" }, "Weather."),
+            React.createElement("div", { id: "app-modules" },
+                React.createElement("button", { onClick: this.moduleLightingBedroom }, "Bedroom Light"),
+                React.createElement("button", { onClick: this.moduleCurtainsBedroom }, "Bedroom Curtains"),
+                React.createElement("button", { onClick: this.moduleLightingLivingRoom }, "Living Room Light"))));
     };
     return App;
 }(React.Component));
