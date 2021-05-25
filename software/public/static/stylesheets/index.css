@@ -1,1 +1,80 @@
-/* TODO */
+/*
+  index.css
+
+  Stylesheet for main dashboard.
+*/
+
+:root {
+  --primary-color: #303030;
+  --secondary-color: #e6e6e6;
+  --tertiary-color: #99004d;
+  --highlight-color: black;
+  --text-color: #fff;
+}
+
+
+html{
+  font-family: -apple-system,BlinkMacSystemFont, "Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol","Noto Color Emoji";
+}
+
+body{
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+#title {
+  position: fixed;
+  top: 0%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  /*padding-left: 20px;
+  padding-right: 20px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  background-color: var(--highlight-color);*/
+}
+
+#app-location{
+  position: fixed;
+  top: 0%;
+  left: 0%; 
+  margin: 50px;
+}
+
+#app-clock {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -45%);
+}
+
+#app-clock-time{
+  font-size: 10vw;
+  text-align: center;
+}
+
+#app-clock-time-seconds{
+  font-size: 80%;
+}
+
+#app-clock-time-ampm{
+  font-size: 80%;
+}
+
+#app-clock-date{
+  font-size: 5vw;
+  text-align: center;
+}
+
+#app-weather {
+  position: fixed;
+  right: 0%;
+  top: 0%;
+  margin: 50px;
+}
+
+#app-modules {
+  position: fixed;
+  bottom: 0%;
+  margin: 50px;
+}

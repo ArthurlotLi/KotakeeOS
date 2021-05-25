@@ -95,12 +95,12 @@ export class App extends React.Component {
         </div>
 
         <div id="app-clock">
-          <h1>
+          <div id="app-clock-time">
             {this.state.currentHoursMinutes}
-            <span style={{fontSize: '25px', verticalAlign: 'text-top'}}>{this.state.currentSeconds}</span>
-            {this.state.currentAmPm}
-          </h1>
-          <h3>{this.state.currentDayMonthYear}</h3>
+            <span id="app-clock-time-seconds">{this.state.currentSeconds}</span>
+            <span id="app-clock-time-ampm">{this.state.currentAmPm}</span>
+          </div>
+          <div id="app-clock-date">{this.state.currentDayMonthYear}</div>
         </div>
 
         <div id="app-weather">
