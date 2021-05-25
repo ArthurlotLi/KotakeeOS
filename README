@@ -18,7 +18,7 @@ avoid automatic transpiling (nothing changed), just run "node server.js"
 instead of npm start. To transpile only (i.e. server is already running), 
 use the following command in the software directory level:
 
-node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js && node server.js
+node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js
 
 
 ------------------------------------------------------------------------------
