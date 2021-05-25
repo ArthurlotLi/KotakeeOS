@@ -1,25 +1,38 @@
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
-Silver - Personal Website
+KotakeeOS - Home Management System
 MAIN REPOSITORY
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
 
 Description:
 
-This website is a pet project of mine meant to blow out the web development 
-cobwebs out of my head and also have something to toss on my resume. There's 
-not going to be anything really special about this website, other than I'll 
-hosting it from a local server for the time being.
+Home-brewed smart home management software; home assistant platform. Mean to
+be hosted on a home local network (not exposed to the internet) as a
+centralized control panel. A platform with immense potential for future
+feature development. 
 
 
-Development Web Address:
-
-https://arthurlotli.com
-
-
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
  Setup - Web Application (webApp)
+------------------------------------------------------------------------------
+
+1) <TO BE DETERMINED IN RELEASE 1.0>
+
+------------------------------------------------------------------------------
+ Setup - Lighting Modules (Switches)
+------------------------------------------------------------------------------
+
+1) <TO BE DETERMINED IN RELEASE 1.0>
+
+------------------------------------------------------------------------------
+ Setup - Lighting Modules (Plugs)
+------------------------------------------------------------------------------
+
+1) <TO BE DETERMINED IN RELEASE 1.0>
+
+------------------------------------------------------------------------------
+ Setup - Curtain Modules
 ------------------------------------------------------------------------------
 
 1) <TO BE DETERMINED IN RELEASE 1.0>
