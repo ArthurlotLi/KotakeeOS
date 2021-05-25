@@ -9,8 +9,22 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 export class App extends React.Component {
+  constructor(){
+    super();
+    this.state = {};
+    // This is where you'd put this.function = this.function.bind(this);
+  }
+
+  async componentDidMount(){
+    // Add whatever you'd like here. 
+  }
+
   render() {
-    return(<h1>Hello!</h1>);
+    return(
+      <div>
+        <h1>Hello there!</h1>
+      </div>
+    );
   }
 }
 
