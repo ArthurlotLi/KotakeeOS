@@ -1,0 +1,33 @@
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Silver - Personal Website
+MAIN REPOSITORY
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+Description:
+
+This website is a pet project of mine meant to blow out the web development 
+cobwebs out of my head and also have something to toss on my resume. There's 
+not going to be anything really special about this website, other than I'll 
+hosting it from a local server for the time being.
+
+
+Development Web Address:
+
+https://arthurlotli.com
+
+
+-------------------------------------------------------------------------------
+ Setup - Web Application (webApp)
+------------------------------------------------------------------------------
+
+1) <TO BE DETERMINED IN RELEASE 1.0>
+
+--------------------------------<Files>--------------------------------------
+
+documents (dir)         : Folder containing various documentation relating to
+                          development.
+external (dir)          : Various external files that are crucial to operation
+                          but are not software.
+software (dir)            : Primary directory of web/server files.
