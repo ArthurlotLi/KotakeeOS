@@ -14,6 +14,10 @@ const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateTimeWait = 1000; // Every second
 const updateWeatherWait = 900000; // Once every 15 minutes
 
+const dayOfWeek = [
+  'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
+];
+
 export class App extends React.Component {
   constructor(){
     super();
@@ -63,7 +67,8 @@ export class App extends React.Component {
     var currentDay = date.getDate().toString();
     var currentMonth = date.toLocaleString('default', {month: 'long'});
     var curentYear = date.getFullYear().toString();
-    var currentDayMonthYear = currentDay + " " + currentMonth + " " + curentYear;
+    var currentWeekDay = dayOfWeek[date.getDay()];
+    var currentDayMonthYear = currentWeekDay + " - " + currentDay + " " + currentMonth + " " + curentYear;
 
     this.setState({
       currentHoursMinutes: currentHoursMinutes,

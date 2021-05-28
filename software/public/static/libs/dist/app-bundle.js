@@ -29884,6 +29884,11 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var openweathermapZipCode = "95051";
 var openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
+var updateTimeWait = 1000; // Every second
+var updateWeatherWait = 900000; // Once every 15 minutes
+var dayOfWeek = [
+    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+];
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App() {
@@ -29929,7 +29934,8 @@ var App = /** @class */ (function (_super) {
         var currentDay = date.getDate().toString();
         var currentMonth = date.toLocaleString('default', { month: 'long' });
         var curentYear = date.getFullYear().toString();
-        var currentDayMonthYear = currentDay + " " + currentMonth + " " + curentYear;
+        var currentWeekDay = dayOfWeek[date.getDay()];
+        var currentDayMonthYear = currentWeekDay + " - " + currentDay + " " + currentMonth + " " + curentYear;
         this.setState({
             currentHoursMinutes: currentHoursMinutes,
             currentSeconds: currentSeconds,
@@ -30011,10 +30017,10 @@ var App = /** @class */ (function (_super) {
     App.prototype.componentDidMount = function () {
         // Start the clock and the interval to update it every second.
         this.updateTime();
-        this.updateTimeInverval = setInterval(this.updateTime, 1000);
+        this.updateTimeInverval = setInterval(this.updateTime, updateTimeWait);
         // Query the weather and start the interval to update it (every 60 minutes).
         this.updateWeather();
-        this.updateWeatherInterval = setInterval(this.updateWeather, 3600000);
+        this.updateWeatherInterval = setInterval(this.updateWeather, updateWeatherWait);
     };
     // Executed upon close.
     App.prototype.componentWillUnmount = function () {
