@@ -12,7 +12,7 @@ var ReactDOM = require('react-dom');
 const openweathermapZipCode = "95051"
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateTimeWait = 1000; // Every second
-const updateWeatherWait = 1800000; // Once every 30 minutes
+const updateWeatherWait = 900000; // Once every 15 minutes
 
 export class App extends React.Component {
   constructor(){
