@@ -11,6 +11,8 @@ var ReactDOM = require('react-dom');
 
 const openweathermapZipCode = "95051"
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
+const updateTimeWait = 1000; // Every second
+const updateWeatherWait = 1800000; // Once every 30 minutes
 
 export class App extends React.Component {
   constructor(){
@@ -138,11 +140,11 @@ export class App extends React.Component {
   componentDidMount(){
     // Start the clock and the interval to update it every second.
     this.updateTime();
-    this.updateTimeInverval = setInterval(this.updateTime, 1000);
+    this.updateTimeInverval = setInterval(this.updateTime, updateTimeWait);
 
     // Query the weather and start the interval to update it (every 60 minutes).
     this.updateWeather();
-    this.updateWeatherInterval = setInterval(this.updateWeather, 3600000);
+    this.updateWeatherInterval = setInterval(this.updateWeather, updateWeatherWait);
   }
 
   // Executed upon close.
