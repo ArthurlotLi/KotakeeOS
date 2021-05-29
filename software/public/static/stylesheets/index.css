@@ -22,11 +22,29 @@ body{
   color: var(--text-color);
 }
 
+button{
+  font-size: 3.5vh;
+  background-color: var(--tertiary-color);
+  color: var(--text-color);
+  width: 30vw;
+  height: 20vh;
+  padding: 0.5vw;
+  margin: 0.3vw;
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+  color: black;
+  cursor: pointer;
+  box-shadow: 0 0 10px #666;
+}
+
 #title {
   position: fixed;
   top: 0%;
   left: 50%;
   transform: translate(-50%, 0);
+  font-size: 1vw;
   /*padding-left: 20px;
   padding-right: 20px;
   border-bottom-left-radius: 5px;
@@ -38,15 +56,16 @@ body{
   position: fixed;
   top: 0%;
   left: 0%; 
-  margin: 50px;
+  margin-left: 1.5vw;
+  margin-top: 1.5vw;
   font-size: 3vw;
 }
 
 #app-clock {
   position: fixed;
-  top: 45%;
+  top: 37%;
   left: 50%;
-  transform: translate(-50%, -45%);
+  transform: translate(-50%, -37%);
 }
 
 #app-clock-time{
@@ -63,7 +82,7 @@ body{
 }
 
 #app-clock-date{
-  font-size: 3.9vw;
+  font-size: 3.7vw;
   text-align: center;
 }
 
@@ -71,7 +90,8 @@ body{
   position: fixed;
   right: 0%;
   top: 0%;
-  margin: 50px;
+  margin-right: 1.5vw;
+  margin-top: 1.5vw;
   text-align: center;
   font-size: 1.5vw;
 }
@@ -82,6 +102,14 @@ body{
 
 #app-modules {
   position: fixed;
-  bottom: 0%;
-  margin: 50px;
+  bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 1.5vw;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
