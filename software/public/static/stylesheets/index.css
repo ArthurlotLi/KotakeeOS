@@ -31,13 +31,13 @@ button{
   padding: 0.5vw;
   margin: 0.3vw;
 }
-
+/*
 button:hover {
   background-color: var(--secondary-color);
   color: black;
   cursor: pointer;
   box-shadow: 0 0 10px #666;
-}
+}*/
 
 #title {
   position: fixed;
