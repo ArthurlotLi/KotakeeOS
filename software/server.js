@@ -5,6 +5,7 @@
 
 const express = require("express");
 const path = require("path");
+const fetch = require("node-fetch");
 
 /*
   Enums to keep constant with client logic. 
@@ -49,21 +50,21 @@ class Home {
       var room = rooms[i];
       roomsDict[room.roomId] = room;
     }
-    this.rooms = roomsDict
+    this.roomsDict = roomsDict
     this.weatherData = weatherData;
   }
 
   // Returns various general data.
   homeStatus(){
     var status = {
-      modulesCount = null,
-      weatherData = null,
+      modulesCount: null,
+      weatherData: null,
     }
 
     // Get total modules. 
     var modulesCount = 0;
-    for(var room in this.rooms){
-      if(rooms.hasOwnProperty(room)){
+    for(var room in this.roomsDict){
+      if(roomsDict.hasOwnProperty(room)){
         modulesCount = modulesCount + room.modulesCount;
       }
     }
@@ -79,6 +80,17 @@ class Home {
     if(roomId in this.roomsDict){
       return this.roomsDict[roomId];
     }
+    return null;
+  }
+
+  // Given roomId, actionId, and toState, kick off the process. 
+  actionToggle(roomId, actionId, toState){
+    if(this.getRoom(roomId) != null){
+      var room = this.getRoom(roomId);
+      return room.actionToggle(actionId, toState);
+    }
+    else
+      console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
     return null;
   }
 }
@@ -117,7 +129,7 @@ class Room {
       if(moduleId in this.modulesDict){
         var module = this.modulesDict[moduleId];
 
-        return module.actionToggle(actionid, toState);
+        return module.actionToggle(actionId, toState);
       }
       else 
         console.log("[ERROR] actionToggle failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");
@@ -137,7 +149,7 @@ class Module {
     // Create a dictionary of states indexed by actionId. 
     var statesDict = {};
     for(var i = 0; i < actions.length; i++){
-      statesDict[action[i]] = 0;
+      statesDict[actions[i]] = 0;
     }
     this.statesDict = statesDict;
   }
@@ -147,7 +159,7 @@ class Module {
   getActionState(actionId){
     if(this.actions.includes(actionId)){
       if(actionId in this.statesDict){
-        return this.statesDict.actionId; 
+        return this.statesDict[actionId]; 
       }
       else 
         console.log("[ERROR] getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.moduleId + ".");
@@ -161,16 +173,14 @@ class Module {
   // the state (if it is a valid new state). Returns true if action was
   // successful, false if something went wrong (i.e. given state is
   // actually current)
-  actionToggle(actionId, toState){
+  async actionToggle(actionId, toState){
     var stateRetVal = this.getActionState(actionId);
-    if(stateRetVal){
-      if(stateRetVal != toState){ 
-        // Verified that the action is correct. Execute the action.
-        return await requestGetStateToggle(actionId, toState);
-      }
-      else
-        console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.moduleId + ".");
+    if(stateRetVal != null && stateRetVal != toState){ 
+      // Verified that the action is correct. Execute the action.
+      return await this.requestGetStateToggle(actionId, toState);
     }
+    else
+      console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.moduleId + ".");
     return false;
   }
 
@@ -181,13 +191,14 @@ class Module {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
+      //apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
+      apiResponse = await fetch('http://' + this.ipAddress + '/testRelay');  // TODO REMOVE ME! 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("[DEBUG] requestGetStateToggle (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");
     }
     catch(error){
-      console.log("[ERROR] requestGetStateToggle (module " +this.moduleId+ ") failed!");
+      console.log("[ERROR] requestGetStateToggle (module " +this.moduleId+ ") failed! Error:\n" + error);
     }
     if(apiResponse.status == 200){
       // Executed successfully!
@@ -226,8 +237,6 @@ const home = new Home(homeRooms, {}); // TODO add weather data.
 // Create the app
 const app = express();
 
-console.log("Testing bedroom actionToggle(50). " + bedroom.actionToggle(50));
-
 /*
   Web Application logic
 */
@@ -248,9 +257,16 @@ app.get('/',(req,res) => {
 // Handle requests from clients to activate modules, without having
 // them know what modules are which. 
 // Ex) http://192.168.0.197/moduleToggle?roomId=1&actionId=75&newState=1
-app.get('/moduleToggle/:roomId/:actionId/:newState', (req, res) => {
+app.get('/moduleToggle/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
-  res.status(200).send();
+  if(req.params.roomId != null && req.params.actionId != null && req.params.toState != null){
+    home.actionToggle(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
+    // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+    res.status(200).send();
+  }
+  else{
+    res.status(400).send();
+  }
 })
 
 app.get('/moduleToggle', (req, res) => {
@@ -261,7 +277,7 @@ app.get('/moduleToggle', (req, res) => {
 // Handle requests from modules to update states when they have
 // successfully been modified. 
 // Ex) http://192.168.0.197/moduleStatusUpdate?roomId=1&actionId=75&newState=1
-app.get('/moduleStateUpdate/:roomId/:actionId/:newState', (req, res) => {
+app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleStateUpdate GET request received. Arguments: " + JSON.stringify(req.params));
   res.status(200).send();
 })
