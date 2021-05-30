@@ -14,6 +14,41 @@ const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateTimeWait = 1000; // Every second
 const updateWeatherWait = 900000; // Once every 15 minutes
 
+// Get webserver address to make API requests to it. apiURL should
+// therefore contain http://192.168.0.197 (regardless of subpage).
+const currentURL = window.location.href;
+const splitURL = currentURL.split("/");
+const apiURL = splitURL[0] + "//" + splitURL[2]; 
+
+/*
+  Enums to keep constant with server logic. 
+*/
+
+// Actions enum - Should be kept constant between this and server 
+// application logic. Each arduino will contain an array of 
+// implemented actions, and within a room, no duplicate actions
+// will be present (allowing deliniation between multiple lighting
+// modules, for example)
+const actions = {
+  LIGHTING1: 50,
+  LIGHTING2: 51,
+  LIGHTING3: 52,
+  LIGHTING4: 53,
+  LIGHTING5: 54,
+  CURTAINS1: 150,
+  CURTAINS2: 151,
+  CURTAINS3: 152,
+  CURTAINS4: 153,
+  CURTAINS5: 154,
+}
+
+// Bedroom IDs - Should be kept constant betweeen this and client
+// application logic. 
+const rooms = {
+  BEDROOM: 1,
+  LIVINGROOM: 2,
+}
+
 const dayOfWeek = [
   'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 ];
@@ -41,6 +76,11 @@ export class App extends React.Component {
     this.updateTime = this.updateTime.bind(this);
     this.updateWeather = this.updateWeather.bind(this);
   }
+
+  // BIG TODO: migrate both updateWeather to webserver, so all 
+  // applications have a centralized weather and time. This 
+  // allows for more calls to the weather API. Should be retrieved 
+  // via the single status web call.
 
   // Modify date state variables whenever called (timer-linked.)
   updateTime(){
@@ -135,7 +175,7 @@ export class App extends React.Component {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch("http://" + bedroomModule1Address + "/testRelay");
+      apiResponse = await fetch(apiURL + "/toggleModule?roomId=" +rooms.BEDROOM + "&actionId="  + actions.LIGHTING1 + "&toState=1"); // TODO: make this state actually dependant on actively retreived module states. 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");

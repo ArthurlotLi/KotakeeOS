@@ -49,12 +49,30 @@ const app = express();
 /*
   Classes (TODO: export to another file)
 */
-class Room {
 
+// Encompassing class for all rooms. Contains various attributes
+// regarding the home at large. 
+class Home {
+  constructor(rooms){
+    this.rooms = rooms;
+  }
 }
 
-class Module {
+// Each room contains room enum as well as an array of modules. 
+class Room {
+  constructor(roomId, modules){
+    this.roomId = roomId;
+    this.modules = modules;
+  }
+}
 
+// Each module contains an array of supported actions and an ipAddress.
+class Module {
+  constructor(actions, states, ipAddress){
+    this.actions = actions;
+    this.states = states;
+    this.ipAddress = ipAddress;
+  }
 }
 
 /*
@@ -80,17 +98,23 @@ app.get('/',(req,res) => {
 app.get('moduleToggle', (req, res) => {
 })
 
-// Handle requests from clients to fetch states of all modules. 
-// Ex) http://192.168.0.197/moduleStates
-app.get('moduleStates', (req, res) => {
-})
-
 // Handle requests from modules to update states when they have
 // successfully been modified. 
 // Ex) http://192.168.0.197/moduleStatusUpdate?roomId=1&actionId=75&newState=1
 app.get('moduleStateUpdate', (req, res) => {
 })
 
+// Handle requests from clients to fetch module States. This
+// should be called frequently (every few seconds).
+// Ex) http://192.168.0.197/moduleStates
+app.get('moduleStates', (req, res) => {
+})
+
+// Handle requests from clients to fetch general update. This
+// should be called frequently (every 10 seconds or so).
+// Ex) http://192.168.0.197/homeStatus
+app.get('homeStatus', (req, res) => {
+})
 
 // Start the server to listen on this port.
 app.listen(listeningPort, () => {
