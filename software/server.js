@@ -36,25 +36,21 @@ const rooms = {
 }
 
 /*
-  Configurable Constants
-*/
-
-// Modify these when adding/removing modules.
-const bedroomModule1Address = "192.168.0.198";
-const listeningPort = 8080;
-
-// Create the app
-const app = express();
-
-/*
   Classes (TODO: export to another file)
 */
 
 // Encompassing class for all rooms. Contains various attributes
 // regarding the home at large. 
 class Home {
-  constructor(rooms){
-    this.rooms = rooms;
+  constructor(rooms, weatherData){
+    // Given array of rooms, create dictionary indexed by roomId. 
+    var roomsDict = {};
+    for(var i = 0; i < rooms.length; i++){
+      var room = rooms[i];
+      roomsDict[room.roomId] = room;
+    }
+    this.rooms = roomsDict
+    this.weatherData = weatherData;
   }
 }
 
@@ -63,17 +59,64 @@ class Room {
   constructor(roomId, modules){
     this.roomId = roomId;
     this.modules = modules;
+    // Create a dictionary of all actions possible in this room
+    // and assign the appropriate module to that dictionary. Note
+    // that we expect that there are no duplicate actionIds across
+    // all room Modules. 
+    var actionsDict = {};
+    for(var i = 0; i < modules.length(); i++){
+      // Iterate through all modules in room and save all seen actions.
+      // Link each action to the module object itself for easy access.
+      var module = modules[i];
+      for(var j = 0; j < module.actions.length; j++){
+        // Iterate through all actions for this module and add them. 
+        actionsDict[module.actions[j]] = module;
+      }
+    }
+    this.actionsDict = actionsDict;
+    console.log("[DEBUG] Created module with actionsDict: " + JSON.stringify(actionsDict));
   }
 }
 
 // Each module contains an array of supported actions and an ipAddress.
 class Module {
-  constructor(actions, states, ipAddress){
+  constructor(actions, ipAddress){
     this.actions = actions;
-    this.states = states;
+    var newStates = [];
+    for(var i = 0; i < actions.length(); i++){
+      newStates.push(0);
+    }
+    this.states = newStates;
     this.ipAddress = ipAddress;
   }
 }
+
+/*
+  Configurable Constants
+*/
+
+const listeningPort = 8080;
+
+// When adding modules, create module object and add to room's
+// array of Modules. 
+
+// Arduino 1 Bedroom 
+const module1BRActions = [actions.LIGHTING1];
+const module1BRIpAddress = "192.168.0.198";
+const moduleBR1 = new Module(module1LRActions, module1LRIpAddress);
+
+// Rooms (add objects here)
+const bedroomModules = [moduleBR1];
+const bedroom = new Room(rooms.BEDROOM,bedroomModules);
+const livingRoomModules = [];
+const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
+
+// Home
+const homeRooms = [bedroom, livingRoom];
+const home = new Home(homeRooms, {}); // TODO add weather data. 
+
+// Create the app
+const app = express();
 
 /*
   Web Application logic
@@ -95,25 +138,38 @@ app.get('/',(req,res) => {
 // Handle requests from clients to activate modules, without having
 // them know what modules are which. 
 // Ex) http://192.168.0.197/moduleToggle?roomId=1&actionId=75&newState=1
-app.get('moduleToggle', (req, res) => {
+app.get('/moduleToggle/:roomId/:actionId/:newState', (req, res) => {
+  console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
+  res.status(200).send();
+})
+
+app.get('/moduleToggle', (req, res) => {
+  console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
+  res.status(200).send();
 })
 
 // Handle requests from modules to update states when they have
 // successfully been modified. 
 // Ex) http://192.168.0.197/moduleStatusUpdate?roomId=1&actionId=75&newState=1
-app.get('moduleStateUpdate', (req, res) => {
+app.get('/moduleStateUpdate/:roomId/:actionId/:newState', (req, res) => {
+  console.log("[DEBUG] /moduleStateUpdate GET request received. Arguments: " + JSON.stringify(req.params));
+  res.status(200).send();
 })
 
 // Handle requests from clients to fetch module States. This
 // should be called frequently (every few seconds).
 // Ex) http://192.168.0.197/moduleStates
-app.get('moduleStates', (req, res) => {
+app.get('/moduleStates', (req, res) => {
+  console.log("[DEBUG] /moduleStates GET request received.");
+  res.status(200).send();
 })
 
 // Handle requests from clients to fetch general update. This
 // should be called frequently (every 10 seconds or so).
 // Ex) http://192.168.0.197/homeStatus
-app.get('homeStatus', (req, res) => {
+app.get('/homeStatus', (req, res) => {
+  console.log("[DEBUG] /homeStatus GET request received.");
+  res.status(200).send();
 })
 
 // Start the server to listen on this port.

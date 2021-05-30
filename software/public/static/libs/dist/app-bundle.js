@@ -30051,7 +30051,7 @@ var App = /** @class */ (function (_super) {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         startTime = new Date();
-                        return [4 /*yield*/, fetch(apiURL + "/toggleModule?roomId=" + rooms.BEDROOM + "&actionId=" + actions.LIGHTING1 + "&toState=1")];
+                        return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + rooms.BEDROOM + "/" + actions.LIGHTING1 + "/1")];
                     case 2:
                         apiResponse = _a.sent(); // TODO: make this state actually dependant on actively retreived module states. 
                         endTime = new Date();

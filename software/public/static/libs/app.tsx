@@ -175,7 +175,7 @@ export class App extends React.Component {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/toggleModule?roomId=" +rooms.BEDROOM + "&actionId="  + actions.LIGHTING1 + "&toState=1"); // TODO: make this state actually dependant on actively retreived module states. 
+      apiResponse = await fetch(apiURL + "/moduleToggle/" +rooms.BEDROOM + "/"  + actions.LIGHTING1 + "/1"); // TODO: make this state actually dependant on actively retreived module states. 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");
