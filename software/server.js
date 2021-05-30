@@ -58,32 +58,33 @@ class Home {
 class Room {
   constructor(roomId, modules){
     this.roomId = roomId;
-    this.modules = modules;
-    // Create a dictionary of all actions possible in this room
-    // and assign the appropriate module to that dictionary. Note
-    // that we expect that there are no duplicate actionIds across
-    // all room Modules. 
+    // Create two dictionaries - one indexed by actionId, the other
+    // by moduleId. 
     var actionsDict = {};
-    for(var i = 0; i < modules.length(); i++){
+    var modulesDict = {};
+    for(var i = 0; i < modules.length; i++){
       // Iterate through all modules in room and save all seen actions.
       // Link each action to the module object itself for easy access.
       var module = modules[i];
+      modulesDict[module.moduleId] = module;
       for(var j = 0; j < module.actions.length; j++){
         // Iterate through all actions for this module and add them. 
-        actionsDict[module.actions[j]] = module;
+        actionsDict[module.actions[j]] = module.moduleId;
       }
     }
     this.actionsDict = actionsDict;
-    console.log("[DEBUG] Created module with actionsDict: " + JSON.stringify(actionsDict));
+    this.modulesDict = modulesDict;
+    console.log("[DEBUG] Created module with actionsDict: " + JSON.stringify(actionsDict) + " and modulesDict: " + JSON.stringify(modulesDict));
   }
 }
 
 // Each module contains an array of supported actions and an ipAddress.
 class Module {
-  constructor(actions, ipAddress){
+  constructor(moduleId, actions, ipAddress){
+    this.moduleId = moduleId;
     this.actions = actions;
     var newStates = [];
-    for(var i = 0; i < actions.length(); i++){
+    for(var i = 0; i < actions.length; i++){
       newStates.push(0);
     }
     this.states = newStates;
@@ -101,9 +102,10 @@ const listeningPort = 8080;
 // array of Modules. 
 
 // Arduino 1 Bedroom 
+const module1BRId = 1;
 const module1BRActions = [actions.LIGHTING1];
 const module1BRIpAddress = "192.168.0.198";
-const moduleBR1 = new Module(module1LRActions, module1LRIpAddress);
+const moduleBR1 = new Module(module1BRId, module1BRActions, module1BRIpAddress);
 
 // Rooms (add objects here)
 const bedroomModules = [moduleBR1];
