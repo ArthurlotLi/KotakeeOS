@@ -9,8 +9,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-const bedroomModule1Address = "192.168.0.198";
-
 const openweathermapZipCode = "95051"
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateTimeWait = 1000; // Every second

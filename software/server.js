@@ -6,23 +6,94 @@
 const express = require("express");
 const path = require("path");
 
-// Global constants
+/*
+  Enums to keep constant with client logic. 
+*/
+
+// Actions enum - Should be kept constant between this and client 
+// application logic. Each arduino will contain an array of 
+// implemented actions, and within a room, no duplicate actions
+// will be present (allowing deliniation between multiple lighting
+// modules, for example)
+const actions = {
+  LIGHTING1: 50,
+  LIGHTING2: 51,
+  LIGHTING3: 52,
+  LIGHTING4: 53,
+  LIGHTING5: 54,
+  CURTAINS1: 150,
+  CURTAINS2: 151,
+  CURTAINS3: 152,
+  CURTAINS4: 153,
+  CURTAINS5: 154,
+}
+
+// Bedroom IDs - Should be kept constant betweeen this and client
+// application logic. 
+const rooms = {
+  BEDROOM: 1,
+  LIVINGROOM: 2,
+}
+
+/*
+  Configurable Constants
+*/
+
+// Modify these when adding/removing modules.
+const bedroomModule1Address = "192.168.0.198";
 const listeningPort = 8080;
 
 // Create the app
 const app = express();
 
-// Whenever the request path has "static" inside of it
-// (i.e. "localhost:8080/static/js/index.js"), simply
-// serve the static directory as you'd expect. 
+/*
+  Classes (TODO: export to another file)
+*/
+class Room {
+
+}
+
+class Module {
+
+}
+
+/*
+  Web Application logic
+*/
+
+// Whenever the request path has "static" inside of it, simply serve 
+// the static directory as you'd expect. 
 app.use("/static", express.static(path.resolve(__dirname, "public", "static")));
 
-// For all requests, we go back to the root with a get
-// request. Meaning that it doesn't matter if user
-// attempts to use post, we just use get.
-app.get('/*',(req,res) => {
+// For the main (and only) page, serve the web application to the client. 
+app.get('/',(req,res) => {
     res.sendFile(path.resolve(__dirname, "public", "index.html"));
 });
 
+/*
+  Web Server logic
+*/
+
+// Handle requests from clients to activate modules, without having
+// them know what modules are which. 
+// Ex) http://192.168.0.197/moduleToggle?roomId=1&actionId=75&newState=1
+app.get('moduleToggle', (req, res) => {
+})
+
+// Handle requests from clients to fetch states of all modules. 
+// Ex) http://192.168.0.197/moduleStates
+app.get('moduleStates', (req, res) => {
+})
+
+// Handle requests from modules to update states when they have
+// successfully been modified. 
+// Ex) http://192.168.0.197/moduleStatusUpdate?roomId=1&actionId=75&newState=1
+app.get('moduleStateUpdate', (req, res) => {
+})
+
+
 // Start the server to listen on this port.
-app.listen(process.env.PORT || listeningPort, () => console.log("Project KotakeeOS is online..."));
+app.listen(listeningPort, () => {
+  console.log("Project KotakeeOS is online at port: " +listeningPort);
+});
+
