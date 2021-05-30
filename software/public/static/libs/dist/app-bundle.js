@@ -29882,6 +29882,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.App = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var bedroomModule1Address = "192.168.0.198";
 var openweathermapZipCode = "95051";
 var openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 var updateTimeWait = 1000; // Every second
@@ -30005,7 +30006,39 @@ var App = /** @class */ (function (_super) {
         });
     };
     App.prototype.moduleLightingBedroom = function () {
-        console.log("TODO: Bedroom lighting module activated.");
+        return __awaiter(this, void 0, void 0, function () {
+            var apiResponse, startTime, endTime, timeDiff, error_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log("Bedroom module 1 activated.");
+                        apiResponse = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        startTime = new Date();
+                        return [4 /*yield*/, fetch("http://" + bedroomModule1Address + "/testRelay")];
+                    case 2:
+                        apiResponse = _a.sent();
+                        endTime = new Date();
+                        timeDiff = endTime - startTime;
+                        console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff / 1000 + " seconds.");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        console.log("ERROR: Module Lighting Bedroom call (bedroomModule1) failed!");
+                        return [3 /*break*/, 4];
+                    case 4:
+                        if (apiResponse.status == 200) {
+                            // TODO - do something to save the state in the web server...? 
+                        }
+                        else {
+                            console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     App.prototype.moduleCurtainsBedroom = function () {
         console.log("TODO: Bedroom curtains module activated.");

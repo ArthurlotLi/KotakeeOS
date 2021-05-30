@@ -9,6 +9,8 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+const bedroomModule1Address = "192.168.0.198";
+
 const openweathermapZipCode = "95051"
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateTimeWait = 1000; // Every second
@@ -129,8 +131,26 @@ export class App extends React.Component {
     }
   }
 
-  moduleLightingBedroom(){
-    console.log("TODO: Bedroom lighting module activated.");
+  async moduleLightingBedroom(){
+    console.log("Bedroom module 1 activated.");
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch("http://" + bedroomModule1Address + "/testRelay");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: Module Lighting Bedroom call (bedroomModule1) failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+    }
   }
 
   moduleCurtainsBedroom(){
