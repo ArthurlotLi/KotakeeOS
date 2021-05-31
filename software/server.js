@@ -129,11 +129,10 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 
 // Handle requests from clients to fetch module States. This
 // should be called frequently (every few seconds).
-// Ex) http://192.168.0.197/moduleStates
-app.get('/moduleStates', (req, res) => {
-  console.log("[DEBUG] /moduleStates GET request received.");
-  // TODO
-  return res.status(200).send();
+// Ex) http://192.168.0.197/actionStates
+app.get('/actionStates', (req, res) => {
+  console.log("[DEBUG] /actionStates GET request received.");
+  return res.status(200).send(home.actionStates());
 });
 
 // Handle requests from clients to fetch general update. This

@@ -116,6 +116,21 @@ class Home {
     return null;
   }
 
+  // Return states of all modules in system, identifying each
+  // action by actionId, seperated by roomId. This is expected
+  // to be a frequently called function on timers by all clients.
+  // The end JSON object should have three layers. 
+  actionStates(){
+    var response = {}
+    for(var room in this.roomsDict){
+      if(this.roomsDict.hasOwnProperty(room)){
+        // For each room, request actionStates.
+        response[room] = this.roomsDict[room].actionStates();
+      }
+    }
+    return response;
+  }
+
   // Weather parsing. Called on a timer by the server. Data is
   // requested by apps whenever they want. Given the API Key that
   // is held by the server. Also given doNotQuery boolean which

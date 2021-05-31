@@ -67,6 +67,20 @@ class Room {
       console.log("[ERROR] moduleStateUpdate failed! actionId " + actionId + " does not exist in room " + this.roomId + ".");
     return false;
   }
+  
+  // Return states of all ACTIONS in the room.
+  actionStates(){
+    var response = {};
+    for(var module in this.modulesDict){
+      var moduleStatesDict = this.modulesDict[module].statesDict;
+      // Shed the moduleId from the information - the clients don't
+      // need to know of these. 
+      for(var key in moduleStatesDict){
+        response[key] = moduleStatesDict[key];
+      }
+    }
+    return response;
+  }
 }
 
 module.exports = Room;
