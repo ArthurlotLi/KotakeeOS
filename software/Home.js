@@ -3,6 +3,8 @@
   Logic for each abstracted home (for now we just expect a single home).
 */
 
+const fetch = require("node-fetch");
+
 // So we don't spam the server.
 const cannedWeatherData = {
   "coord": {
@@ -99,6 +101,18 @@ class Home {
     }
     else
       console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
+    return null;
+  }
+
+  // Given roomId, actionId, and toState, update the state of 
+  // a module. 
+  moduleStateUpdate(roomId, actionId, toState){
+    if(this.getRoom(roomId) != null){
+      var room = this.getRoom(roomId);
+      return room.moduleStateUpdate(actionId, toState);
+    }
+    else
+      console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
     return null;
   }
 

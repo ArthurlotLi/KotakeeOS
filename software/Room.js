@@ -48,6 +48,25 @@ class Room {
       console.log("[ERROR] actionToggle failed! actionId " + actionId + " does not exist in room " + this.roomId + ".");
     return false;
   }
+
+  // Given the actionid and the state, update a module's state. We 
+  // expect this whenever a module has completed an operation or
+  // has restarted. Either way, accept what they're saying as truth. 
+  moduleStateUpdate(actionId, toState){
+    if(actionId in this.actionsDict){
+      var moduleId = this.actionsDict[actionId];
+      if(moduleId in this.modulesDict){
+        var module = this.modulesDict[moduleId];
+
+        return module.moduleStateUpdate(actionId, toState);
+      }
+      else 
+        console.log("[ERROR] moduleStateUpdate failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");
+    }
+    else 
+      console.log("[ERROR] moduleStateUpdate failed! actionId " + actionId + " does not exist in room " + this.roomId + ".");
+    return false;
+  }
 }
 
 module.exports = Room;

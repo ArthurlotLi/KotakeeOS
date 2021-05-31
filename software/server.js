@@ -5,6 +5,7 @@
 
 const express = require("express");
 const path = require("path");
+const fetch = require("node-fetch");
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -48,7 +49,7 @@ const listeningPort = 8080;
 // Open Weather Map stuff. Use the boolean to provide canned data
 // if you're just testing stuff. (If you're restarting the app
 // over and over again, you'll want this boolean set to true.)
-const doNotQueryOpenWeatherMap = false;
+const doNotQueryOpenWeatherMap = true;
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateWeatherWait = 900000; // Once every 15 minutes
 
@@ -103,7 +104,7 @@ app.get('/',(req,res) => {
 
 // Handle requests from clients to activate modules, without having
 // them know what modules are which. 
-// Ex) http://192.168.0.197/moduleToggle?roomId=1&actionId=75&newState=1
+// Ex) http://192.168.0.197/moduleToggle/1/50/1
 app.get('/moduleToggle/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
   if(req.params.roomId != null && req.params.actionId != null && req.params.toState != null){
@@ -116,16 +117,13 @@ app.get('/moduleToggle/:roomId/:actionId/:toState', (req, res) => {
   }
 });
 
-app.get('/moduleToggle', (req, res) => {
-  console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
-  return res.status(200).send();
-});
-
 // Handle requests from modules to update states when they have
-// successfully been modified. 
-// Ex) http://192.168.0.197/moduleStatusUpdate?roomId=1&actionId=75&newState=1
+// successfully been modified, or when they restart. 
+// Ex) http://192.168.0.197/moduleStateUpdate/1/50/0
 app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleStateUpdate GET request received. Arguments: " + JSON.stringify(req.params));
+  // Update the module status.
+  home.moduleStateUpdate(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
   return res.status(200).send();
 });
 
@@ -134,6 +132,7 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 // Ex) http://192.168.0.197/moduleStates
 app.get('/moduleStates', (req, res) => {
   console.log("[DEBUG] /moduleStates GET request received.");
+  // TODO
   return res.status(200).send();
 });
 

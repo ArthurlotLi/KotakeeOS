@@ -35,6 +35,26 @@ class Module {
     return null;
   }
 
+  // Set the state of a specific action. Return true if no fatal
+  // errors occur. 
+  setActionState(actionId, toState){
+    if(this.actions.includes(actionId)){
+      if(actionId in this.statesDict){
+        var currentState = this.statesDict[actionId];
+        if(currentState != toState) {
+          this.statesDict[actionId] = toState; 
+          console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for module " + this.moduleId + ".");
+        }
+        return true;
+      }
+      else 
+        console.log("[ERROR] setActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.moduleId + ".");
+    }
+    else 
+      console.log("[ERROR] setActionState failed! actionId " + actionId + " is not implemented for module " + this.moduleId + ".");
+    return null;
+  }
+
   // Given actionId and toState, sends instruction to module to change 
   // the state (if it is a valid new state). Returns true if action was
   // successful, false if something went wrong (i.e. given state is
@@ -48,6 +68,12 @@ class Module {
     else
       console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.moduleId + ".");
     return false;
+  }
+
+  // Given actionId and toState, updates the state based on what
+  // the module has told us. No strings attached. 
+  moduleStateUpdate(actionId, toState){
+    return this.setActionState(actionId, toState);
   }
 
   // Sends a request to the arduino to change to a new state. Returns
