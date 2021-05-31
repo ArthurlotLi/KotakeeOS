@@ -113,3 +113,12 @@ button:hover {
   align-items: center;
   text-align: center;
 }
+
+#app-home-status {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  margin-left: 0.5vw;
+  margin-bottom: 0.5vw;
+  font-size: 1vw;
+}

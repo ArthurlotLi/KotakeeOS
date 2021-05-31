@@ -29882,10 +29882,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.App = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var openweathermapZipCode = "95051";
-var openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 var updateTimeWait = 1000; // Every second
-var updateWeatherWait = 900000; // Once every 15 minutes
+var updateHomeStatusWait = 10000; // Every 5 seconds.
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
 var currentURL = window.location.href;
@@ -29926,7 +29924,7 @@ var App = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         // Interval handles to clean up.
         _this.updateTimeInverval = null;
-        _this.updateWeatherInterval = null;
+        _this.updateHomeStatusInterval = null;
         // State
         _this.state = {
             currentHoursMinutes: null,
@@ -29936,10 +29934,11 @@ var App = /** @class */ (function (_super) {
             currentWeatherMain: null,
             currentWeatherMinMax: null,
             currentWeatherFeelsLike: null,
+            currentModulesCount: null,
         };
         // Binding functions to "this"
         _this.updateTime = _this.updateTime.bind(_this);
-        _this.updateWeather = _this.updateWeather.bind(_this);
+        _this.updateHomeStatus = _this.updateHomeStatus.bind(_this);
         return _this;
     }
     // BIG TODO: migrate both updateWeather to webserver, so all 
@@ -29979,9 +29978,9 @@ var App = /** @class */ (function (_super) {
         });
     };
     // Modify weather state variables whenever called (timer-linked)
-    App.prototype.updateWeather = function () {
+    App.prototype.updateHomeStatus = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var apiResponse, startTime, endTime, timeDiff, error_1, receivedData, weatherMain, weatherDesc, mainTemp, mainFeels_like, mainTemp_min, mainTemp_max, mainPressure, mainHumidity, visibility, windSpeed, windDeg, dt, sysSunrise, sysSunset, currentWeatherMain, currentWeatherMinMax, currentWeatherFeelsLike;
+            var apiResponse, startTime, endTime, timeDiff, error_1, receivedData, currentModulesCount, weatherData, weatherMain, weatherDesc, mainTemp, mainFeels_like, mainTemp_min, mainTemp_max, mainPressure, mainHumidity, visibility, windSpeed, windDeg, dt, sysSunrise, sysSunset, currentWeatherMain, currentWeatherMinMax, currentWeatherFeelsLike;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -29990,38 +29989,40 @@ var App = /** @class */ (function (_super) {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         startTime = new Date();
-                        return [4 /*yield*/, fetch("http://api.openweathermap.org/data/2.5/weather?zip=" + openweathermapZipCode + "&units=imperial&appid=" + openweathermapApiKey)];
+                        return [4 /*yield*/, fetch(apiURL + "/homeStatus")];
                     case 2:
                         apiResponse = _a.sent();
                         endTime = new Date();
                         timeDiff = endTime - startTime;
-                        console.log("DEBUG: Open Weather Map API call returned in " + timeDiff / 1000 + " seconds.");
+                        console.log("DEBUG: homeStatus call returned in " + timeDiff / 1000 + " seconds.");
                         return [3 /*break*/, 4];
                     case 3:
                         error_1 = _a.sent();
-                        console.log("ERROR: Open Weather Map API call failed!");
+                        console.log("ERROR: homeStatus call failed!");
                         return [3 /*break*/, 4];
                     case 4:
                         if (!(apiResponse.status == 200)) return [3 /*break*/, 6];
                         return [4 /*yield*/, apiResponse.json()];
                     case 5:
                         receivedData = _a.sent();
-                        console.log("DEBUG: Received Open Weather Map API data:");
+                        console.log("DEBUG: Received homeStatus data:");
                         console.log(receivedData);
-                        weatherMain = receivedData.weather[0].main;
-                        weatherDesc = receivedData.weather[0].description;
-                        mainTemp = receivedData.main.temp;
-                        mainFeels_like = receivedData.main.feels_like;
-                        mainTemp_min = receivedData.main.temp_min;
-                        mainTemp_max = receivedData.main.temp_max;
-                        mainPressure = receivedData.main.pressure;
-                        mainHumidity = receivedData.main.humidity;
-                        visibility = receivedData.visibility;
-                        windSpeed = receivedData.wind.speed;
-                        windDeg = receivedData.wind.deg;
-                        dt = receivedData.dt;
-                        sysSunrise = receivedData.sys.sunrise;
-                        sysSunset = receivedData.sys.sunset;
+                        currentModulesCount = receivedData.modulesCount;
+                        weatherData = receivedData.weatherData;
+                        weatherMain = weatherData.weather[0].main;
+                        weatherDesc = weatherData.weather[0].description;
+                        mainTemp = weatherData.main.temp;
+                        mainFeels_like = weatherData.main.feels_like;
+                        mainTemp_min = weatherData.main.temp_min;
+                        mainTemp_max = weatherData.main.temp_max;
+                        mainPressure = weatherData.main.pressure;
+                        mainHumidity = weatherData.main.humidity;
+                        visibility = weatherData.visibility;
+                        windSpeed = weatherData.wind.speed;
+                        windDeg = weatherData.wind.deg;
+                        dt = weatherData.dt;
+                        sysSunrise = weatherData.sys.sunrise;
+                        sysSunset = weatherData.sys.sunset;
                         currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
                         currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
                         currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
@@ -30029,10 +30030,11 @@ var App = /** @class */ (function (_super) {
                             currentWeatherMain: currentWeatherMain,
                             currentWeatherMinMax: currentWeatherMinMax,
                             currentWeatherFeelsLike: currentWeatherFeelsLike,
+                            currentModulesCount: currentModulesCount,
                         });
                         return [3 /*break*/, 7];
                     case 6:
-                        console.log("WARNING: Open Weather Map API call returned with status " + apiResponse.status + ".");
+                        console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
                         _a.label = 7;
                     case 7: return [2 /*return*/];
                 }
@@ -30086,8 +30088,8 @@ var App = /** @class */ (function (_super) {
         this.updateTime();
         this.updateTimeInverval = setInterval(this.updateTime, updateTimeWait);
         // Query the weather and start the interval to update it (every 60 minutes).
-        this.updateWeather();
-        this.updateWeatherInterval = setInterval(this.updateWeather, updateWeatherWait);
+        this.updateHomeStatus();
+        this.updateHomeStatusInterval = setInterval(this.updateHomeStatus, updateHomeStatusWait);
     };
     // Executed upon close.
     App.prototype.componentWillUnmount = function () {
@@ -30109,7 +30111,11 @@ var App = /** @class */ (function (_super) {
             React.createElement("div", { id: "app-modules" },
                 React.createElement("button", { onClick: this.moduleLightingBedroom }, "Bedroom Light"),
                 React.createElement("button", { onClick: this.moduleCurtainsBedroom }, "Bedroom Curtains"),
-                React.createElement("button", { onClick: this.moduleLightingLivingRoom }, "Living Room Light"))));
+                React.createElement("button", { onClick: this.moduleLightingLivingRoom }, "Living Room Light")),
+            React.createElement("div", { id: "app-home-status" },
+                React.createElement("div", { id: "app-home-status-modules" },
+                    "Modules: ",
+                    this.state.currentModulesCount))));
     };
     return App;
 }(React.Component));
