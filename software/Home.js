@@ -53,7 +53,7 @@ const cannedWeatherData = {
 // Encompassing class for all rooms. Contains various attributes
 // regarding the home at large. 
 class Home {
-  constructor(rooms, zipCode, weatherData){
+  constructor(rooms, zipCode, weatherData, homeStatusTopic, actionStatesTopic, publisher){
     this.zipCode = zipCode;
     this.weatherData = weatherData;
     // Given array of rooms, create dictionary indexed by roomId. 
@@ -63,6 +63,9 @@ class Home {
       roomsDict[room.roomId] = room;
     }
     this.roomsDict = roomsDict
+    this.homeStatusTopic = homeStatusTopic;
+    this.actionStatesTopic = actionStatesTopic;
+    this.publisher = publisher
   }
 
   // Returns various general data.
@@ -110,17 +113,28 @@ class Home {
     if(this.getRoom(roomId) != null){
       var room = this.getRoom(roomId);
       var updateStatus = await room.moduleStateUpdate(actionId, toState);
-      if(updateStatus){
-        // The state actually changed. 
-        console.log("[DEBUG] moduleStateUpdate succeeded. Updating Topic ACTION_STATES.");
-      }
-      else{
-        console.log("[DEBUG] moduleStateUpdate failed. Not updating ACTION_STATES.");
+      if(this.publisher != null){
+          if( updateStatus){
+          // The state actually changed. 
+          console.log("[DEBUG] moduleStateUpdate succeeded. Updating Topic ACTION_STATES.");
+          this.topicPublishActionStates();
+        }
+        else{
+          console.log("[DEBUG] moduleStateUpdate did nothing. Not updating ACTION_STATES.");
+        }
       }
     }
     else
       console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
     return false;
+  }
+
+  topicPublishActionStates() {
+    this.publisher.publish(this.actionStatesTopic, JSON.stringify(this.actionStates()))
+  }
+
+  topicPublishHomeStatus() {
+    this.publisher.publish(this.homeStatusTopic, JSON.stringify(this.homeStatus()))
   }
 
   // Return states of all modules in system, identifying each
@@ -178,6 +192,10 @@ class Home {
         // it forward). 
         var receivedData = await apiResponse.json();
         this.weatherData = receivedData;
+        // Update clients. 
+        if(this.publisher != null){
+          this.topicPublishHomeStatus();
+        }
       }
       else{
         console.log("[WARNING] Open Weather Map API call returned with status " + apiResponse.status + ".");

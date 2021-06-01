@@ -29883,8 +29883,8 @@ exports.App = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var updateTimeWait = 1000; // Every second
-var updateHomeStatusWait = 10000; // 10 seconds. 
-var updateActionStatusWait = 1500; // 1.5 seconds.
+var updateHomeStatusWait = 30000; // 30 seconds. 
+var updateActionStatesWait = 10000; // 10 seconds. // TODO: update web app to request for status again abnormally after a request is made. 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
 var currentURL = window.location.href;
@@ -29916,6 +29916,10 @@ var rooms = {
     BEDROOM: 1,
     LIVINGROOM: 2,
 };
+// pubsub topic names
+var HOME_STATUS = 'homeStatus';
+var ACTION_STATES = 'actionStates';
+// End enums
 var dayOfWeek = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 ];
@@ -29926,6 +29930,7 @@ var App = /** @class */ (function (_super) {
         // Interval handles to clean up.
         _this.updateTimeInverval = null;
         _this.updateHomeStatusInterval = null;
+        _this.updateActionStatesInterval = null;
         // State
         _this.state = {
             currentHoursMinutes: null,
@@ -29980,13 +29985,16 @@ var App = /** @class */ (function (_super) {
             currentDayMonthYear: currentDayMonthYear,
         });
     };
-    // Modify weather state variables whenever called (timer-linked)
-    App.prototype.updateHomeStatus = function () {
+    // Query the web server if no data is provied. If data is provided,
+    // we'll use that instead. 
+    App.prototype.updateHomeStatus = function (data) {
+        if (data === void 0) { data = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var apiResponse, startTime, endTime, timeDiff, error_1, receivedData, currentModulesCount, weatherData, weatherMain, weatherDesc, mainTemp, mainFeels_like, mainTemp_min, mainTemp_max, mainPressure, mainHumidity, visibility, windSpeed, windDeg, dt, sysSunrise, sysSunset, currentWeatherMain, currentWeatherMinMax, currentWeatherFeelsLike;
+            var apiResponse, startTime, endTime, timeDiff, error_1, currentModulesCount, weatherData, weatherMain, weatherDesc, mainTemp, mainFeels_like, mainTemp_min, mainTemp_max, mainPressure, mainHumidity, visibility, windSpeed, windDeg, dt, sysSunrise, sysSunset, currentWeatherMain, currentWeatherMinMax, currentWeatherFeelsLike;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!(data == null)) return [3 /*break*/, 7];
                         apiResponse = null;
                         _a.label = 1;
                     case 1:
@@ -30007,50 +30015,56 @@ var App = /** @class */ (function (_super) {
                         if (!(apiResponse.status == 200)) return [3 /*break*/, 6];
                         return [4 /*yield*/, apiResponse.json()];
                     case 5:
-                        receivedData = _a.sent();
-                        console.log("DEBUG: Received homeStatus data:");
-                        console.log(receivedData);
-                        currentModulesCount = receivedData.modulesCount;
-                        weatherData = receivedData.weatherData;
-                        weatherMain = weatherData.weather[0].main;
-                        weatherDesc = weatherData.weather[0].description;
-                        mainTemp = weatherData.main.temp;
-                        mainFeels_like = weatherData.main.feels_like;
-                        mainTemp_min = weatherData.main.temp_min;
-                        mainTemp_max = weatherData.main.temp_max;
-                        mainPressure = weatherData.main.pressure;
-                        mainHumidity = weatherData.main.humidity;
-                        visibility = weatherData.visibility;
-                        windSpeed = weatherData.wind.speed;
-                        windDeg = weatherData.wind.deg;
-                        dt = weatherData.dt;
-                        sysSunrise = weatherData.sys.sunrise;
-                        sysSunset = weatherData.sys.sunset;
-                        currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
-                        currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
-                        currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
-                        this.setState({
-                            currentWeatherMain: currentWeatherMain,
-                            currentWeatherMinMax: currentWeatherMinMax,
-                            currentWeatherFeelsLike: currentWeatherFeelsLike,
-                            currentModulesCount: currentModulesCount,
-                        });
+                        data = _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
                         console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
                         _a.label = 7;
-                    case 7: return [2 /*return*/];
+                    case 7:
+                        if (data != null) {
+                            console.log("DEBUG: Parsing homeStatus data:");
+                            console.log(data);
+                            currentModulesCount = data.modulesCount;
+                            weatherData = data.weatherData;
+                            weatherMain = weatherData.weather[0].main;
+                            weatherDesc = weatherData.weather[0].description;
+                            mainTemp = weatherData.main.temp;
+                            mainFeels_like = weatherData.main.feels_like;
+                            mainTemp_min = weatherData.main.temp_min;
+                            mainTemp_max = weatherData.main.temp_max;
+                            mainPressure = weatherData.main.pressure;
+                            mainHumidity = weatherData.main.humidity;
+                            visibility = weatherData.visibility;
+                            windSpeed = weatherData.wind.speed;
+                            windDeg = weatherData.wind.deg;
+                            dt = weatherData.dt;
+                            sysSunrise = weatherData.sys.sunrise;
+                            sysSunset = weatherData.sys.sunset;
+                            currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
+                            currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
+                            currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
+                            this.setState({
+                                currentWeatherMain: currentWeatherMain,
+                                currentWeatherMinMax: currentWeatherMinMax,
+                                currentWeatherFeelsLike: currentWeatherFeelsLike,
+                                currentModulesCount: currentModulesCount,
+                            });
+                        }
+                        return [2 /*return*/];
                 }
             });
         });
     };
-    // Query the web server 
-    App.prototype.updateActionStates = function () {
+    // Query the web server if no data is provied. If data is provided,
+    // we'll use that instead. 
+    App.prototype.updateActionStates = function (data) {
+        if (data === void 0) { data = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var apiResponse, startTime, endTime, timeDiff, error_2, receivedData;
+            var apiResponse, startTime, endTime, timeDiff, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!(data == null)) return [3 /*break*/, 7];
                         apiResponse = null;
                         _a.label = 1;
                     case 1:
@@ -30071,15 +30085,22 @@ var App = /** @class */ (function (_super) {
                         if (!(apiResponse.status == 200)) return [3 /*break*/, 6];
                         return [4 /*yield*/, apiResponse.json()];
                     case 5:
-                        receivedData = _a.sent();
-                        this.setState({
-                            actionStates: receivedData
-                        });
+                        data = _a.sent();
                         return [3 /*break*/, 7];
                     case 6:
                         console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
                         _a.label = 7;
-                    case 7: return [2 /*return*/];
+                    case 7:
+                        if (data != null) {
+                            console.log("DEBUG: Parsing updateActionStates data:");
+                            console.log(data);
+                            // Shove it right into the states. We know it'll be structured
+                            // with roomId first, then actionId. 
+                            this.setState({
+                                actionStates: data
+                            });
+                        }
+                        return [2 /*return*/];
                 }
             });
         });
@@ -30148,13 +30169,11 @@ var App = /** @class */ (function (_super) {
         this.updateHomeStatusInterval = setInterval(this.updateHomeStatus, updateHomeStatusWait);
         // Query the Server for action updates and start the interval to update it.
         this.updateActionStates();
-        this.updateActionStatesInverval = setInterval(this.updateActionStates, updateActionStatusWait);
+        this.updateActionStatesInterval = setInterval(this.updateActionStates, updateActionStatesWait);
     };
     // Executed upon close.
     App.prototype.componentWillUnmount = function () {
         clearInterval(this.updateTimeInterval);
-        clearInterval(this.updateHomeStatusInterval);
-        clearInterval(this.updateActionStatesInverval);
     };
     App.prototype.render = function () {
         var _this = this;

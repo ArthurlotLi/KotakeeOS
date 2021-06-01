@@ -5,7 +5,7 @@
 
 const express = require("express");
 const path = require("path");
-const PubSub = require('pubsub-js'); // Allow clients to subscribe.
+const redis = require('redis');
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -44,18 +44,36 @@ const rooms = {
 const HOME_STATUS = 'homeStatus';
 const ACTION_STATES = 'actionStates';
 
+// End enums
+
 /*
-  Configurable Constants
+  Configurable Constants + app creation
 */
 
 const listeningPort = 8080;
 
+const doNotQueryOpenWeatherMap = true;
+const useRedis = false;
+
 // Open Weather Map stuff. Use the boolean to provide canned data
 // if you're just testing stuff. (If you're restarting the app
 // over and over again, you'll want this boolean set to true.)
-const doNotQueryOpenWeatherMap = false;
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
+
+// For pubsub architecture
+var publisher;
+if(useRedis){
+  console.log("[DEBUG] redis has been enabled. Ensure redis-server has been run otherwise an exception is imminent.");
+  publisher = redis.createClient();
+}
+else{
+  console.log("[DEBUG] redis is NOT enabled.");
+  publisher = null;
+}
+
+// Create the app
+const app = express();
 
 // When adding modules, create module object and add to room's
 // array of Modules. 
@@ -75,14 +93,11 @@ const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
 // Home
 const homeRooms = [bedroom, livingRoom];
 const homeZipCode = "95051"
-const home = new Home(homeRooms, homeZipCode, {}); // Start with no weather data. 
+const home = new Home(homeRooms, homeZipCode, {}, HOME_STATUS, ACTION_STATES, publisher); // Start with no weather data. 
 
 /*
   Initial Application Logic (executed once)
 */
-
-// Create the app
-const app = express();
 
 // Create a timer for the open weather map API calls. 
 home.updateWeather(openweathermapApiKey, doNotQueryOpenWeatherMap);

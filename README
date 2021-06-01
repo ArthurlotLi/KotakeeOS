@@ -20,14 +20,45 @@ use the following command in the software directory level:
 
 node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js
 
+To run only, use the following command:
+
+node server.js
+
+------------------------------------------------------------------------------
+Prerequisites
+------------------------------------------------------------------------------
+
+1. Node.js must be installed. (with appropriate dependencies)
+2. (NOT IMPLEMENTED:) Redis must be installed. 
+
+For convenience, a working version has been provided
+in the dependencies folder. 
+
+a. cd into folder
+b. run "make"
+c. run "sudo make install" (to add redis-server to bin)
+d. restart all terminals. 
+
+The server runs, by default, on port 6379 with PID 35286. 
+
+Note that, on mac,
+you might need to update your xcode command line tools. If you have issues
+with that, reference the following to delete and redownload xcode tools:
+
+https://stackoverflow.com/questions/34617452/how-to-update-xcode-from-command-line
+
 
 ------------------------------------------------------------------------------
  Setup - Web Application (webApp)
 ------------------------------------------------------------------------------
 
-0) Navigate inside of software directory
-1) Execute "npm install"
-2) Execute "npm start"
+0) (NOT IMPLEMENTED:) Start the redis server with "redis-server". (can do this in another terminal)
+
+Note that to shut down redis-server on mac, use "redis-cli shutdown"
+
+1) Navigate inside of software directory
+2) Execute "npm install". 
+3) Execute "npm start"
 
 ------------------------------------------------------------------------------
  Setup - Lighting Modules (Switches)

@@ -11,7 +11,7 @@ var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
 const updateHomeStatusWait = 30000; // 30 seconds. 
-const updateActionStatusWait = 10000; // 10 seconds. // TODO: update web app to request for status again abnormally after a request is made. 
+const updateActionStatesWait = 10000; // 10 seconds. // TODO: update web app to request for status again abnormally after a request is made. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
@@ -48,6 +48,12 @@ const rooms = {
   LIVINGROOM: 2,
 }
 
+// pubsub topic names
+const HOME_STATUS = 'homeStatus';
+const ACTION_STATES = 'actionStates';
+
+// End enums
+
 const dayOfWeek = [
   'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 ];
@@ -59,6 +65,7 @@ export class App extends React.Component {
     // Interval handles to clean up.
     this.updateTimeInverval = null;
     this.updateHomeStatusInterval = null;
+    this.updateActionStatesInterval = null;
     
     // State
     this.state = {
@@ -120,29 +127,36 @@ export class App extends React.Component {
     });
   }
 
-  // Modify weather state variables whenever called (timer-linked)
-  async updateHomeStatus(){
-    var apiResponse = null;
-    var startTime, endTime; // We report in debug the api time.
-    try{
-      startTime = new Date();
-      apiResponse = await fetch(apiURL + "/homeStatus");
-      endTime = new Date();
-      var timeDiff = endTime - startTime;
-      console.log("DEBUG: homeStatus call returned in " + timeDiff/1000 + " seconds.");
+  // Query the web server if no data is provied. If data is provided,
+  // we'll use that instead. 
+  async updateHomeStatus(data = null){
+    if(data == null) {
+      var apiResponse = null;
+      var startTime, endTime; // We report in debug the api time.
+      try{
+        startTime = new Date();
+        apiResponse = await fetch(apiURL + "/homeStatus");
+        endTime = new Date();
+        var timeDiff = endTime - startTime;
+        console.log("DEBUG: homeStatus call returned in " + timeDiff/1000 + " seconds.");
+      }
+      catch(error){
+        console.log("ERROR: homeStatus call failed!");
+      }
+      if(apiResponse.status == 200){
+        data = await apiResponse.json();
+      }
+      else{
+        console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
+      }
     }
-    catch(error){
-      console.log("ERROR: homeStatus call failed!");
-    }
-    if(apiResponse.status == 200){
-      var receivedData = await apiResponse.json();
-  
-      console.log("DEBUG: Received homeStatus data:");
-      console.log(receivedData);
+    if(data != null){
+      console.log("DEBUG: Parsing homeStatus data:");
+      console.log(data);
 
-      var currentModulesCount = receivedData.modulesCount;
+      var currentModulesCount = data.modulesCount;
 
-      var weatherData = receivedData.weatherData;
+      var weatherData = data.weatherData;
 
       // Given open weather map JSON data, parse it. See example: 
       // https://openweathermap.org/current#zip
@@ -171,37 +185,42 @@ export class App extends React.Component {
         currentModulesCount: currentModulesCount,
       });
     }
-    else{
-      console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
-    }
   }
 
-  // Query the web server 
-  async updateActionStates(){
-    var apiResponse = null;
-    var startTime, endTime; // We report in debug the api time.
-    try{
-      startTime = new Date();
-      apiResponse = await fetch(apiURL + "/actionStates");
-      endTime = new Date();
-      var timeDiff = endTime - startTime;
-      console.log("DEBUG: actionStates call returned in " + timeDiff/1000 + " seconds.");
+  // Query the web server if no data is provied. If data is provided,
+  // we'll use that instead. 
+  async updateActionStates(data = null){
+    if(data == null) {
+      var apiResponse = null;
+      var startTime, endTime; // We report in debug the api time.
+      try{
+        startTime = new Date();
+        apiResponse = await fetch(apiURL + "/actionStates");
+        endTime = new Date();
+        var timeDiff = endTime - startTime;
+        console.log("DEBUG: actionStates call returned in " + timeDiff/1000 + " seconds.");
+      }
+      catch(error){
+        console.log("ERROR: actionStates call failed!");
+      }
+      if(apiResponse.status == 200){
+        data = await apiResponse.json();
+      }
+      else{
+        console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
+      }
     }
-    catch(error){
-      console.log("ERROR: actionStates call failed!");
-    }
-    if(apiResponse.status == 200){
+    if (data != null){
+      console.log("DEBUG: Parsing updateActionStates data:");
+      console.log(data);
       // Shove it right into the states. We know it'll be structured
       // with roomId first, then actionId. 
-      var receivedData = await apiResponse.json();
       this.setState({
-        actionStates: receivedData
+        actionStates: data
       });
     }
-    else{
-      console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
-    }
   }
+  
 
   // Query the web server to update an action to a different state
   // based on what we know.
@@ -259,14 +278,12 @@ export class App extends React.Component {
 
     // Query the Server for action updates and start the interval to update it.
     this.updateActionStates();
-    this.updateActionStatesInverval = setInterval(this.updateActionStates, updateActionStatusWait);
+    this.updateActionStatesInterval = setInterval(this.updateActionStates, updateActionStatesWait);
   }
 
   // Executed upon close.
   componentWillUnmount(){
     clearInterval(this.updateTimeInterval);
-    clearInterval(this.updateHomeStatusInterval);
-    clearInterval(this.updateActionStatesInverval);
   }
 
   render() {
