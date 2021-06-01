@@ -30088,17 +30088,34 @@ var App = /** @class */ (function (_super) {
     // based on what we know.
     App.prototype.moduleToggle = function (roomId, actionId) {
         return __awaiter(this, void 0, void 0, function () {
-            var apiResponse, startTime, endTime, timeDiff, error_3;
+            var toState, currentState, apiResponse, startTime, endTime, timeDiff, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log("Bedroom module 1 activated.");
+                        console.log("DEBUG: moduleToggle called with roomId " + roomId + " and actionId " + actionId + ".");
+                        toState = null;
+                        currentState = this.state.actionStates[roomId][actionId];
+                        if (currentState == null) {
+                            console.log("ERROR: moduleToggle attempted to toggle room " + roomId + " action " + actionId + " that has no reported state!");
+                            return [2 /*return*/];
+                        }
+                        // Highest Lighting and Lowest Lighting are expected to be
+                        // numerical bounds for general category. 
+                        if (actionId <= actions.LIGHTING5 && actionId >= actions.LIGHTING1) {
+                            console.log("Test.");
+                            if (currentState == 0) {
+                                toState = 1;
+                            }
+                            else {
+                                toState = 0;
+                            }
+                        }
                         apiResponse = null;
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         startTime = new Date();
-                        return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + roomId + "/" + actionId + "/1")];
+                        return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + roomId + "/" + actionId + "/" + toState)];
                     case 2:
                         apiResponse = _a.sent(); // TODO: make this state actually dependant on actively retreived module states. 
                         endTime = new Date();
@@ -30157,15 +30174,15 @@ var App = /** @class */ (function (_super) {
                 React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1); } },
                     "Bedroom Light",
                     React.createElement("br", null),
-                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : "ERR"),
+                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : -1),
                 React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1); } },
                     "Bedroom Curtains",
                     React.createElement("br", null),
-                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1] : "ERR"),
+                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1] : -1),
                 React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1); } },
                     "Living Room Light",
                     React.createElement("br", null),
-                    this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : "ERR")),
+                    this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : -1)),
             React.createElement("div", { id: "app-home-status" },
                 React.createElement("div", { id: "app-home-status-modules" },
                     "Modules: ",

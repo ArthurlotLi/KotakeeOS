@@ -107,14 +107,17 @@ app.get('/',(req,res) => {
 // Ex) http://192.168.0.197/moduleToggle/1/50/1
 app.get('/moduleToggle/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleToggle GET request received. Arguments: " + JSON.stringify(req.params));
-  if(req.params.roomId != null && req.params.actionId != null && req.params.toState != null){
-    home.actionToggle(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
-    // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
-    return res.status(200).send();
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    var toState = parseInt(req.params.toState);
+    if(roomId != null && actionId != null && toState != null){
+      home.actionToggle(roomId, actionId, toState);
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
   }
-  else{
-    return res.status(400).send();
-  }
+  return res.status(400).send();
 });
 
 // Handle requests from modules to update states when they have

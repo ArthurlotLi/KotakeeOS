@@ -206,12 +206,32 @@ export class App extends React.Component {
   // Query the web server to update an action to a different state
   // based on what we know.
   async moduleToggle(roomId, actionId){
-    console.log("Bedroom module 1 activated.");
+    console.log("DEBUG: moduleToggle called with roomId " + roomId + " and actionId " + actionId + ".");
+    var toState = null;
+    var currentState = this.state.actionStates[roomId][actionId];
+    if(currentState == null){
+      console.log("ERROR: moduleToggle attempted to toggle room " + roomId + " action " +actionId+" that has no reported state!");
+      return;
+    }
+    // Highest Lighting and Lowest Lighting are expected to be
+    // numerical bounds for general category. 
+    if(actionId <= actions.LIGHTING5 && actionId >= actions.LIGHTING1){
+      console.log("Test.");
+      if(currentState == 0){
+        toState = 1;
+      }
+      else {
+        toState = 0;
+      }
+    }
+    // TODO: handle additional actionIds. We will make this a 
+    // whitelist, not a blacklist. 
+
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/moduleToggle/" +roomId + "/"  + actionId + "/1"); // TODO: make this state actually dependant on actively retreived module states. 
+      apiResponse = await fetch(apiURL + "/moduleToggle/" +roomId + "/"  + actionId + "/" + toState); // TODO: make this state actually dependant on actively retreived module states. 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");
@@ -272,9 +292,9 @@ export class App extends React.Component {
         </div>
 
         <div id="app-modules">
-          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}>Bedroom Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : "ERR"}</button>
-          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}>Bedroom Curtains<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1]: "ERR"}</button>
-          <button onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}>Living Room Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : "ERR"}</button>
+          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}>Bedroom Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : -1}</button>
+          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}>Bedroom Curtains<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1]: -1}</button>
+          <button onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}>Living Room Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : -1}</button>
         </div>
 
         <div id="app-home-status">
