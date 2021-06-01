@@ -5,7 +5,8 @@
 
 const fetch = require("node-fetch");
 
-// So we don't spam the server.
+// So we don't spam the server. Used only when the argument has been
+// provided on startup. 
 const cannedWeatherData = {
   "coord": {
     "lon": -121.9844,

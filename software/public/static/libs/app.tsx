@@ -361,6 +361,8 @@ export class App extends React.Component {
   // Executed upon close.
   componentWillUnmount(){
     clearInterval(this.updateTimeInterval);
+    clearInterval(this.updateHomeStatusInterval);
+    clearInterval(this.updateActionStatesInterval);
   }
 
   render() {
