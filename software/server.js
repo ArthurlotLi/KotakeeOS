@@ -51,7 +51,7 @@ const listeningPort = 8080;
 // over and over again, you'll want this boolean set to true.)
 const doNotQueryOpenWeatherMap = false;
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
-const updateWeatherWait = 900000; // Once every 15 minutes
+const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
 
 // When adding modules, create module object and add to room's
 // array of Modules. 
