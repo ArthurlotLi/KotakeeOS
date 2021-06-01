@@ -87,6 +87,10 @@ export class App extends React.Component {
     this.updateTimeInverval = null;
     this.updateHomeStatusInterval = null;
     this.updateActionStatesInterval = null;
+
+    // Various functions to ensure cleanliness.
+    this.updateHomeStatusWorking = false;
+    this.updateActionStatesWorking = false;
     
     // State
     this.state = {
@@ -153,7 +157,9 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateHomeStatus(data = null){
-    if(data == null) {
+    if(data == null && !this.updateHomeStatusWorking) {
+      // Stop browsers from bombarding web server if they hang on something.
+      this.updateHomeStatusWorking = true;
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
@@ -179,6 +185,7 @@ export class App extends React.Component {
       else{
         console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
       }
+      this.updateHomeStatusWorking = false;
     }
     if(data != null){
       console.log("DEBUG: Parsing homeStatus data:");
@@ -223,7 +230,9 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateActionStates(data = null){
-    if(data == null) {
+    if(data == null && !this.updateActionStatesWorking) {
+      // Stop browsers from bombarding web server if they hang on something.
+      this.updateActionStatesWorking = true;
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
@@ -249,6 +258,7 @@ export class App extends React.Component {
       else{
         console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
       }
+      this.updateActionStatesWorking = false;
     }
     if (data != null){
       console.log("DEBUG: Parsing updateActionStates data:");
@@ -269,10 +279,10 @@ export class App extends React.Component {
               button.innerHTML = actionsAsStrings[roomId + "." + actionId];
               var actionState = room[actionId];
               if(actionState == "1"){
-                button.style.backgroundColor = '#027000'; // Green
+                button.style.backgroundColor = '#03a100'; // Green
               }
               else if(actionState == "0"){
-                button.style.backgroundColor = '#6e0505';  // Red
+                button.style.backgroundColor = '#a60000';  // Red
               }
             }
             else{

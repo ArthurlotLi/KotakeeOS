@@ -52,8 +52,15 @@ const ACTION_STATES = 'actionStates';
 
 const listeningPort = 8080;
 
-const doNotQueryOpenWeatherMap = true;
+var doNotQueryOpenWeatherMap = false;
 const useRedis = false;
+
+// Get arguments (currently only for query map.)
+const args = process.argv.slice(2);
+if(args.length > 0){
+  // If we have ANYTHING, don't query the API. That's good enough for now. 
+  doNotQueryOpenWeatherMap = true; 
+}
 
 // Open Weather Map stuff. Use the boolean to provide canned data
 // if you're just testing stuff. (If you're restarting the app
