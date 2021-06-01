@@ -101,19 +101,26 @@ class Home {
     }
     else
       console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
-    return null;
+    return false;
   }
 
   // Given roomId, actionId, and toState, update the state of 
-  // a module. 
-  moduleStateUpdate(roomId, actionId, toState){
+  // a module. This will initiate a topic update for ACTION_STATES.
+  async moduleStateUpdate(roomId, actionId, toState){
     if(this.getRoom(roomId) != null){
       var room = this.getRoom(roomId);
-      return room.moduleStateUpdate(actionId, toState);
+      var updateStatus = await room.moduleStateUpdate(actionId, toState);
+      if(updateStatus){
+        // The state actually changed. 
+        console.log("[DEBUG] moduleStateUpdate succeeded. Updating Topic ACTION_STATES.");
+      }
+      else{
+        console.log("[DEBUG] moduleStateUpdate failed. Not updating ACTION_STATES.");
+      }
     }
     else
       console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
-    return null;
+    return false;
   }
 
   // Return states of all modules in system, identifying each

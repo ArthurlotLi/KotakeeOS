@@ -81,13 +81,14 @@ class Room {
   // Given the actionid and the state, update a module's state. We 
   // expect this whenever a module has completed an operation or
   // has restarted. Either way, accept what they're saying as truth. 
-  moduleStateUpdate(actionId, toState){
+  async moduleStateUpdate(actionId, toState){
     if(actionId in this.actionsDict){
       var moduleId = this.actionsDict[actionId];
       if(moduleId in this.modulesDict){
         var module = this.modulesDict[moduleId];
 
-        return module.moduleStateUpdate(actionId, toState);
+        var updateStatus = await module.moduleStateUpdate(actionId, toState);
+        return updateStatus;
       }
       else 
         console.log("[ERROR] moduleStateUpdate failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");

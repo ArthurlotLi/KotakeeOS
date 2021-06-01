@@ -32,7 +32,7 @@ class Module {
     }
     else 
       console.log("[ERROR] getActionState failed! actionId " + actionId + " is not implemented for module " + this.moduleId + ".");
-    return null;
+    return false;
   }
 
   // Set the state of a specific action. Return true if no fatal
@@ -43,16 +43,19 @@ class Module {
         var currentState = this.statesDict[actionId];
         if(currentState != toState) {
           this.statesDict[actionId] = toState; 
-          console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for module " + this.moduleId + ".");
+          console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for actionid " + actionId + " for module " + this.moduleId + ".");
+          return true;
         }
-        return true;
+        else {
+          console.log("[DEBUG] setActionState state " + currentState + " is equivalent to gotten state "+ toState + " for actionid " + actionId + " for module  " + this.moduleId + ". Ignoring request.");
+        }
       }
       else 
         console.log("[ERROR] setActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.moduleId + ".");
     }
     else 
       console.log("[ERROR] setActionState failed! actionId " + actionId + " is not implemented for module " + this.moduleId + ".");
-    return null;
+    return false;
   }
 
   // Given actionId and toState, sends instruction to module to change 

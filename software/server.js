@@ -5,7 +5,7 @@
 
 const express = require("express");
 const path = require("path");
-const fetch = require("node-fetch");
+const PubSub = require('pubsub-js'); // Allow clients to subscribe.
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -39,6 +39,10 @@ const rooms = {
   BEDROOM: 1,
   LIVINGROOM: 2,
 }
+
+// pubsub topic names
+const HOME_STATUS = 'homeStatus';
+const ACTION_STATES = 'actionStates';
 
 /*
   Configurable Constants
