@@ -31,19 +31,19 @@ void setup() {
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("Communication with WiFi module failed!");
+    Serial.println("[ERROR] Communication with WiFi module failed! Giving up...");
     // don't continue
     while (true);
   }
 
   String fv = WiFi.firmwareVersion();
   if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    Serial.println("Please upgrade the firmware");
+    Serial.println("[ERROR] Please upgrade the firmware");
   }
 
   // attempt to connect to WiFi network:
   while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to Network named: ");
+    Serial.print("[DEBUG] Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
 
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
@@ -63,12 +63,12 @@ void loop() {
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
-    Serial.println("new client");           // print a message out the serial port
+    //Serial.println("new client");           // print a message out the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+        //Serial.write(c);                    // print it out the serial monitor
         if (c == '\n') {                    // if the byte is a newline character
           // End of HTTP Request - client is connecting directly to the index. 
           // Send a response:
@@ -101,27 +101,39 @@ void loop() {
         // it's already on we don't do anything. 
         if (currentLine.endsWith("GET /stateToggle/50/1")) {
           if (!relayPinState) { 
+            Serial.println("[DEBUG] Instructed to turn on light when it was off. Executing...");
             // If it's off, turn it on. 
             digitalWrite(relayPin, HIGH);
             relayPinState = true;
             // Inform the web server.
             moduleStateUpdate();
           }
+          else{
+            Serial.println("[WARNING] Was instructed to turn on light when it was already on. Request ignored.");
+          }
         }
         else if(currentLine.endsWith("GET /stateToggle/50/0")){
           if(relayPinState) {
+            Serial.println("[DEBUG] Instructed to turn off light when it was on. Executing...");
             // if it's on, turn it off.  
             digitalWrite(relayPin, LOW);
             relayPinState = false;
             // Inform the web server.
             moduleStateUpdate();
           }
+          else{
+            Serial.println("[WARNING] Was instructed to turn off light when it was already off. Request ignored.");
+          }
+        }
+        else if(currentLine.endsWith("GET /stateGet/50")){
+          Serial.println("[DEBUG] stateGet request received. Replying...");
+          moduleStateUpdate();
         }
       }
     }
     // close the connection:
     client.stop();
-    Serial.println("client disconnected");
+    //Serial.println("client disconnected");
   }
 }
 
@@ -142,7 +154,7 @@ void moduleStateUpdate(){
     webServer.println("GET /moduleStateUpdate/1/50/" + toState);
     webServer.println("Connection: close");
     webServer.println();
-    Serial.println("Queried Web Server successfully with state " + toState + ".");
+    Serial.println("[DEBUG] Queried Web Server successfully with state " + toState + ".");
     webServer.stop();
   }
   else{
@@ -151,21 +163,14 @@ void moduleStateUpdate(){
 }
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
   // print your board's IP address:
   IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
+  Serial.print("[DEBUG] Arduino Local IP Address: ");
   Serial.println(ip);
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
+  Serial.print("[DEBUG] Arduino signal strength (RSSI):");
   Serial.print(rssi);
   Serial.println(" dBm");
-  // print where to go in a browser:
-  Serial.print("To see this page in action, open a browser to http://");
-  Serial.println(ip);
 }

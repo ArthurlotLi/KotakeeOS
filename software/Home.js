@@ -131,6 +131,16 @@ class Home {
     return response;
   }
 
+  //Requests all modules to report action states to web server.
+  requestAllActionStates(){
+    for(var room in this.roomsDict){
+      if(this.roomsDict.hasOwnProperty(room)){
+        // For each room, requestAllActionStates.
+        this.roomsDict[room].requestAllActionStates();
+      }
+    }
+  }
+
   // Weather parsing. Called on a timer by the server. Data is
   // requested by apps whenever they want. Given the API Key that
   // is held by the server. Also given doNotQuery boolean which

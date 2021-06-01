@@ -85,6 +85,10 @@ home.updateWeather(openweathermapApiKey, doNotQueryOpenWeatherMap);
 var updateWeatherInterval = setInterval(function() { home.updateWeather(openweathermapApiKey, doNotQueryOpenWeatherMap); }, updateWeatherWait);
 console.log("[DEBUG] Update Weather Interval set with interval " + updateWeatherWait + ".");
 
+// On startup, request all modules to report action states. 
+// (in case of web server crash, for example)
+requestAllActionStates();
+
 /*
   Web Application logic
 */

@@ -98,6 +98,30 @@ class Module {
     console.log("[WARNING] requestGetStateToggle (module " +this.moduleId+ ") returned with status " + apiResponse.status + ".");
     return false;
   }
+
+  // Sends a request to the arduino to get state status. 
+  // The arduino will then seperately reply with its standard
+  // reply commands. 
+  async requestGetStateGet(actionId){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch('http://' + this.ipAddress + '/stateGet/' + actionId); 
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("[DEBUG] requestGetStateGet (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("[ERROR] requestGetStateGet (module " +this.moduleId+ ") failed! Error:\n" + error);
+    }
+    if(apiResponse.status == 200){
+      // Executed successfully!
+      return true;
+    }
+    console.log("[WARNING] requestGetStateGet (module " +this.moduleId+ ") returned with status " + apiResponse.status + ".");
+    return false;
+  }
 }
 
 module.exports = Module;

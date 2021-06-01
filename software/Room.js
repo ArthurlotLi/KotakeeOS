@@ -49,6 +49,35 @@ class Room {
     return false;
   }
 
+  // Given an action Id, request a module to report action state to web
+  // server. NOTE: Currently not used. 
+  requestGetStateGet(actionId){
+    if(actionId in this.actionsDict){
+      var moduleId = this.actionsDict[actionId];
+      if(moduleId in this.modulesDict){
+        var module = this.modulesDict[moduleId];
+
+        return module.requestGetStateGet(actionId);
+      }
+      else 
+        console.log("[ERROR] requestGetStateGet failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");
+    }
+    else 
+      console.log("[ERROR] requestGetStateGet failed! actionId " + actionId + " does not exist in room " + this.roomId + ".");
+    return false;
+  }
+
+  //Requests all modules to report action states to web server.
+  requestAllActionStates(){
+    for(var moduleId in this.modulesDict){
+      var module = this.modulesDict[moduleId];
+      var moduleActions = module.actions;
+      for(var i = 0; i <  moduleActions; i++){
+        module.requestGetStateGet(moduleActions[i]);
+      }
+    }
+  }
+
   // Given the actionid and the state, update a module's state. We 
   // expect this whenever a module has completed an operation or
   // has restarted. Either way, accept what they're saying as truth. 
