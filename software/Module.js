@@ -83,8 +83,7 @@ class Module {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      //apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
-      apiResponse = await fetch('http://' + this.ipAddress + '/testRelay');  // TODO REMOVE ME! 
+      apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("[DEBUG] requestGetStateToggle (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");

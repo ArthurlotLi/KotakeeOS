@@ -96,19 +96,26 @@ void loop() {
         }
 
         // Check to see if the client request is servable. 
-        if (currentLine.endsWith("GET /testRelay")) {
-          if (relayPinState) { 
-            // If it's on, turn it off. 
-            digitalWrite(relayPin, LOW);
-            relayPinState = false;
-          }
-          else {
+        // Note that here even if we get multiple requests to 
+        // do something (like turn actionId 50 to on), if 
+        // it's already on we don't do anything. 
+        if (currentLine.endsWith("GET /stateToggle/50/1")) {
+          if (!relayPinState) { 
+            // If it's off, turn it on. 
             digitalWrite(relayPin, HIGH);
             relayPinState = true;
+            // Inform the web server.
+            moduleStateUpdate();
           }
-          
-          // Now that we've actuated the state, let's inform the web server. 
-          moduleStateUpdate();
+        }
+        else if(currentLine.endsWith("GET /stateToggle/50/0")){
+          if(relayPinState) {
+            // if it's on, turn it off.  
+            digitalWrite(relayPin, LOW);
+            relayPinState = false;
+            // Inform the web server.
+            moduleStateUpdate();
+          }
         }
       }
     }
