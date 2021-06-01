@@ -1,43 +1,26 @@
 /*
   KotakeeOS Module
 
- Uses WifiNina Simple Web Server Wifi example as a baseline. 
+  Uses WifiNina Simple Web Server Wifi example as a baseline. 
 
- Universal code base for all KotakeeOS arduino nodes with logic for all 
- nodes included. TODO: Add more info and flush out design.
+  Universal code base for all KotakeeOS arduino nodes with logic for all 
+  nodes included. TODO: Add more info and flush out design.
 
   Seriously, this is a terrible web server, write a better one! 
- 
- A simple web server that lets you blink an LED via the web.
- This sketch will print the IP address of your WiFi module (once connected)
- to the Serial Monitor. From there, you can open that address in a web browser
- to turn on and off the LED on pin 9.
-
- If the IP address of your board is yourAddress:
- http://yourAddress/H turns the LED on
- http://yourAddress/L turns it off
-
- This example is written for a network using WPA encryption. For
- WEP or WPA, change the WiFi.begin() call accordingly.
-
- Circuit:
- * Board with NINA module (Arduino MKR WiFi 1010, MKR VIDOR 4000 and UNO WiFi Rev.2)
- * LED attached to pin 9
-
- created 25 Nov 2012
- by Tom Igoe
- */
+*/
 #include <SPI.h>
 #include <WiFiNINA.h>
 
 #include "arduino_secrets.h" 
-///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-char ssid[] = SECRET_SSID;        // your network SSID (name)
-char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;                 // your network key index number (needed only for WEP)
 
+char ssid[] = SECRET_SSID;  
+char pass[] = SECRET_PASS;   
+int keyIndex = 0;        
 const int relayPin = 13; 
 bool relayPinState = false;
+// IP of the web server.
+IPAddress webServerIpAddress(192,168,0,197);
+const int webServerPort = 8080;
 
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
@@ -70,6 +53,9 @@ void setup() {
   }
   server.begin();                           // start the web server on port 80
   printWifiStatus();                        // you're connected now, so print out the status
+
+  // Send out initial state notification to web server since we just restarted. 
+  moduleStateUpdate();
 }
 
 
@@ -120,12 +106,40 @@ void loop() {
             digitalWrite(relayPin, HIGH);
             relayPinState = true;
           }
+          
+          // Now that we've actuated the state, let's inform the web server. 
+          moduleStateUpdate();
         }
       }
     }
     // close the connection:
     client.stop();
     Serial.println("client disconnected");
+  }
+}
+
+// Given current state, notify the web server!
+void moduleStateUpdate(){
+  WiFiClient webServer;
+
+  String toState;
+  if(relayPinState){
+    toState = String(1);
+  }
+  else{
+    toState = String(0);
+  }
+
+  // Make a basic HTTP request:
+  if(webServer.connect(webServerIpAddress, webServerPort)){
+    webServer.println("GET /moduleStateUpdate/1/50/" + toState);
+    webServer.println("Connection: close");
+    webServer.println();
+    Serial.println("Queried Web Server successfully with state " + toState + ".");
+    webServer.stop();
+  }
+  else{
+    Serial.println("[ERROR] querying Web Server with state " + toState + "...");
   }
 }
 

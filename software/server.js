@@ -82,7 +82,7 @@ const app = express();
 
 // Create a timer for the open weather map API calls. 
 home.updateWeather(openweathermapApiKey, doNotQueryOpenWeatherMap);
-var updateWeatherInterval = setInterval(function() { home.updateWeather(openWeathermapApiKey, doNotQueryOpenWeatherMap); }, updateWeatherWait);
+var updateWeatherInterval = setInterval(function() { home.updateWeather(openweathermapApiKey, doNotQueryOpenWeatherMap); }, updateWeatherWait);
 console.log("[DEBUG] Update Weather Interval set with interval " + updateWeatherWait + ".");
 
 /*
