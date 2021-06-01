@@ -10,7 +10,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 10000; // Every 5 seconds.
+const updateHomeStatusWait = 10000; // 10 seconds. 
+const updateActionStatusWait = 1500; // 1.5 seconds.
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
@@ -69,11 +70,13 @@ export class App extends React.Component {
       currentWeatherMinMax: null,
       currentWeatherFeelsLike: null,
       currentModulesCount: null,
+      actionStates: null,
     };
 
     // Binding functions to "this"
     this.updateTime = this.updateTime.bind(this);
     this.updateHomeStatus = this.updateHomeStatus.bind(this);
+    this.updateActionStates = this.updateActionStates.bind(this);
   }
 
   // BIG TODO: migrate both updateWeather to webserver, so all 
@@ -173,13 +176,42 @@ export class App extends React.Component {
     }
   }
 
-  async moduleLightingBedroom(){
+  // Query the web server 
+  async updateActionStates(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/actionStates");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: actionStates call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: actionStates call failed!");
+    }
+    if(apiResponse.status == 200){
+      // Shove it right into the states. We know it'll be structured
+      // with roomId first, then actionId. 
+      var receivedData = await apiResponse.json();
+      this.setState({
+        actionStates: receivedData
+      });
+    }
+    else{
+      console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Query the web server to update an action to a different state
+  // based on what we know.
+  async moduleToggle(roomId, actionId){
     console.log("Bedroom module 1 activated.");
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/moduleToggle/" +rooms.BEDROOM + "/"  + actions.LIGHTING1 + "/1"); // TODO: make this state actually dependant on actively retreived module states. 
+      apiResponse = await fetch(apiURL + "/moduleToggle/" +roomId + "/"  + actionId + "/1"); // TODO: make this state actually dependant on actively retreived module states. 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");
@@ -195,28 +227,26 @@ export class App extends React.Component {
     }
   }
 
-  moduleCurtainsBedroom(){
-    console.log("TODO: Bedroom curtains module activated.");
-  }
-
-  moduleLightingLivingRoom(){
-    console.log("TODO: Living Room lighting module activated.");
-  }
-
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it every second.
     this.updateTime();
     this.updateTimeInverval = setInterval(this.updateTime, updateTimeWait);
 
-    // Query the weather and start the interval to update it (every 60 minutes).
+    // Query the weather and start the interval to update it.
     this.updateHomeStatus();
     this.updateHomeStatusInterval = setInterval(this.updateHomeStatus, updateHomeStatusWait);
+
+    // Query the Server for action updates and start the interval to update it.
+    this.updateActionStates();
+    this.updateActionStatesInverval = setInterval(this.updateActionStates, updateActionStatusWait);
   }
 
   // Executed upon close.
   componentWillUnmount(){
     clearInterval(this.updateTimeInterval);
+    clearInterval(this.updateHomeStatusInterval);
+    clearInterval(this.updateActionStatesInverval);
   }
 
   render() {
@@ -242,9 +272,9 @@ export class App extends React.Component {
         </div>
 
         <div id="app-modules">
-          <button onClick={this.moduleLightingBedroom}>Bedroom Light</button>
-          <button onClick={this.moduleCurtainsBedroom}>Bedroom Curtains</button>
-          <button onClick={this.moduleLightingLivingRoom}>Living Room Light</button>
+          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}>Bedroom Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : "ERR"}</button>
+          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}>Bedroom Curtains<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1]: "ERR"}</button>
+          <button onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}>Living Room Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : "ERR"}</button>
         </div>
 
         <div id="app-home-status">

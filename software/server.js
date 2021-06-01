@@ -131,7 +131,7 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 // should be called frequently (every few seconds).
 // Ex) http://192.168.0.197/actionStates
 app.get('/actionStates', (req, res) => {
-  console.log("[DEBUG] /actionStates GET request received.");
+  //console.log("[DEBUG] /actionStates GET request received.");
   return res.status(200).send(home.actionStates());
 });
 

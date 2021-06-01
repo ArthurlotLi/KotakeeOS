@@ -29883,7 +29883,8 @@ exports.App = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var updateTimeWait = 1000; // Every second
-var updateHomeStatusWait = 10000; // Every 5 seconds.
+var updateHomeStatusWait = 10000; // 10 seconds. 
+var updateActionStatusWait = 1500; // 1.5 seconds.
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
 var currentURL = window.location.href;
@@ -29935,10 +29936,12 @@ var App = /** @class */ (function (_super) {
             currentWeatherMinMax: null,
             currentWeatherFeelsLike: null,
             currentModulesCount: null,
+            actionStates: null,
         };
         // Binding functions to "this"
         _this.updateTime = _this.updateTime.bind(_this);
         _this.updateHomeStatus = _this.updateHomeStatus.bind(_this);
+        _this.updateActionStates = _this.updateActionStates.bind(_this);
         return _this;
     }
     // BIG TODO: migrate both updateWeather to webserver, so all 
@@ -30041,9 +30044,51 @@ var App = /** @class */ (function (_super) {
             });
         });
     };
-    App.prototype.moduleLightingBedroom = function () {
+    // Query the web server 
+    App.prototype.updateActionStates = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var apiResponse, startTime, endTime, timeDiff, error_2;
+            var apiResponse, startTime, endTime, timeDiff, error_2, receivedData;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        apiResponse = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        startTime = new Date();
+                        return [4 /*yield*/, fetch(apiURL + "/actionStates")];
+                    case 2:
+                        apiResponse = _a.sent();
+                        endTime = new Date();
+                        timeDiff = endTime - startTime;
+                        console.log("DEBUG: actionStates call returned in " + timeDiff / 1000 + " seconds.");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        console.log("ERROR: actionStates call failed!");
+                        return [3 /*break*/, 4];
+                    case 4:
+                        if (!(apiResponse.status == 200)) return [3 /*break*/, 6];
+                        return [4 /*yield*/, apiResponse.json()];
+                    case 5:
+                        receivedData = _a.sent();
+                        this.setState({
+                            actionStates: receivedData
+                        });
+                        return [3 /*break*/, 7];
+                    case 6:
+                        console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
+                        _a.label = 7;
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // Query the web server to update an action to a different state
+    // based on what we know.
+    App.prototype.moduleToggle = function (roomId, actionId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var apiResponse, startTime, endTime, timeDiff, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -30053,7 +30098,7 @@ var App = /** @class */ (function (_super) {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         startTime = new Date();
-                        return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + rooms.BEDROOM + "/" + actions.LIGHTING1 + "/1")];
+                        return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + roomId + "/" + actionId + "/1")];
                     case 2:
                         apiResponse = _a.sent(); // TODO: make this state actually dependant on actively retreived module states. 
                         endTime = new Date();
@@ -30061,7 +30106,7 @@ var App = /** @class */ (function (_super) {
                         console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff / 1000 + " seconds.");
                         return [3 /*break*/, 4];
                     case 3:
-                        error_2 = _a.sent();
+                        error_3 = _a.sent();
                         console.log("ERROR: Module Lighting Bedroom call (bedroomModule1) failed!");
                         return [3 /*break*/, 4];
                     case 4:
@@ -30076,26 +30121,26 @@ var App = /** @class */ (function (_super) {
             });
         });
     };
-    App.prototype.moduleCurtainsBedroom = function () {
-        console.log("TODO: Bedroom curtains module activated.");
-    };
-    App.prototype.moduleLightingLivingRoom = function () {
-        console.log("TODO: Living Room lighting module activated.");
-    };
     // Executed only once upon startup.
     App.prototype.componentDidMount = function () {
         // Start the clock and the interval to update it every second.
         this.updateTime();
         this.updateTimeInverval = setInterval(this.updateTime, updateTimeWait);
-        // Query the weather and start the interval to update it (every 60 minutes).
+        // Query the weather and start the interval to update it.
         this.updateHomeStatus();
         this.updateHomeStatusInterval = setInterval(this.updateHomeStatus, updateHomeStatusWait);
+        // Query the Server for action updates and start the interval to update it.
+        this.updateActionStates();
+        this.updateActionStatesInverval = setInterval(this.updateActionStates, updateActionStatusWait);
     };
     // Executed upon close.
     App.prototype.componentWillUnmount = function () {
         clearInterval(this.updateTimeInterval);
+        clearInterval(this.updateHomeStatusInterval);
+        clearInterval(this.updateActionStatesInverval);
     };
     App.prototype.render = function () {
+        var _this = this;
         return (React.createElement("div", null,
             React.createElement("div", { id: "app-location" }, "Santa Clara, CA"),
             React.createElement("div", { id: "app-clock" },
@@ -30109,9 +30154,18 @@ var App = /** @class */ (function (_super) {
                 React.createElement("div", { id: "app-weather-minMax" }, this.state.currentWeatherMinMax),
                 React.createElement("div", { id: "app-weather-feelsLike" }, this.state.currentWeatherFeelsLike)),
             React.createElement("div", { id: "app-modules" },
-                React.createElement("button", { onClick: this.moduleLightingBedroom }, "Bedroom Light"),
-                React.createElement("button", { onClick: this.moduleCurtainsBedroom }, "Bedroom Curtains"),
-                React.createElement("button", { onClick: this.moduleLightingLivingRoom }, "Living Room Light")),
+                React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1); } },
+                    "Bedroom Light",
+                    React.createElement("br", null),
+                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : "ERR"),
+                React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1); } },
+                    "Bedroom Curtains",
+                    React.createElement("br", null),
+                    this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1] : "ERR"),
+                React.createElement("button", { onClick: function () { _this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1); } },
+                    "Living Room Light",
+                    React.createElement("br", null),
+                    this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : "ERR")),
             React.createElement("div", { id: "app-home-status" },
                 React.createElement("div", { id: "app-home-status-modules" },
                     "Modules: ",
