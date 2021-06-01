@@ -87,7 +87,7 @@ console.log("[DEBUG] Update Weather Interval set with interval " + updateWeather
 
 // On startup, request all modules to report action states. 
 // (in case of web server crash, for example)
-requestAllActionStates();
+home.requestAllActionStates();
 
 /*
   Web Application logic
