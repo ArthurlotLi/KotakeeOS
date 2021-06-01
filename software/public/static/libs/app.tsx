@@ -50,6 +50,31 @@ const rooms = {
 
 // End enums
 
+// Frontend enum only (for display purposes to translate roomIds 
+// and actionIDs onto buttons.)
+const actionsAsStrings = {
+  "1.50": "Bedroom Floor Lamp",
+  "1.51": "",
+  "1.52": "",
+  "1.53": "",
+  "1.54": "",
+  "1.150": "",
+  "1.151": "",
+  "1.152": "",
+  "1.153": "",
+  "1.154": "",
+  "2.50": "Living Room Lamp",
+  "2.51": "",
+  "2.52": "",
+  "2.53": "",
+  "2.54": "",
+  "2.150": "",
+  "2.151": "",
+  "2.152": "",
+  "2.153": "",
+  "2.154": "",
+}
+
 const dayOfWeek = [
   'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 ];
@@ -229,8 +254,34 @@ export class App extends React.Component {
       console.log("DEBUG: Parsing updateActionStates data:");
       console.log(data);
       var currentLastUpdate = data.lastUpdate.toString();
-      // Shove it right into the states. We know it'll be structured
-      // with roomId first, then actionId. 
+      // We only get data if it's been updated thanks to the timestamp
+      // processing, so now we need to update our information. 
+
+      for(var key in data){
+        // Ignore the lastUpdate variable. 
+        if(key != "lastUpdate"){
+          var roomId = key; // Just to make things clearer.
+          var room = data[key];
+          for(var actionId in room){
+            var buttonId = 'app-modules-' + roomId + '-' + actionId;
+            var button = document.getElementById(buttonId);
+            if(button != null){
+              button.innerHTML = actionsAsStrings[roomId + "." + actionId];
+              var actionState = room[actionId];
+              if(actionState == "1"){
+                button.style.backgroundColor = '#027000'; // Green
+              }
+              else if(actionState == "0"){
+                button.style.backgroundColor = '#6e0505';  // Red
+              }
+            }
+            else{
+              console.log("WARNING: updateActionStates attempted to find a button with id " + buttonId + " that did not exist!");
+            }
+          }
+        }
+      }
+
       this.setState({
         actionStates: data,
         lastUpdateActionStates: currentLastUpdate,
@@ -325,9 +376,9 @@ export class App extends React.Component {
         </div>
 
         <div id="app-modules">
-          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}>Bedroom Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.LIGHTING1] : -1}</button>
-          <button onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}>Bedroom Curtains<br></br>{this.state.actionStates ? this.state.actionStates[rooms.BEDROOM][actions.CURTAINS1]: -1}</button>
-          <button onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}>Living Room Light<br></br>{this.state.actionStates ? this.state.actionStates[rooms.LIVINGROOM][actions.LIGHTING1] : -1}</button>
+          <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
+          <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.CURTAINS1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
         </div>
 
         <div id="app-home-status">

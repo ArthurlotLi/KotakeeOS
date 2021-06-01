@@ -52,7 +52,7 @@ const ACTION_STATES = 'actionStates';
 
 const listeningPort = 8080;
 
-const doNotQueryOpenWeatherMap = false;
+const doNotQueryOpenWeatherMap = true;
 const useRedis = false;
 
 // Open Weather Map stuff. Use the boolean to provide canned data
