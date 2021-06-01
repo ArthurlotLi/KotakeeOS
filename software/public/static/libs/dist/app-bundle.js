@@ -30117,7 +30117,7 @@ var App = /** @class */ (function (_super) {
                         startTime = new Date();
                         return [4 /*yield*/, fetch(apiURL + "/moduleToggle/" + roomId + "/" + actionId + "/" + toState)];
                     case 2:
-                        apiResponse = _a.sent(); // TODO: make this state actually dependant on actively retreived module states. 
+                        apiResponse = _a.sent();
                         endTime = new Date();
                         timeDiff = endTime - startTime;
                         console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff / 1000 + " seconds.");
