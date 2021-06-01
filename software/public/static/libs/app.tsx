@@ -11,7 +11,7 @@ var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
 const updateHomeStatusWait = 10000; // 10 seconds. 
-const updateActionStatesWait = 1000; // 1 seconds. 
+const updateActionStatesWait = 500; // 0.5 seconds. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
