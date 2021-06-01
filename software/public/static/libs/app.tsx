@@ -10,8 +10,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 30000; // 30 seconds. 
-const updateActionStatesWait = 10000; // 10 seconds. // TODO: update web app to request for status again abnormally after a request is made. 
+const updateHomeStatusWait = 10000; // 10 seconds. 
+const updateActionStatesWait = 1000; // 1 seconds. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
@@ -48,10 +48,6 @@ const rooms = {
   LIVINGROOM: 2,
 }
 
-// pubsub topic names
-const HOME_STATUS = 'homeStatus';
-const ACTION_STATES = 'actionStates';
-
 // End enums
 
 const dayOfWeek = [
@@ -78,6 +74,8 @@ export class App extends React.Component {
       currentWeatherFeelsLike: null,
       currentModulesCount: null,
       actionStates: null,
+      lastUpdateActionStates: null,
+      lastUpdateHomeStatus: null,
     };
 
     // Binding functions to "this"
@@ -134,17 +132,24 @@ export class App extends React.Component {
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
+        var lastUpdate = this.state.lastUpdateHomeStatus;
+        if(lastUpdate == null){
+          lastUpdate = 0;
+        }
         startTime = new Date();
-        apiResponse = await fetch(apiURL + "/homeStatus");
+        apiResponse = await fetch(apiURL + "/homeStatus/" + lastUpdate);
         endTime = new Date();
-        var timeDiff = endTime - startTime;
-        console.log("DEBUG: homeStatus call returned in " + timeDiff/1000 + " seconds.");
       }
       catch(error){
         console.log("ERROR: homeStatus call failed!");
       }
       if(apiResponse.status == 200){
+        var timeDiff = endTime - startTime;
+        console.log("DEBUG: homeStatus call returned in " + timeDiff/1000 + " seconds.");
         data = await apiResponse.json();
+      }
+      else if(apiResponse.status == 204){
+        // Heartbeat, do nothing. 
       }
       else{
         console.log("WARNING: homeStatus call returned with status " + apiResponse.status + ".");
@@ -153,6 +158,8 @@ export class App extends React.Component {
     if(data != null){
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
+
+      var currentLastUpdate = data.lastUpdate.toString();
 
       var currentModulesCount = data.modulesCount;
 
@@ -178,11 +185,12 @@ export class App extends React.Component {
       var currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
       var currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
       var currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
-      this.setState({
+      await this.setState({
         currentWeatherMain: currentWeatherMain,
         currentWeatherMinMax: currentWeatherMinMax,
         currentWeatherFeelsLike: currentWeatherFeelsLike,
         currentModulesCount: currentModulesCount,
+        lastUpdateHomeStatus: currentLastUpdate,
       });
     }
   }
@@ -194,17 +202,24 @@ export class App extends React.Component {
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
+        var lastUpdate = this.state.lastUpdateActionStates;
+        if(lastUpdate == null){
+          lastUpdate = 0;
+        }
         startTime = new Date();
-        apiResponse = await fetch(apiURL + "/actionStates");
+        apiResponse = await fetch(apiURL + "/actionStates/" + lastUpdate);
         endTime = new Date();
-        var timeDiff = endTime - startTime;
-        console.log("DEBUG: actionStates call returned in " + timeDiff/1000 + " seconds.");
       }
       catch(error){
         console.log("ERROR: actionStates call failed!");
       }
       if(apiResponse.status == 200){
+        var timeDiff = endTime - startTime;
+        console.log("DEBUG: actionStates call returned in " + timeDiff/1000 + " seconds.");
         data = await apiResponse.json();
+      }
+      else if(apiResponse.status == 204){
+        //Heartbeat, do nothing.
       }
       else{
         console.log("WARNING: actionStates call returned with status " + apiResponse.status + ".");
@@ -213,14 +228,15 @@ export class App extends React.Component {
     if (data != null){
       console.log("DEBUG: Parsing updateActionStates data:");
       console.log(data);
+      var currentLastUpdate = data.lastUpdate.toString();
       // Shove it right into the states. We know it'll be structured
       // with roomId first, then actionId. 
       this.setState({
-        actionStates: data
+        actionStates: data,
+        lastUpdateActionStates: currentLastUpdate,
       });
     }
   }
-  
 
   // Query the web server to update an action to a different state
   // based on what we know.

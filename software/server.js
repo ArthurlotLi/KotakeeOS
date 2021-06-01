@@ -156,17 +156,39 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 // Handle requests from clients to fetch module States. This
 // should be called frequently (every few seconds).
 // Ex) http://192.168.0.197/actionStates
-app.get('/actionStates', (req, res) => {
-  //console.log("[DEBUG] /actionStates GET request received.");
-  return res.status(200).send(home.actionStates());
+app.get('/actionStates/:lastUpdate', (req, res) => {
+  //console.log("[DEBUG] /actionStates GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.lastUpdate != null && req.params.lastUpdate != "null"){
+    lastUpdate = parseInt(req.params.lastUpdate)
+    var response = home.actionStates(lastUpdate);
+    if (response == null){
+      // No change since last update. 
+      return res.status(204).send();
+    }
+    else {
+      console.log("[DEBUG] /actionStates GET request with earlier lastUpdate of " +lastUpdate +" received. Responding.");
+      return res.status(200).send(response);
+    }
+  }
 });
 
 // Handle requests from clients to fetch general update. This
 // should be called frequently (every 10 seconds or so).
 // Ex) http://192.168.0.197/homeStatus
-app.get('/homeStatus', (req, res) => {
-  //console.log("[DEBUG] /homeStatus GET request received.");
-  return res.status(200).send(home.homeStatus());
+app.get('/homeStatus/:lastUpdate', (req, res) => {
+  //console.log("[DEBUG] /homeStatus GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.lastUpdate != null && req.params.lastUpdate != "null"){
+    lastUpdate = parseInt(req.params.lastUpdate)
+    var response = home.homeStatus(lastUpdate);
+    if(response == null){
+      // No change since last update. 
+      return res.status(204).send();
+    }
+    else{
+      console.log("[DEBUG] /homeStatus GET request with earlier lastUpdate of " +lastUpdate +" received. Responding.");
+      return res.status(200).send(response);
+    }
+  }
 });
 
 // Start the server to listen on this port.

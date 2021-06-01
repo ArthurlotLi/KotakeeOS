@@ -15,7 +15,7 @@ class Module {
     // Create a dictionary of states indexed by actionId. 
     var statesDict = {};
     for(var i = 0; i < actions.length; i++){
-      statesDict[actions[i]] = 0;
+      statesDict[actions[i]] = -999; // uninitialized. 
     }
     this.statesDict = statesDict;
   }

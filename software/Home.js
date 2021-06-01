@@ -66,26 +66,34 @@ class Home {
     this.homeStatusTopic = homeStatusTopic;
     this.actionStatesTopic = actionStatesTopic;
     this.publisher = publisher
+    this.lastUpdateHomeStatus = null;
+    this.lastUpdateActionStates = null;
   }
 
   // Returns various general data.
-  homeStatus(){
-    var status = {
-      modulesCount: null,
-      weatherData: null,
-    }
-
-    // Get total modules. 
-    var modulesCount = 0;
-    for(var room in this.roomsDict){
-      if(this.roomsDict.hasOwnProperty(room)){
-        modulesCount = modulesCount + this.roomsDict[room].modulesCount;
+  homeStatus(lastUpdate){
+    if(this.lastUpdateHomeStatus != null && lastUpdate < this.lastUpdateHomeStatus){
+      var status = {
+        modulesCount: null,
+        weatherData: null,
+        lastUpdate: this.lastUpdateHomeStatus,
       }
-    }
 
-    status.modulesCount = modulesCount;
-    status.weatherData = this.weatherData;
-    return status;
+      // Get total modules. 
+      var modulesCount = 0;
+      for(var room in this.roomsDict){
+        if(this.roomsDict.hasOwnProperty(room)){
+          modulesCount = modulesCount + this.roomsDict[room].modulesCount;
+        }
+      }
+
+      status.modulesCount = modulesCount;
+      status.weatherData = this.weatherData;
+      return status;
+    }
+    else{
+      return null;
+    }
   }
 
   // Returns a room object given ID. 
@@ -123,6 +131,10 @@ class Home {
           console.log("[DEBUG] moduleStateUpdate did nothing. Not updating ACTION_STATES.");
         }
       }
+      if(updateStatus){
+        this.lastUpdateActionStates = new Date().getTime();
+        console.log("[DEBUG] moduleStateUpdate succeeded. New lastUpdateActionStates is: " + this.lastUpdateActionStates + ".");
+      }
     }
     else
       console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
@@ -141,15 +153,22 @@ class Home {
   // action by actionId, seperated by roomId. This is expected
   // to be a frequently called function on timers by all clients.
   // The end JSON object should have three layers. 
-  actionStates(){
-    var response = {}
-    for(var room in this.roomsDict){
-      if(this.roomsDict.hasOwnProperty(room)){
-        // For each room, request actionStates.
-        response[room] = this.roomsDict[room].actionStates();
+  actionStates(lastUpdate){
+    if(this.lastUpdateActionStates != null && lastUpdate < this.lastUpdateActionStates){
+      var response = {
+        lastUpdate: this.lastUpdateActionStates,
       }
+      for(var room in this.roomsDict){
+        if(this.roomsDict.hasOwnProperty(room)){
+          // For each room, request actionStates.
+          response[room] = this.roomsDict[room].actionStates();
+        }
+      }
+      return response;
     }
-    return response;
+    else{
+      return null;
+    }
   }
 
   //Requests all modules to report action states to web server.
@@ -170,7 +189,8 @@ class Home {
   async updateWeather(openweathermapApiKey, doNotQuery = false){
     if(doNotQuery){
       this.weatherData = cannedWeatherData;
-      console.log("[DEBUG] updateWeater was given doNotQuery command, so canned data was retreived.");
+      this.lastUpdateHomeStatus = new Date().getTime();
+      console.log("[DEBUG] updateWeater was given doNotQuery command, so canned data was retreived. New lastUpdateHomeStatus is: " + this.lastUpdateHomeStatus + ".");
     }
     else {
       var apiResponse = null;
@@ -196,6 +216,8 @@ class Home {
         if(this.publisher != null){
           this.topicPublishHomeStatus();
         }
+        this.lastUpdateHomeStatus = new Date().getTime();
+        console.log("[DEBUG] updateWeather succeeded. New lastUpdateHomeStatus is: " + this.lastUpdateHomeStatus + ".");
       }
       else{
         console.log("[WARNING] Open Weather Map API call returned with status " + apiResponse.status + ".");
