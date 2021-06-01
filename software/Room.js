@@ -72,7 +72,7 @@ class Room {
     for(var moduleId in this.modulesDict){
       var module = this.modulesDict[moduleId];
       var moduleActions = module.actions;
-      for(var i = 0; i <  moduleActions; i++){
+      for(var i = 0; i <  moduleActions.length; i++){
         module.requestGetStateGet(moduleActions[i]);
       }
     }
