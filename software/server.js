@@ -49,7 +49,7 @@ const listeningPort = 8080;
 // Open Weather Map stuff. Use the boolean to provide canned data
 // if you're just testing stuff. (If you're restarting the app
 // over and over again, you'll want this boolean set to true.)
-const doNotQueryOpenWeatherMap = true;
+const doNotQueryOpenWeatherMap = false;
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateWeatherWait = 900000; // Once every 15 minutes
 
