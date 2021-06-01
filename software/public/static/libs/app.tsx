@@ -10,8 +10,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 10000; // 10 seconds. 
-const updateActionStatusWait = 1500; // 1.5 seconds.
+const updateHomeStatusWait = 30000; // 30 seconds. 
+const updateActionStatusWait = 10000; // 10 seconds. // TODO: update web app to request for status again abnormally after a request is made. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
