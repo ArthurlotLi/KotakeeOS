@@ -87,7 +87,7 @@ const app = express();
 
 // Arduino 1 Bedroom 
 const module1BRId = 1;
-const module1BRActions = [actions.LIGHTING1, actions.CURTAINS1]; // TODO: remove debugging stuff. 
+const module1BRActions = [actions.LIGHTING1, actions.CURTAINS1];
 const module1BRPins = [13, 12];
 const module1BRIpAddress = "192.168.0.198";
 const moduleBR1 = new Module(module1BRId, module1BRActions, module1BRPins, module1BRIpAddress);

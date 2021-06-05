@@ -148,7 +148,7 @@ class Module {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch('http://' + this.ipAddress + '/moduleUpdate/' + actionsAndPins.join('/')); 
+      apiResponse = await fetch('http://' + this.ipAddress + '/moduleUpdate/' + this.moduleId + "/"+ actionsAndPins.join('/')); 
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("[DEBUG] moduleUpdate (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");

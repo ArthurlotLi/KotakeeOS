@@ -24,6 +24,8 @@ int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int states[actionsAndPinsMax];
 
+int moduleId = -1;
+
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
 const int webServerPort = 8080;
@@ -199,21 +201,29 @@ void loop() {
           actionsAndPins.toCharArray(buf, sizeof(buf));
           char *p = buf;
           char *str;
-          int i = 1;
+          int i = 0;
           while ((str = strtok_r(p, "/", &p)) != NULL){ // delimiter is /
-            if(i%2 == 0){
-              // Even. (i.e. 2, 4, 6...)
-              pins[(i-1)/2] = atoi(str);
+            if(i == 0){
+              // First item is always the id. 
+              moduleId = atoi(str);
             }
             else{
-              // Odd. (1, 3, 5...)
-              actions[i/2] = atoi(str);
-              states[i/2] = 0; // Initialize all states. 
-              // TODO: For states that aren't binary, initialize them
-              // here given the actionId. 
+              if(i%2 == 0){
+                // Even. (i.e. 2, 4, 6...)
+                pins[(i-1)/2] = atoi(str);
+              }
+              else{
+                // Odd. (1, 3, 5...)
+                actions[i/2] = atoi(str);
+                states[i/2] = 0; // Initialize all states. 
+                // TODO: For states that aren't binary, initialize them
+                // here given the actionId. 
+              }
             }
             i++;
           }
+          Serial.print("[DEBUG] ModuleId: ");
+          Serial.println(moduleId);
           Serial.print("[DEBUG] Actions: ");
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
@@ -298,17 +308,18 @@ void moduleStateUpdate(int actionId){
 
   String toState = String(states[i]);
   String actionIdStr = String(actionId);
+  String moduleIdStr = String(moduleId);
 
   // Make a basic HTTP request:
   if(webServer.connect(webServerIpAddress, webServerPort)){
-    webServer.println("GET /moduleStateUpdate/1/"+actionIdStr+"/" + toState);
+    webServer.println("GET /moduleStateUpdate/"+moduleIdStr+"/"+actionIdStr+"/" + toState);
     webServer.println("Connection: close");
     webServer.println();
-    Serial.println("[DEBUG] Queried Web Server successfully with actionId "+actionIdStr+" and state " + toState + ".");
+    Serial.println("[DEBUG] Queried Web Server successfully with moduleId "+ moduleIdStr+ " and actionId "+actionIdStr+" and state " + toState + ".");
     webServer.stop();
   }
   else{
-    Serial.println("[ERROR] querying Web Server with actionId "+actionIdStr+" and state " + toState + "...");
+    Serial.println("[ERROR] querying Web Server with moduleId "+ moduleIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
 
