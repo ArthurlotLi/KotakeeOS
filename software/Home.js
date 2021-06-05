@@ -182,6 +182,25 @@ class Home {
     }
   }
 
+  // Given the ipAddress of a module, find that module and 
+  // tell it its expected capabilities + pin numbers. 
+  async moduleUpdate(ipAddress){
+    for(var room in this.roomsDict){
+      if(this.roomsDict.hasOwnProperty(room)){
+        // For each room, feed them the ip address until one
+        // room replies with true. 
+        var foundModule = this.roomsDict[room].getModule(ipAddress);
+        if(foundModule != null ){
+          // Then, request that the room request the module be
+          // informed of its capabiltiies. 
+          return foundModule.moduleUpdate();
+        }
+      }
+    }
+    console.log("[ERROR] moduleUpdate failed! A module with " + ipAddress + " does not exist.");
+    return false;
+  }
+
   // Weather parsing. Called on a timer by the server. Data is
   // requested by apps whenever they want. Given the API Key that
   // is held by the server. Also given doNotQuery boolean which

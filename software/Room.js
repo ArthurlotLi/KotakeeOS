@@ -30,6 +30,20 @@ class Room {
     console.log("[DEBUG] Created room id " + roomId+ " with the following info:\nactionsDict " + JSON.stringify(actionsDict) + "\nmodulesDict " + JSON.stringify(modulesDict) + "\nmodulesCount " + modulesCount);
   }
 
+  // Given an ipAddress, go through all modules in this room and
+  // look for that ipAddress. Return the module if found, null 
+  // otherwise. 
+  getModule(ipAddress){
+    for(var moduleId in this.modulesDict){
+      var module = this.modulesDict[moduleId];
+      var moduleIpAddress = module.getIpAddress();
+      if(moduleIpAddress == ipAddress){
+        return module;
+      }
+    }
+    return null;
+  }
+
   // Given action Id and toState, execute Module code if found in dict
   // AND if the state is not what is currently stored. Otherwise ignore.
   // Returns true or false depending on execution status. 

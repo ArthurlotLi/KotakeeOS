@@ -87,9 +87,10 @@ const app = express();
 
 // Arduino 1 Bedroom 
 const module1BRId = 1;
-const module1BRActions = [actions.LIGHTING1];
+const module1BRActions = [actions.LIGHTING1, actions.CURTAINS1]; // TODO: remove debugging stuff. 
+const module1BRPins = [13, 12];
 const module1BRIpAddress = "192.168.0.198";
-const moduleBR1 = new Module(module1BRId, module1BRActions, module1BRIpAddress);
+const moduleBR1 = new Module(module1BRId, module1BRActions, module1BRPins, module1BRIpAddress);
 
 // Rooms (add objects here)
 const bedroomModules = [moduleBR1];
@@ -194,6 +195,25 @@ app.get('/homeStatus/:lastUpdate', (req, res) => {
     else{
       console.log("[DEBUG] /homeStatus GET request with earlier lastUpdate of " +lastUpdate +" received. Responding.");
       return res.status(200).send(response);
+    }
+  }
+});
+
+// Handle requests from modules upon startup, who don't know
+// who they are and what they can do, and respond with
+// their capabilities based on their passed in ip address. 
+// Note that we expect their ips to correspond to the MAC
+// of the arduino pernamently (DCHP reservation).
+app.get('/moduleStartup/:ipAddress', (req, res) => {
+  console.log("[DEBUG] /moduleStartup GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.ipAddress != null && req.params.ipAddress != "null"){
+    var response = home.moduleUpdate(req.params.ipAddress);
+    if(response){
+      return res.status(200).send();
+    }
+    else{
+      // Something went wrong - unknown IP address, perhaps? 
+      return res.status(400).send();
     }
   }
 });

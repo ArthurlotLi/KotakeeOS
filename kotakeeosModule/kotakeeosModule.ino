@@ -18,6 +18,13 @@ char pass[] = SECRET_PASS;
 int keyIndex = 0;        
 const int relayPin = 13; 
 bool relayPinState = false;
+
+// Hard coded array since we can only handle up to 25 actions
+// (arduinos only have up so many I/O pins. )
+const int actionsAndPinsMax = 25;
+int actions[actionsAndPinsMax];
+int pins[actionsAndPinsMax];
+
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
 const int webServerPort = 8080;
@@ -26,6 +33,16 @@ int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
 void setup() {
+  // Variable housekeeping.
+  // Zero all values.
+  for(int i = 0; i < actionsAndPinsMax; i++){
+    actions[i] = 0;
+  }
+  // Zero all values.
+  for(int i = 0; i < actionsAndPinsMax; i++){
+    pins[i] = 0;
+  }
+
   Serial.begin(9600);      // initialize serial communication
   pinMode(relayPin, OUTPUT);      // set the LED pin mode
 
@@ -63,7 +80,6 @@ void loop() {
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
-    //Serial.println("new client");           // print a message out the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
@@ -99,6 +115,7 @@ void loop() {
         // Note that here even if we get multiple requests to 
         // do something (like turn actionId 50 to on), if 
         // it's already on we don't do anything. 
+        // TODO: HTTP response codes... 
         if (currentLine.endsWith("GET /stateToggle/50/1")) {
           if (!relayPinState) { 
             Serial.println("[DEBUG] Instructed to turn on light when it was off. Executing...");
@@ -129,12 +146,64 @@ void loop() {
           Serial.println("[DEBUG] stateGet request received. Replying...");
           moduleStateUpdate();
         }
+        else if(currentLine.startsWith("GET /moduleUpdate/") && currentLine.endsWith(" ")){
+          // Get the rest of the first line. 
+          String actionsAndPins = currentLine;
+          actionsAndPins.replace("GET /moduleUpdate/", ""); // Shed the first part. 
+          Serial.println("[DEBUG] Given action and pin information from server. actionsAndPins is: ");
+          Serial.println(actionsAndPins);
+
+          // Convert from String to string
+          char buf[actionsAndPins.length()];
+          actionsAndPins.toCharArray(buf, sizeof(buf));
+          char *p = buf;
+          char *str;
+          int i = 1;
+          while ((str = strtok_r(p, "/", &p)) != NULL){ // delimiter is /
+            if(i%2 == 0){
+              // Even. (i.e. 2, 4, 6...)
+              pins[(i-1)/2] = atoi(str);
+            }
+            else{
+              // Odd. (1, 3, 5...)
+              actions[i/2] = atoi(str);
+            }
+            i++;
+          }
+          Serial.println("[DEBUG] Actions: ");
+          for(int i = 0; i < actionsAndPinsMax; i++)
+          {
+            Serial.print(actions[i]);
+            Serial.print(", ");
+          }
+          Serial.println("");
+          Serial.println("[DEBUG] Pins: ");
+          for(int i = 0; i < actionsAndPinsMax; i++)
+          {
+            Serial.print(pins[i]);
+            Serial.print(", ");
+          }
+          // We've now populated our actions and pins array and
+          // are ready to go. 
+        }
       }
     }
     // close the connection:
     client.stop();
-    //Serial.println("client disconnected");
   }
+}
+
+// Helper function. Given an actionId, get the index of
+// both the action and the pin. If not found, return
+// -1. 
+int findActionId(int actionId){
+  for(int i = 0; i < actionsAndPinsMax; i++)
+  {
+    if(actionId == actions[i]){
+      return i;
+    }
+  }
+  return -1;
 }
 
 // Given current state, notify the web server!
