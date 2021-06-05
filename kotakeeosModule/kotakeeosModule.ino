@@ -15,7 +15,9 @@
 
 char ssid[] = SECRET_SSID;  
 char pass[] = SECRET_PASS;   
-int keyIndex = 0;        
+int keyIndex = 0;     
+
+// TODO: Remove me. 
 const int relayPin = 13; 
 bool relayPinState = false;
 
@@ -24,6 +26,7 @@ bool relayPinState = false;
 const int actionsAndPinsMax = 25;
 int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
+int states[actionsAndPinsMax];
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -36,14 +39,15 @@ void setup() {
   // Variable housekeeping.
   // Zero all values.
   for(int i = 0; i < actionsAndPinsMax; i++){
-    actions[i] = 0;
-  }
-  // Zero all values.
-  for(int i = 0; i < actionsAndPinsMax; i++){
-    pins[i] = 0;
+    actions[i] = -1;
+    pins[i] = -1;
+    states[i] = -1;
   }
 
   Serial.begin(9600);      // initialize serial communication
+  Serial.println("[DEBUG] KotakeeOS Arduino Module booting...");
+
+  // TODO: Remove Me. 
   pinMode(relayPin, OUTPUT);      // set the LED pin mode
 
   // check for the WiFi module:
@@ -61,18 +65,18 @@ void setup() {
   // attempt to connect to WiFi network:
   while (status != WL_CONNECTED) {
     Serial.print("[DEBUG] Attempting to connect to Network named: ");
-    Serial.println(ssid);                   // print the network name (SSID);
+    Serial.println(ssid);
 
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
     delay(10000);
   }
-  server.begin();                           // start the web server on port 80
-  printWifiStatus();                        // you're connected now, so print out the status
+  server.begin();
+  printWifiStatus();
 
-  // Send out initial state notification to web server since we just restarted. 
-  moduleStateUpdate();
+  // Now that we're online, let's ask the server what
+  // actions/pins we should have. 
+  moduleStartupRequest();
 }
 
 
@@ -174,17 +178,21 @@ void loop() {
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
             Serial.print(actions[i]);
-            Serial.print(", ");
+            Serial.print(" ");
           }
           Serial.println("");
           Serial.println("[DEBUG] Pins: ");
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
             Serial.print(pins[i]);
-            Serial.print(", ");
+            Serial.print(" ");
           }
+          Serial.println("");
           // We've now populated our actions and pins array and
           // are ready to go. 
+
+          // Send our initial state notification to web server.
+          moduleStateUpdate();
         }
       }
     }
@@ -229,6 +237,33 @@ void moduleStateUpdate(){
   else{
     Serial.println("[ERROR] querying Web Server with state " + toState + "...");
   }
+}
+
+// Upon startup, request the server to send our information! 
+void moduleStartupRequest(){
+  WiFiClient webServer;
+  String ip = IpAddress2String(WiFi.localIP());
+
+  // Make a basic HTTP request:
+  if(webServer.connect(webServerIpAddress, webServerPort)){
+    webServer.println("GET /moduleStartup/" + ip);
+    webServer.println("Connection: close");
+    webServer.println();
+    Serial.println("[DEBUG] Queried Web Server successfully with moduleStartup with ipAddress " + ip + ".");
+    webServer.stop();
+  }
+  else{
+    Serial.println("[ERROR] querying Web Server with moduleStartup with ipAddress " + ip + "...");
+  }
+}
+
+// author apicquot from https://forum.arduino.cc/index.php?topic=228884.0
+String IpAddress2String(const IPAddress& ipAddress)
+{
+  return String(ipAddress[0]) + String(".") +
+          String(ipAddress[1]) + String(".") +
+          String(ipAddress[2]) + String(".") +
+          String(ipAddress[3]);
 }
 
 void printWifiStatus() {
