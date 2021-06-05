@@ -24,7 +24,7 @@ int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int states[actionsAndPinsMax];
 
-int moduleId = -1;
+int roomId = -1;
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -205,7 +205,7 @@ void loop() {
           while ((str = strtok_r(p, "/", &p)) != NULL){ // delimiter is /
             if(i == 0){
               // First item is always the id. 
-              moduleId = atoi(str);
+              roomId = atoi(str);
             }
             else{
               if(i%2 == 0){
@@ -222,8 +222,8 @@ void loop() {
             }
             i++;
           }
-          Serial.print("[DEBUG] ModuleId: ");
-          Serial.println(moduleId);
+          Serial.print("[DEBUG] roomId: ");
+          Serial.println(roomId);
           Serial.print("[DEBUG] Actions: ");
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
@@ -308,18 +308,18 @@ void moduleStateUpdate(int actionId){
 
   String toState = String(states[i]);
   String actionIdStr = String(actionId);
-  String moduleIdStr = String(moduleId);
+  String roomIdStr = String(roomId);
 
   // Make a basic HTTP request:
   if(webServer.connect(webServerIpAddress, webServerPort)){
-    webServer.println("GET /moduleStateUpdate/"+moduleIdStr+"/"+actionIdStr+"/" + toState);
+    webServer.println("GET /moduleStateUpdate/"+roomIdStr+"/"+actionIdStr+"/" + toState);
     webServer.println("Connection: close");
     webServer.println();
-    Serial.println("[DEBUG] Queried Web Server successfully with moduleId "+ moduleIdStr+ " and actionId "+actionIdStr+" and state " + toState + ".");
+    Serial.println("[DEBUG] Queried Web Server successfully with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + ".");
     webServer.stop();
   }
   else{
-    Serial.println("[ERROR] querying Web Server with moduleId "+ moduleIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
+    Serial.println("[ERROR] querying Web Server with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
 

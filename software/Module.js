@@ -8,8 +8,9 @@ const fetch = require("node-fetch");
 
 // Each module contains an array of supported actions and an ipAddress.
 class Module {
-  constructor(moduleId, actions, pins, ipAddress){
+  constructor(moduleId, roomId, actions, pins, ipAddress){
     this.moduleId = moduleId;
+    this.roomId = roomId;
     this.ipAddress = ipAddress;
     this.actions = actions;
     this.pins = pins; // like-indexed array accompanying actions array. 
@@ -34,10 +35,10 @@ class Module {
         return this.statesDict[actionId]; 
       }
       else 
-        console.log("[ERROR] getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.moduleId + ".");
+        console.log("[ERROR] getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
     }
     else 
-      console.log("[ERROR] getActionState failed! actionId " + actionId + " is not implemented for module " + this.moduleId + ".");
+      console.log("[ERROR] getActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ".");
     return false;
   }
 
@@ -49,18 +50,18 @@ class Module {
         var currentState = this.statesDict[actionId];
         if(currentState != toState) {
           this.statesDict[actionId] = toState; 
-          console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for actionid " + actionId + " for module " + this.moduleId + ".");
+          console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for actionid " + actionId + " for module " + this.ipAddress + ".");
           return true;
         }
         else {
-          console.log("[DEBUG] setActionState state " + currentState + " is equivalent to gotten state "+ toState + " for actionid " + actionId + " for module  " + this.moduleId + ". Ignoring request.");
+          console.log("[DEBUG] setActionState state " + currentState + " is equivalent to gotten state "+ toState + " for actionid " + actionId + " for module  " + this.ipAddress + ". Ignoring request.");
         }
       }
       else 
-        console.log("[ERROR] setActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.moduleId + ".");
+        console.log("[ERROR] setActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
     }
     else 
-      console.log("[ERROR] setActionState failed! actionId " + actionId + " is not implemented for module " + this.moduleId + ".");
+      console.log("[ERROR] setActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ".");
     return false;
   }
 
@@ -75,7 +76,7 @@ class Module {
       return await this.requestGetStateToggle(actionId, toState);
     }
     else
-      console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.moduleId + ".");
+      console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.ipAddress + ".");
     return false;
   }
 
@@ -95,16 +96,16 @@ class Module {
       apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
       endTime = new Date();
       var timeDiff = endTime - startTime;
-      console.log("[DEBUG] requestGetStateToggle (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");
+      console.log("[DEBUG] requestGetStateToggle (module " +this.ipAddress+ ") returned in " + timeDiff/1000 + " seconds.");
     }
     catch(error){
-      console.log("[ERROR] requestGetStateToggle (module " +this.moduleId+ ") failed! Error:\n" + error);
+      console.log("[ERROR] requestGetStateToggle (module " +this.ipAddress+ ") failed! Error:\n" + error);
     }
     if(apiResponse.status == 200){
       // Executed successfully!
       return true;
     }
-    console.log("[WARNING] requestGetStateToggle (module " +this.moduleId+ ") returned with status " + apiResponse.status + ".");
+    console.log("[WARNING] requestGetStateToggle (module " +this.ipAddress+ ") returned with status " + apiResponse.status + ".");
     return false;
   }
 
@@ -119,16 +120,16 @@ class Module {
       apiResponse = await fetch('http://' + this.ipAddress + '/stateGet/' + actionId); 
       endTime = new Date();
       var timeDiff = endTime - startTime;
-      console.log("[DEBUG] requestGetStateGet (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");
+      console.log("[DEBUG] requestGetStateGet (module " +this.ipAddress+ ") returned in " + timeDiff/1000 + " seconds.");
     }
     catch(error){
-      console.log("[ERROR] requestGetStateGet (module " +this.moduleId+ ") failed! Error:\n" + error);
+      console.log("[ERROR] requestGetStateGet (module " +this.ipAddress+ ") failed! Error:\n" + error);
     }
     if(apiResponse.status == 200){
       // Executed successfully!
       return true;
     }
-    console.log("[WARNING] requestGetStateGet (module " +this.moduleId+ ") returned with status " + apiResponse.status + ".");
+    console.log("[WARNING] requestGetStateGet (module " +this.ipAddress+ ") returned with status " + apiResponse.status + ".");
     return false;
   }
 
@@ -148,19 +149,19 @@ class Module {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch('http://' + this.ipAddress + '/moduleUpdate/' + this.moduleId + "/"+ actionsAndPins.join('/')); 
+      apiResponse = await fetch('http://' + this.ipAddress + '/moduleUpdate/' + this.roomId + "/"+ actionsAndPins.join('/')); 
       endTime = new Date();
       var timeDiff = endTime - startTime;
-      console.log("[DEBUG] moduleUpdate (module " +this.moduleId+ ") returned in " + timeDiff/1000 + " seconds.");
+      console.log("[DEBUG] moduleUpdate (module " +this.ipAddress+ ") returned in " + timeDiff/1000 + " seconds.");
     }
     catch(error){
-      console.log("[ERROR] moduleUpdate (module " +this.moduleId+ ") failed! Error:\n" + error);
+      console.log("[ERROR] moduleUpdate (module " +this.ipAddress+ ") failed! Error:\n" + error);
     }
     if(apiResponse.status == 200){
       // Executed successfully!
       return true;
     }
-    console.log("[WARNING] moduleUpdate (module " +this.moduleId+ ") returned with status " + apiResponse.status + ".");
+    console.log("[WARNING] moduleUpdate (module " +this.ipAddress+ ") returned with status " + apiResponse.status + ".");
     return false;
   }
 }
