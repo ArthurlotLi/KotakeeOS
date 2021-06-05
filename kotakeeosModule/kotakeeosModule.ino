@@ -179,11 +179,11 @@ void loop() {
           }
         }
         // Expect Ex) stateGet/50
-        else if(currentLine.endsWith("GET /stateGet/") && currentLine.endsWith(" ")){
+        else if(currentLine.startsWith("GET /stateGet/") && currentLine.endsWith(" ")){
           String actionIdStr = currentLine;
           actionIdStr.replace("GET /stateGet/", ""); // Shed the first part. 
           int actionId = actionIdStr.toInt();
-          Serial.println("[DEBUG] stateGet request received. actionId is: ");
+          Serial.print("[DEBUG] stateGet request received. actionId is: ");
           Serial.println(actionId);
           moduleStateUpdate(actionId);
         }
