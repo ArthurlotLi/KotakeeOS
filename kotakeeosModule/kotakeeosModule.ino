@@ -17,10 +17,6 @@ char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;   
 int keyIndex = 0;     
 
-// TODO: Remove me. 
-const int relayPin = 13; 
-bool relayPinState = false;
-
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
 const int actionsAndPinsMax = 25;
@@ -46,9 +42,6 @@ void setup() {
 
   Serial.begin(9600);      // initialize serial communication
   Serial.println("[DEBUG] KotakeeOS Arduino Module booting...");
-
-  // TODO: Remove Me. 
-  pinMode(relayPin, OUTPUT);      // set the LED pin mode
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -120,41 +113,85 @@ void loop() {
         // do something (like turn actionId 50 to on), if 
         // it's already on we don't do anything. 
         // TODO: HTTP response codes... 
-        if (currentLine.endsWith("GET /stateToggle/50/1")) {
-          if (!relayPinState) { 
-            Serial.println("[DEBUG] Instructed to turn on light when it was off. Executing...");
-            // If it's off, turn it on. 
-            digitalWrite(relayPin, HIGH);
-            relayPinState = true;
-            // Inform the web server.
-            moduleStateUpdate();
+
+        // Expect Ex) GET /stateToggle/50/1 (actionId/toState)
+        if (currentLine.startsWith("GET /stateToggle/") && currentLine.endsWith(" ")) {
+          String actionId;
+          int actionIdInt;
+          String toState;
+          int toStateInt;
+
+          // Get the rest of the first line. 
+          String actionIdAndToState = currentLine;
+          actionIdAndToState.replace("GET /stateToggle/", ""); // Shed the first part. 
+          Serial.print("[DEBUG] Received stateToggle command from server. actionIdAndToState is: ");
+          Serial.println(actionIdAndToState);
+
+          // Convert from String to string
+          char buf[actionIdAndToState.length()];
+          actionIdAndToState.toCharArray(buf, sizeof(buf));
+          char *p = buf;
+          char *str;
+          int i = 0;
+          while (((str = strtok_r(p, "/", &p)) != NULL) && i < 2){ // delimiter is /
+            if(i == 0){
+              actionId = str;
+              actionIdInt = actionId.toInt();
+            }
+            else if(i == 1){
+              toState = str;
+              toStateInt = toState.toInt();
+            }
+            i++;
+          }
+
+          // Get the id of the action.
+          int actionIndex = findActionId(actionIdInt);
+
+          if(actionIndex >= 0){
+            if (states[actionIndex] != toStateInt) { 
+              Serial.print("[DEBUG] Instructed to toggle action " + actionId + " from state ");
+              Serial.print(states[actionIndex]);
+              Serial.print(" to " + toState + ". Executing on pin ");
+              Serial.print(pins[actionIndex]);
+              Serial.println("...");
+              if(toStateInt == 1){
+                // If it's off, turn it on. 
+                digitalWrite(pins[actionIndex], HIGH);
+                states[actionIndex] = 1;
+              }
+              else{
+                // If it's on, turn it off
+                digitalWrite(pins[actionIndex], LOW);
+                states[actionIndex] = 0;
+              }
+              // Inform the web server.
+              moduleStateUpdate(actionIdInt);
+            }
+            else{
+              Serial.print("[WARNING] Instructed to toggle action " + actionId + " from state ");
+              Serial.print(states[actionIndex]);
+              Serial.println(" to " + toState + ". Request Ignored.");
+            }
           }
           else{
-            Serial.println("[WARNING] Was instructed to turn on light when it was already on. Request ignored.");
+            Serial.print("[WARNING] Instructed to toggle action " + actionId + ", but actionId does is not Implemented!");
           }
         }
-        else if(currentLine.endsWith("GET /stateToggle/50/0")){
-          if(relayPinState) {
-            Serial.println("[DEBUG] Instructed to turn off light when it was on. Executing...");
-            // if it's on, turn it off.  
-            digitalWrite(relayPin, LOW);
-            relayPinState = false;
-            // Inform the web server.
-            moduleStateUpdate();
-          }
-          else{
-            Serial.println("[WARNING] Was instructed to turn off light when it was already off. Request ignored.");
-          }
-        }
-        else if(currentLine.endsWith("GET /stateGet/50")){
-          Serial.println("[DEBUG] stateGet request received. Replying...");
-          moduleStateUpdate();
+        // Expect Ex) stateGet/50
+        else if(currentLine.endsWith("GET /stateGet/") && currentLine.endsWith(" ")){
+          String actionIdStr = currentLine;
+          actionIdStr.replace("GET /stateGet/", ""); // Shed the first part. 
+          int actionId = actionIdStr.toInt();
+          Serial.println("[DEBUG] stateGet request received. actionId is: ");
+          Serial.println(actionId);
+          moduleStateUpdate(actionId);
         }
         else if(currentLine.startsWith("GET /moduleUpdate/") && currentLine.endsWith(" ")){
           // Get the rest of the first line. 
           String actionsAndPins = currentLine;
           actionsAndPins.replace("GET /moduleUpdate/", ""); // Shed the first part. 
-          Serial.println("[DEBUG] Given action and pin information from server. actionsAndPins is: ");
+          Serial.print("[DEBUG] Given action and pin information from server. actionsAndPins is: ");
           Serial.println(actionsAndPins);
 
           // Convert from String to string
@@ -171,28 +208,40 @@ void loop() {
             else{
               // Odd. (1, 3, 5...)
               actions[i/2] = atoi(str);
+              states[i/2] = 0; // Initialize all states. 
+              // TODO: For states that aren't binary, initialize them
+              // here given the actionId. 
             }
             i++;
           }
-          Serial.println("[DEBUG] Actions: ");
+          Serial.print("[DEBUG] Actions: ");
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
-            Serial.print(actions[i]);
-            Serial.print(" ");
+            int actionId = actions[i];
+            if(actionId != -1){
+              Serial.print(actionId);
+              Serial.print(" ");
+            }
           }
           Serial.println("");
-          Serial.println("[DEBUG] Pins: ");
+          Serial.print("[DEBUG] Pins: ");
           for(int i = 0; i < actionsAndPinsMax; i++)
           {
-            Serial.print(pins[i]);
-            Serial.print(" ");
+            int pin = pins[i];
+            if(pin != -1){
+              Serial.print(pin);
+              Serial.print(" ");
+            }
           }
           Serial.println("");
           // We've now populated our actions and pins array and
           // are ready to go. 
 
+          // Initialize all pins.
+          initializePins();
+
           // Send our initial state notification to web server.
-          moduleStateUpdate();
+          initialStateUpdate();
         }
       }
     }
@@ -214,28 +263,52 @@ int findActionId(int actionId){
   return -1;
 }
 
-// Given current state, notify the web server!
-void moduleStateUpdate(){
+// For all pins in the pins array, initialize them. 
+void initializePins(){
+  for(int i = 0; i < actionsAndPinsMax; i++){
+    int pin = pins[i];
+    if(pin > 0){
+      pinMode(pin, OUTPUT);
+      Serial.print("[DEBUG] initialized pin ");
+      Serial.print(pin);
+      Serial.println(" with OUTPUT for actionId " + actions[i]);
+    }
+  }
+}
+
+// Call moduleStateUpdate for all implemented actions.
+void initialStateUpdate(){
+  for(int i = 0; i < actionsAndPinsMax; i++){
+    int actionId = actions[i];
+    if(actionId > 0){
+      moduleStateUpdate(actionId);
+    }
+  }
+}
+
+// Given current state of given actionId, notify the web server!
+void moduleStateUpdate(int actionId){
   WiFiClient webServer;
 
-  String toState;
-  if(relayPinState){
-    toState = String(1);
+  int i = findActionId(actionId);
+  if(i < 0){
+    Serial.print("[ERROR] moduleStateUpdate was unable to find actionId ");
+    Serial.println(actionId);
   }
-  else{
-    toState = String(0);
-  }
+
+  String toState = String(states[i]);
+  String actionIdStr = String(actionId);
 
   // Make a basic HTTP request:
   if(webServer.connect(webServerIpAddress, webServerPort)){
-    webServer.println("GET /moduleStateUpdate/1/50/" + toState);
+    webServer.println("GET /moduleStateUpdate/1/"+actionIdStr+"/" + toState);
     webServer.println("Connection: close");
     webServer.println();
-    Serial.println("[DEBUG] Queried Web Server successfully with state " + toState + ".");
+    Serial.println("[DEBUG] Queried Web Server successfully with actionId "+actionIdStr+" and state " + toState + ".");
     webServer.stop();
   }
   else{
-    Serial.println("[ERROR] querying Web Server with state " + toState + "...");
+    Serial.println("[ERROR] querying Web Server with actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
 

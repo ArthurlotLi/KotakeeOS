@@ -311,15 +311,14 @@ export class App extends React.Component {
     }
     // Highest Lighting and Lowest Lighting are expected to be
     // numerical bounds for general category. 
-    if(actionId <= actions.LIGHTING5 && actionId >= actions.LIGHTING1){
-      console.log("Test.");
+    //if(actionId <= actions.LIGHTING5 && actionId >= actions.LIGHTING1){
       if(currentState == 0){
         toState = 1;
       }
       else {
         toState = 0;
       }
-    }
+    //}
     // TODO: handle additional actionIds. We will make this a 
     // whitelist, not a blacklist. 
 
