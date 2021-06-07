@@ -93,10 +93,18 @@ const module1BRPins = [13];
 const module1BRIpAddress = "192.168.0.198";
 const moduleBR1 = new Module(module1BRId, module1BRRoomId, module1BRActions, module1BRPins, module1BRIpAddress);
 
+// Arduino 2 Living Room
+const module2LRId = 2; // Internal server use only. 
+const module2LRRoomId = rooms.LIVINGROOM; 
+const module2LRActions = [actions.LIGHTING1];
+const module2LRPins = [13];
+const module2LRIpAddress = "192.168.0.160";
+const moduleLR2 = new Module(module2LRId, module2LRRoomId, module2LRActions, module2LRPins, module2LRIpAddress);
+
 // Rooms (add objects here)
 const bedroomModules = [moduleBR1];
 const bedroom = new Room(rooms.BEDROOM,bedroomModules);
-const livingRoomModules = [];
+const livingRoomModules = [moduleLR2];
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
 
 // Home
