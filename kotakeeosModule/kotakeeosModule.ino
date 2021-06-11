@@ -43,6 +43,8 @@ int roomId = -1;
 // TODO: facilitate more than just one servo in use at any given point
 // in time. 
 Servo servo;
+Servo servo1;
+Servo servo2;
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -215,6 +217,17 @@ void handleStateToggle(String currentLine, bool virtualCommand){
           Serial.println("[WARNING] Illegal action was requested! Ignoring...");
         }
       }
+      else if(actions[actionIndex] <= switch5 && actions[actionIndex] >= switch1){
+        Serial.println("[DEBUG] Activating Servos...");
+        // 20 off, 21 active, 22 on. 
+        if(toStateInt == 22 || toStateInt == 20){
+          // If we're ready, let's become active. 
+          servoPressSwitch(actionIndex, toStateInt, virtualCommand);
+        }
+        else{
+          Serial.println("[WARNING] Illegal action was requested! Ignoring...");
+        }
+      }
       else{
         // Default binary 0, 1. 
         if(toStateInt == 1){
@@ -284,7 +297,7 @@ void handleModuleUpdate(String currentLine){
           pins[(i-1)/2] = atoi(str);
           initializeServos((i-1)/2);
         }
-        if(actions[(i-1)/2] <= switch5 && actions[(i-1)/2] >= switch5){
+        if(actions[(i-1)/2] <= switch5 && actions[(i-1)/2] >= switch1){
           // We expect, in the case of two pins, a 4 digit
           // string regardless. 
           char pin1Str[3];
@@ -342,7 +355,7 @@ void handleModuleUpdate(String currentLine){
     }
     int pin2 = pins2[i];
     if(pin2 != -1){
-      Serial.print(",");
+      Serial.print("and ");
       Serial.print(pin2);
       Serial.print(" ");
     }
@@ -416,7 +429,7 @@ void initializeServos(int actionIndex){
     delay(servoActionWait);
     servo.detach();
     Serial.print(" and pin ");
-    Serial.print(pins[actionIndex]);
+    Serial.print(pins2[actionIndex]);
   }
   Serial.print(" with a Servo object for actionId ");
   Serial.println(actions[actionIndex]);
@@ -444,6 +457,43 @@ void servoPressButton(int actionIndex, int toStateInt, bool virtualCommand){
       int pin = pins[actionIndex];
       // Notify the server of our new state. 
       states[actionIndex] = 11; // 11 = active.
+      moduleStateUpdate(actions[actionIndex]);
+
+      // Activate the servo. We expect to be in neutral.
+      servo.attach(pin);
+      servo.write(servoActive);
+      delay(servoActionWait);
+      servo.write(servoNeutral);
+      delay(servoActionWait);
+      servo.detach();
+    }
+
+    // Notify the server of our new state. 
+    states[actionIndex] = toStateInt;
+    moduleStateUpdate(actions[actionIndex]);
+  }
+}
+
+// Given an action index that is presumably for a switch action,
+// Set ourselves as state active, notify the server, perform 
+// the action, return to neutral state, and notify the server
+// again. Also takes in a toStateInt to know what to tell
+// the server at the end of the procedure. 
+void servoPressSwitch(int actionIndex, int toStateInt, bool virtualCommand){
+  // Sanity Check:
+  if(toStateInt == 22 || toStateInt == 20){
+    if(!virtualCommand){
+      int pin;
+      if(toStateInt == 22){
+        // Pin2 is to turn on. 
+        pin = pins2[actionIndex];
+      }
+      else{
+        // Pin1 is to turn off. 
+        pin = pins[actionIndex];
+      }
+      // Notify the server of our new state. 
+      states[actionIndex] = 21; // 21 = active.
       moduleStateUpdate(actions[actionIndex]);
 
       // Activate the servo. We expect to be in neutral.
