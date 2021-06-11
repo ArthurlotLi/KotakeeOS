@@ -133,7 +133,11 @@ void loop() {
 
         // Expect Ex) GET /stateToggle/50/1 (actionId/toState)
         if (currentLine.startsWith("GET /stateToggle/") && currentLine.endsWith(" ")) {
-          handleStateToggle(currentLine);
+          handleStateToggle(currentLine, false);
+        }
+        // Expect Ex) GET /stateVirtualToggle/50/1 (actionId/toState)
+        if (currentLine.startsWith("GET /stateVirtualToggle/") && currentLine.endsWith(" ")) {
+          handleStateToggle(currentLine, true);
         }
         // Expect Ex) stateGet/50
         else if(currentLine.startsWith("GET /stateGet/") && currentLine.endsWith(" ")){
@@ -149,7 +153,7 @@ void loop() {
   }
 }
 
-void handleStateToggle(String currentLine){
+void handleStateToggle(String currentLine, bool virtualCommand){
   String actionId;
   int actionIdInt;
   String toState;
@@ -157,8 +161,14 @@ void handleStateToggle(String currentLine){
 
   // Get the rest of the first line. 
   String actionIdAndToState = currentLine;
-  actionIdAndToState.replace("GET /stateToggle/", ""); // Shed the first part. 
-  Serial.print("[DEBUG] Received stateToggle command from server. actionIdAndToState is: ");
+  if(virtualCommand){
+    actionIdAndToState.replace("GET /stateVirtualToggle/", ""); // Shed the first part. 
+    Serial.print("[DEBUG] Received stateVirtualToggle command from server. actionIdAndToState is: ");
+  }
+  else{
+    actionIdAndToState.replace("GET /stateToggle/", ""); // Shed the first part. 
+    Serial.print("[DEBUG] Received stateToggle command from server. actionIdAndToState is: ");
+  }
   Serial.println(actionIdAndToState);
 
   // Convert from String to string
@@ -195,7 +205,7 @@ void handleStateToggle(String currentLine){
         // 10 off, 11 active, 12 on. 
         if(toStateInt == 12 || toStateInt == 10){
           // If we're ready, let's become active. 
-          servoPressButton(actionIndex, toStateInt);
+          servoPressButton(actionIndex, toStateInt, virtualCommand);
         }
         else{
           Serial.println("[WARNING] Illegal action was requested! Ignoring...");
@@ -206,13 +216,15 @@ void handleStateToggle(String currentLine){
         if(toStateInt == 1){
           Serial.println("[DEBUG] Turning on...");
           // If it's off, turn it on. 
-          digitalWrite(pins[actionIndex], HIGH);
+          if(!virtualCommand)
+            digitalWrite(pins[actionIndex], HIGH);
           states[actionIndex] = 1;
         }
         else{
           Serial.println("[DEBUG] Turning off...");
           // If it's on, turn it off
-          digitalWrite(pins[actionIndex], LOW);
+          if(!virtualCommand)
+            digitalWrite(pins[actionIndex], LOW);
           states[actionIndex] = 0;
         }
         // Inform the web server.
@@ -389,21 +401,23 @@ void initialStateUpdate(){
 // the action, return to neutral state, and notify the server
 // again. Also takes in a toStateInt to know what to tell
 // the server at the end of the procedure. 
-void servoPressButton(int actionIndex, int toStateInt){
+void servoPressButton(int actionIndex, int toStateInt, bool virtualCommand){
   // Sanity Check:
   if(toStateInt == 12 || toStateInt == 10){
-    int pin = pins[actionIndex];
-    // Notify the server of our new state. 
-    states[actionIndex] = 11; // 11 = active.
-    moduleStateUpdate(actions[actionIndex]);
+    if(!virtualCommand){
+      int pin = pins[actionIndex];
+      // Notify the server of our new state. 
+      states[actionIndex] = 11; // 11 = active.
+      moduleStateUpdate(actions[actionIndex]);
 
-    // Activate the servo. We expect to be in neutral.
-    servo.attach(pin);
-    servo.write(servoActive);
-    delay(servoActionWait);
-    servo.write(servoNeutral);
-    delay(servoActionWait);
-    servo.detach();
+      // Activate the servo. We expect to be in neutral.
+      servo.attach(pin);
+      servo.write(servoActive);
+      delay(servoActionWait);
+      servo.write(servoNeutral);
+      delay(servoActionWait);
+      servo.detach();
+    }
 
     // Notify the server of our new state. 
     states[actionIndex] = toStateInt;
