@@ -175,10 +175,10 @@ void loop() {
 
               if(actions[actionIndex] <= remote20 && actions[actionIndex] >= remote1){
                 Serial.println("[DEBUG] Activating Servo...");
-                // 10 ready, 11 active. 
-                if(toStateInt == 11){
+                // 10 off, 11 active, 12 on. 
+                if(toStateInt == 12 || toStateInt == 10){
                   // If we're ready, let's become active. 
-                  servoPressButton(actionIndex);
+                  servoPressButton(actionIndex, toStateInt);
                 }
                 else{
                   Serial.println("[WARNING] Illegal action was requested! Ignoring...");
@@ -261,7 +261,7 @@ void loop() {
                 // Initialize the state. This initial state depends on the 
                 // action type. 
                 if(actions[i/2] <= remote20 && actions[i/2] >= remote1){
-                  states[i/2] = 10; // 10 is ready, 11 is active. 
+                  states[i/2] = 10; // 10 is off, 11 is active, 12 is on. 
                 }
                 else{
                   states[i/2] = 0; // Default as binary.
@@ -349,9 +349,13 @@ void initializePin(int actionIndex){
   Serial.println(actions[actionIndex]);
 }
 
-// This doesn't actually do anything, but we let the 
-// developer think it does so he feels good. 
+// Upon startup, make sure all servos are at the neutral position.
 void initializeServo(int actionIndex){
+  // Activate the servo. We expect to be in neutral.
+  servo.attach(pins[actionIndex]);
+  servo.write(servoNeutral);
+  delay(servoActionWait);
+  servo.detach();
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pins[actionIndex]);
   Serial.print(" with a Servo object for actionId ");
@@ -371,24 +375,28 @@ void initialStateUpdate(){
 // Given an action index that is presumably for a remote action,
 // Set ourselves as state active, notify the server, perform 
 // the action, return to neutral state, and notify the server
-// again. 
-void servoPressButton(int actionIndex){
-  int pin = pins[actionIndex];
-  // Notify the server of our new state. 
-  states[actionIndex] = 11; // 11 = active.
-  moduleStateUpdate(actions[actionIndex]);
+// again. Also takes in a toStateInt to know what to tell
+// the server at the end of the procedure. 
+void servoPressButton(int actionIndex, int toStateInt){
+  // Sanity Check:
+  if(toStateInt == 12 || toStateInt == 10){
+    int pin = pins[actionIndex];
+    // Notify the server of our new state. 
+    states[actionIndex] = 11; // 11 = active.
+    moduleStateUpdate(actions[actionIndex]);
 
-  // Activate the servo. We expect to be in neutral.
-  servo.attach(pin);
-  servo.write(servoActive);
-  delay(servoActionWait);
-  servo.write(servoNeutral);
-  delay(servoActionWait);
-  servo.detach();
+    // Activate the servo. We expect to be in neutral.
+    servo.attach(pin);
+    servo.write(servoActive);
+    delay(servoActionWait);
+    servo.write(servoNeutral);
+    delay(servoActionWait);
+    servo.detach();
 
-  // Notify the server of our new state. 
-  states[actionIndex] = 10; // 10 = ready.
-  moduleStateUpdate(actions[actionIndex]);
+    // Notify the server of our new state. 
+    states[actionIndex] = toStateInt;
+    moduleStateUpdate(actions[actionIndex]);
+  }
 }
 
 // Given current state of given actionId, notify the web server!
