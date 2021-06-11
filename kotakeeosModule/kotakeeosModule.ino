@@ -23,6 +23,8 @@ int keyIndex = 0;
 // considered binary 0 1 states. 
 const int remote1 = 250;
 const int remote20 = 269;
+const int switch1 = 350;
+const int switch5 = 354;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
@@ -33,6 +35,7 @@ const int servoActionWait = 1000; // time to move arm between neutral and active
 const int actionsAndPinsMax = 25;
 int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
+int pins2[actionsAndPinsMax]; // Subsequent pin arrays for actions that use more than one. 
 int states[actionsAndPinsMax];
 
 int roomId = -1;
@@ -54,6 +57,7 @@ void setup() {
   for(int i = 0; i < actionsAndPinsMax; i++){
     actions[i] = -1;
     pins[i] = -1;
+    pins2[i] = -1;
     states[i] = -1;
   }
 
@@ -275,13 +279,26 @@ void handleModuleUpdate(String currentLine){
         // Since this is always the second of the pair, 
         // we know the aciton already exists. check it and
         // initialize the pin accordingly. 
-        pins[(i-1)/2] = atoi(str);
-
         if(actions[(i-1)/2] <= remote20 && actions[(i-1)/2] >= remote1){
           // Servo usage.
-          initializeServo((i-1)/2);
+          pins[(i-1)/2] = atoi(str);
+          initializeServos((i-1)/2);
+        }
+        if(actions[(i-1)/2] <= switch5 && actions[(i-1)/2] >= switch5){
+          // We expect, in the case of two pins, a 4 digit
+          // string regardless. 
+          char pin1Str[3];
+          memcpy( pin1Str, &str[0], 2 );
+          pin1Str[2] = '\0'; // Null terminate the substring. Yay C++...
+          char pin2Str[3];
+          memcpy( pin2Str, &str[2], 2 );
+          pin2Str[2] = '\0'; // Null terminate the substring. Yay C++...
+          pins[(i-1)/2] = atoi(pin1Str);
+          pins2[(i-1)/2] = atoi(pin2Str);
+          initializeServos((i-1)/2);
         }
         else {
+          pins[(i-1)/2] = atoi(str);
           initializePin((i-1)/2);
         }
       }
@@ -292,6 +309,9 @@ void handleModuleUpdate(String currentLine){
         // action type. 
         if(actions[i/2] <= remote20 && actions[i/2] >= remote1){
           states[i/2] = 10; // 10 is off, 11 is active, 12 is on. 
+        }
+        else if(actions[i/2] <= switch5 && actions[i/2] >= switch1){
+          states[i/2] = 20; // 20 is off, 21 is active, 22 is on. 
         }
         else{
           states[i/2] = 0; // Default as binary.
@@ -318,6 +338,12 @@ void handleModuleUpdate(String currentLine){
     int pin = pins[i];
     if(pin != -1){
       Serial.print(pin);
+      Serial.print(" ");
+    }
+    int pin2 = pins2[i];
+    if(pin2 != -1){
+      Serial.print(",");
+      Serial.print(pin2);
       Serial.print(" ");
     }
   }
@@ -374,14 +400,24 @@ void initializePin(int actionIndex){
 }
 
 // Upon startup, make sure all servos are at the neutral position.
-void initializeServo(int actionIndex){
+void initializeServos(int actionIndex){
   // Activate the servo. We expect to be in neutral.
   servo.attach(pins[actionIndex]);
   servo.write(servoNeutral);
   delay(servoActionWait);
   servo.detach();
+
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pins[actionIndex]);
+
+  if(pins2[actionIndex] != -1){
+    servo.attach(pins2[actionIndex]);
+    servo.write(servoNeutral);
+    delay(servoActionWait);
+    servo.detach();
+    Serial.print(" and pin ");
+    Serial.print(pins[actionIndex]);
+  }
   Serial.print(" with a Servo object for actionId ");
   Serial.println(actions[actionIndex]);
 }

@@ -146,10 +146,32 @@ class Module {
   async moduleUpdate(){
     var actionsAndPins = []; // An array of pairs actions + pins. 
     for(var i = 0; i < this.actions.length; i++){
-      var action = this.actions[i];
-      var pin = this.pins[i];
-      actionsAndPins.push(action);
-      actionsAndPins.push(pin);
+      var actionStr = this.actions[i].toString();
+      var pinStr = this.pins[i].toString();
+      if(pinStr.contains(".")){
+        var pinSplitStr = pinStr.split(".");
+        var pin1 = parseInt(pinSplitStr[0]);
+        var pin2 = parseInt(pinSplitStr[1]);
+        var pin1String;
+        var pin2String;
+        if(pin1 < 10){
+          // Single digit.
+          pin1String = "0" + pin1.toString();
+        }
+        else{
+          pin1String = pin1.toString();
+        }
+        if(pin2 < 10){
+          // Single digit.
+          pin2String = "0" + pin2.toString();
+        }
+        else{
+          pin2String = pin2.toString();
+        }
+        pinStr = pin1String + pin2String;
+      }
+      actionsAndPins.push(actionStr);
+      actionsAndPins.push(pinStr);
     }
 
     var apiResponse = null;

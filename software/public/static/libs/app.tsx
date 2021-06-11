@@ -62,6 +62,11 @@ const actions = {
   REMOTE18: 267,
   REMOTE19: 268,
   REMOTE20: 269,
+  SWITCH1: 350,
+  SWITCH2: 351,
+  SWITCH3: 352,
+  SWITCH4: 353,
+  SWITCH5: 354,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -136,6 +141,16 @@ const actionsAsStrings = {
   "2.267": "",
   "2.268": "",
   "2.269": "",
+  "1.350": "",
+  "1.351": "",
+  "1.352": "",
+  "1.353": "",
+  "1.354": "",
+  "2.350": "Kitchen Light",
+  "2.351": "",
+  "2.352": "",
+  "2.353": "",
+  "2.354": "",
 }
 
 const dayOfWeek = [
@@ -351,7 +366,16 @@ export class App extends React.Component {
                 button.style.backgroundColor = '#d9a30f';  // Orange
               }
               else if(actionState == "12"){
-                button.style.backgroundColor = '#03a100';  // Orange
+                button.style.backgroundColor = '#03a100';  // Green
+              }
+              else if(actionState == "20"){
+                button.style.backgroundColor = '#a60000'; // Red
+              }
+              else if(actionState == "21"){
+                button.style.backgroundColor = '#d9a30f';  // Orange
+              }
+              else if(actionState == "22"){
+                button.style.backgroundColor = '#03a100';  // Green
               }
               else {
                 button.style.backgroundColor = '#222222';  // Default null color.
@@ -392,7 +416,19 @@ export class App extends React.Component {
       }
       else{
         // current state is 11 or something else. Ignore. 
-        console.log("WARNING: moduleToggle attempted to toggle aciton with current state of 11. Ignored.");
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 11. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.SWITCH5 && parseInt(actionId) >= actions.SWITCH1){
+      if(currentState == 20) {
+        toState = 22;
+      }
+      else if (currentState == 22){
+        toState = 20;
+      }
+      else{
+        // current state is 21 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 21. Ignored.");
       }
     }
     else{
@@ -501,7 +537,7 @@ export class App extends React.Component {
         <div id="app-modules-row2">
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
         </div>
 
         <div id="app-home-status">
