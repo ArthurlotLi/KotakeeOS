@@ -28,7 +28,7 @@ const int switch5 = 354;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
-const int servoActionWait = 1000; // time to move arm between neutral and active. 
+const int servoActionWait = 600; // time to move arm between neutral and active. 
 
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
