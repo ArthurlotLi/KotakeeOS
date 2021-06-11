@@ -502,12 +502,12 @@ export class App extends React.Component {
             // For every single room and action, check the state. 
             var actionState = parseInt(room[actionId]);
             if(actionState == 1 || actionState == 12 || actionState == 22){
-              offCount++;
+              onCount++;
             }
             else{
               // We'll just count everything else as on (even if we're in 11 to go
               // to 10, for example.)
-              onCount++;
+              offCount++;
             }
           }
         }
@@ -525,20 +525,12 @@ export class App extends React.Component {
             var actionState = parseInt(room[actionId]);
             if(turnAllOn){
               if(actionState != 1 && actionState != 12 && actionState != 22){
-                console.log("DEBUG1");
                 this.moduleToggle(roomId, actionId);
-              }
-              else{
-                console.log("DEBUG01: " + actionState);
               }
             }
             else{
               if(actionState != 0 && actionState != 10 && actionState != 20){
-                console.log("DEBUG2");
                 this.moduleToggle(roomId, actionId);
-              }
-              else{
-                console.log("DEBUG02: " + actionState);
               }
             }
           }
