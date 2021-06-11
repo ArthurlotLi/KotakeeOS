@@ -371,7 +371,7 @@ export class App extends React.Component {
     }
     // Highest Lighting and Lowest Lighting are expected to be
     // numerical bounds for general category. 
-    if(parseInt(actionId) <= actions.REMOTE1 && parseInt(actionId) >= actions.REMOTE19){
+    if(parseInt(actionId) <= actions.REMOTE19 && parseInt(actionId) >= actions.REMOTE1){
       if(currentState == 10) {
         toState = 11;
       }
