@@ -483,6 +483,61 @@ export class App extends React.Component {
     }
   }
 
+  // Experimental - Have server turn all lights on or off. Note
+  // this essentially harmonizes all light states. Converts 
+  // the majority to the minority. If they are equal, always
+  // turns everything on. 
+  featureAllLights(){
+    var data = this.state.actionStates;
+    if (data != null){
+      var onCount = 0;
+      var offCount = 0;
+      for(var key in data){
+        // Ignore the lastUpdate variable. 
+        if(key != "lastUpdate"){
+          var roomId = key; // Just to make things clearer.
+          var room = data[key];
+          for(var actionId in room){
+            // For every single room and action, check the state. 
+            var actionState = parseInt(room[actionId]);
+            if(actionState == 1 || actionState == 12 || actionState == 22){
+              offCount++;
+            }
+            else{
+              // We'll just count everything else as on (even if we're in 11 to go
+              // to 10, for example.)
+              onCount++;
+            }
+          }
+        }
+      }
+      var turnAllOn = true;
+      if(onCount > offCount){
+        turnAllOn = false;
+      }
+      for(var key in data){
+        // Ignore the lastUpdate variable. 
+        if(key != "lastUpdate"){
+          var roomId = key; // Just to make things clearer.
+          var room = data[key];
+          for(var actionId in room){
+            var actionState = parseInt(room[actionId]);
+            if(turnAllOn){
+              if(actionState != 1 && actionState != 12 && actionState != 22){
+                this.moduleToggle(room, actionId);
+              }
+            }
+            else{
+              if(actionState != 0 && actionState != 10 && actionState != 20){
+                this.moduleToggle(room, actionId);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it every second.
@@ -510,7 +565,8 @@ export class App extends React.Component {
       <div>
         <div id="app-location">
           <div>Santa Clara, CA</div>
-          <div><button id={"app-location-debug"} onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
+          <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
+          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Lights</button></div>
         </div>
 
         <div id="app-clock">

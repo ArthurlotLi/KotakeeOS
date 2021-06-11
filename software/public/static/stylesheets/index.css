@@ -33,7 +33,7 @@ button{
 }
 
 /* Button overrides for this unique button. */
-#app-location-debug{
+.app-location-debug{
   background-color: #222222;
   color: var(--text-color);
   width: 10vw;
