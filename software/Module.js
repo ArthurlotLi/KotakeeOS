@@ -148,7 +148,7 @@ class Module {
     for(var i = 0; i < this.actions.length; i++){
       var actionStr = this.actions[i].toString();
       var pinStr = this.pins[i].toString();
-      if(pinStr.contains(".")){
+      if(pinStr.includes(".")){
         var pinSplitStr = pinStr.split(".");
         var pin1 = parseInt(pinSplitStr[0]);
         var pin2 = parseInt(pinSplitStr[1]);
