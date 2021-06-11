@@ -567,7 +567,7 @@ export class App extends React.Component {
         <div id="app-location">
           <div>Santa Clara, CA</div>
           <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
-          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Lights</button></div>
+          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
         </div>
 
         <div id="app-clock">
