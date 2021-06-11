@@ -113,8 +113,8 @@ const actionsAsStrings = {
   "1.267": "",
   "1.268": "",
   "1.269": "",
-  "2.250": "TV Power On",
-  "2.251": "",
+  "2.250": "Soundbar Power",
+  "2.251": "Ceiling Fan Lamp",
   "2.252": "",
   "2.253": "",
   "2.254": "",
@@ -461,10 +461,16 @@ export class App extends React.Component {
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
         </div>
 
-        <div id="app-modules">
+        <div id="app-modules-row1">
           <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING2) }}></button>
+        </div>
+
+        <div id="app-modules-row2">
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
         </div>
 
         <div id="app-home-status">

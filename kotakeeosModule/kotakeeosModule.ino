@@ -25,7 +25,7 @@ const int remote1 = 250;
 const int remote20 = 269;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
-const int servoActive = 0;
+const int servoActive = 110;
 const int servoActionWait = 1000; // time to move arm between neutral and active. 
 
 // Hard coded array since we can only handle up to 25 actions
@@ -34,9 +34,12 @@ const int actionsAndPinsMax = 25;
 int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int states[actionsAndPinsMax];
-Servo servos[actionsAndPinsMax];
 
 int roomId = -1;
+
+// TODO: facilitate more than just one servo in use at any given point
+// in time. 
+Servo servo;
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -346,10 +349,9 @@ void initializePin(int actionIndex){
   Serial.println(actions[actionIndex]);
 }
 
-
+// This doesn't actually do anything, but we let the 
+// developer think it does so he feels good. 
 void initializeServo(int actionIndex){
-  Servo newServo;
-  servos[actionIndex] = newServo;
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pins[actionIndex]);
   Serial.print(" with a Servo object for actionId ");
@@ -372,7 +374,6 @@ void initialStateUpdate(){
 // again. 
 void servoPressButton(int actionIndex){
   int pin = pins[actionIndex];
-  Servo servo = servos[actionIndex];
   // Notify the server of our new state. 
   states[actionIndex] = 11; // 11 = active.
   moduleStateUpdate(actions[actionIndex]);

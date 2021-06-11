@@ -129,11 +129,19 @@ const module3LRPins = [12];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
+// Arduino 4 Living Room
+const module4LRId = 4; // Internal server use only. 
+const module4LRRoomId = rooms.LIVINGROOM; 
+const module4LRActions = [actions.REMOTE2];
+const module4LRPins = [12];
+const module4LRIpAddress = "192.168.0.144";
+const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
+
 
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroom = new Room(rooms.BEDROOM,bedroomModules);
-const livingRoomModules = [module2LR, module3LR];
+const livingRoomModules = [module2LR, module3LR, module4LR];
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
 
 // Home

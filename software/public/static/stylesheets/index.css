@@ -27,7 +27,7 @@ button{
   background-color: #222222;
   color: var(--text-color);
   width: 30vw;
-  height: 20vh;
+  height: 15vh;
   padding: 0.5vw;
   margin: 0.3vw;
 }
@@ -63,7 +63,7 @@ button:hover {
 
 #app-clock {
   position: fixed;
-  top: 37%;
+  top: 30%;
   left: 50%;
   transform: translate(-50%, -37%);
 }
@@ -100,7 +100,21 @@ button:hover {
   font-size: 3vw;
 }
 
-#app-modules {
+#app-modules-row1 {
+  position: fixed;
+  bottom: 16.5vh;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 1.5vw;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#app-modules-row2 {
   position: fixed;
   bottom: 0;
   margin-left: 0;
