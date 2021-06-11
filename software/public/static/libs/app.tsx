@@ -345,10 +345,10 @@ export class App extends React.Component {
                 button.style.backgroundColor = '#a60000';  // Red
               }
               else if(actionState == "10"){
-                button.style.backgroundColor = 'blue';  // Blue
+                button.style.backgroundColor = '#3295a8';  // Blue
               }
               else if(actionState == "11"){
-                button.style.backgroundColor = 'yellow';  // Yellow
+                button.style.backgroundColor = '#d9a30f';  // Orange
               }
             }
             else{
