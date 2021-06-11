@@ -109,7 +109,7 @@ const app = express();
 const module1BRId = 1; // Internal server use only. 
 const module1BRRoomId = rooms.BEDROOM; 
 const module1BRActions = [actions.LIGHTING1];
-const module1BRPins = [13];
+const module1BRPins = [12];
 const module1BRIpAddress = "192.168.0.198";
 const module1BR = new Module(module1BRId, module1BRRoomId, module1BRActions, module1BRPins, module1BRIpAddress);
 
@@ -117,7 +117,7 @@ const module1BR = new Module(module1BRId, module1BRRoomId, module1BRActions, mod
 const module2LRId = 2; // Internal server use only. 
 const module2LRRoomId = rooms.LIVINGROOM; 
 const module2LRActions = [actions.LIGHTING1];
-const module2LRPins = [13];
+const module2LRPins = [12];
 const module2LRIpAddress = "192.168.0.160";
 const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, module2LRPins, module2LRIpAddress);
 
