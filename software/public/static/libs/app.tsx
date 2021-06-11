@@ -524,12 +524,12 @@ export class App extends React.Component {
             var actionState = parseInt(room[actionId]);
             if(turnAllOn){
               if(actionState != 1 && actionState != 12 && actionState != 22){
-                this.moduleToggle(room, actionId);
+                this.moduleToggle(roomId, actionId);
               }
             }
             else{
               if(actionState != 0 && actionState != 10 && actionState != 20){
-                this.moduleToggle(room, actionId);
+                this.moduleToggle(roomId, actionId);
               }
             }
           }
