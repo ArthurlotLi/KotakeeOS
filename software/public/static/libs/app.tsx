@@ -345,10 +345,13 @@ export class App extends React.Component {
                 button.style.backgroundColor = '#a60000';  // Red
               }
               else if(actionState == "10"){
-                button.style.backgroundColor = '#3295a8';  // Blue
+                button.style.backgroundColor = '#a60000'; // Red
               }
               else if(actionState == "11"){
                 button.style.backgroundColor = '#d9a30f';  // Orange
+              }
+              else if(actionState == "12"){
+                button.style.backgroundColor = '#03a100';  // Orange
               }
             }
             else{
@@ -379,12 +382,14 @@ export class App extends React.Component {
     // numerical bounds for general category. 
     if(parseInt(actionId) <= actions.REMOTE19 && parseInt(actionId) >= actions.REMOTE1){
       if(currentState == 10) {
-        toState = 11;
+        toState = 12;
+      }
+      else if (currentState == 12){
+        toState = 10;
       }
       else{
-        // Note this shouldn't ever happen unless it's by accident.
-        // we still let it pass through the system, though. 
-        toState = 10;
+        // current state is 11 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle aciton with current state of 11. Ignored.");
       }
     }
     else{
