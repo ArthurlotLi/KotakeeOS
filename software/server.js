@@ -197,6 +197,25 @@ app.get('/moduleToggle/:roomId/:actionId/:toState', (req, res) => {
   return res.status(400).send();
 });
 
+// Handle requests from clients to activate modules, without having
+// them know what modules are which. Does not actually toggle the
+// physical action. Used to resolve desynchronization issues. 
+// Ex) http://192.168.0.197/moduleVirtualToggle/1/50/1
+app.get('/moduleVirtualToggle/:roomId/:actionId/:toState', (req, res) => {
+  console.log("[DEBUG] /moduleVirtualToggle GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    var toState = parseInt(req.params.toState);
+    if(roomId != null && actionId != null && toState != null){
+      home.actionToggle(roomId, actionId, toState, true);
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
+});
+
 // Handle requests from modules to update states when they have
 // successfully been modified, or when they restart. 
 // Ex) http://192.168.0.197/moduleStateUpdate/1/50/0

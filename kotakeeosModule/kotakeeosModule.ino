@@ -133,186 +133,198 @@ void loop() {
 
         // Expect Ex) GET /stateToggle/50/1 (actionId/toState)
         if (currentLine.startsWith("GET /stateToggle/") && currentLine.endsWith(" ")) {
-          String actionId;
-          int actionIdInt;
-          String toState;
-          int toStateInt;
-
-          // Get the rest of the first line. 
-          String actionIdAndToState = currentLine;
-          actionIdAndToState.replace("GET /stateToggle/", ""); // Shed the first part. 
-          Serial.print("[DEBUG] Received stateToggle command from server. actionIdAndToState is: ");
-          Serial.println(actionIdAndToState);
-
-          // Convert from String to string
-          char buf[actionIdAndToState.length()];
-          actionIdAndToState.toCharArray(buf, sizeof(buf));
-          char *p = buf;
-          char *str;
-          int i = 0;
-          while (((str = strtok_r(p, "/", &p)) != NULL) && i < 2){ // delimiter is /
-            if(i == 0){
-              actionId = str;
-              actionIdInt = actionId.toInt();
-            }
-            else if(i == 1){
-              toState = str;
-              toStateInt = toState.toInt();
-            }
-            i++;
-          }
-
-          // Get the id of the action.
-          int actionIndex = findActionId(actionIdInt);
-
-          if(actionIndex >= 0){
-            if (states[actionIndex] != toStateInt) { 
-              Serial.print("[DEBUG] Instructed to toggle action " + actionId + " from state ");
-              Serial.print(states[actionIndex]);
-              Serial.print(" to " + toState + ". Executing on pin ");
-              Serial.print(pins[actionIndex]);
-              Serial.println("...");
-
-              if(actions[actionIndex] <= remote20 && actions[actionIndex] >= remote1){
-                Serial.println("[DEBUG] Activating Servo...");
-                // 10 off, 11 active, 12 on. 
-                if(toStateInt == 12 || toStateInt == 10){
-                  // If we're ready, let's become active. 
-                  servoPressButton(actionIndex, toStateInt);
-                }
-                else{
-                  Serial.println("[WARNING] Illegal action was requested! Ignoring...");
-                }
-              }
-              else{
-                // Default binary 0, 1. 
-                if(toStateInt == 1){
-                  Serial.println("[DEBUG] Turning on...");
-                  // If it's off, turn it on. 
-                  digitalWrite(pins[actionIndex], HIGH);
-                  states[actionIndex] = 1;
-                }
-                else{
-                  Serial.println("[DEBUG] Turning off...");
-                  // If it's on, turn it off
-                  digitalWrite(pins[actionIndex], LOW);
-                  states[actionIndex] = 0;
-                }
-                // Inform the web server.
-                moduleStateUpdate(actionIdInt);
-              }
-            }
-            else{
-              Serial.print("[WARNING] Instructed to toggle action " + actionId + " from state ");
-              Serial.print(states[actionIndex]);
-              Serial.println(" to " + toState + ". Request Ignored.");
-            }
-          }
-          else{
-            Serial.print("[WARNING] Instructed to toggle action " + actionId + ", but actionId does is not Implemented!");
-          }
+          handleStateToggle(currentLine);
         }
         // Expect Ex) stateGet/50
         else if(currentLine.startsWith("GET /stateGet/") && currentLine.endsWith(" ")){
-          String actionIdStr = currentLine;
-          actionIdStr.replace("GET /stateGet/", ""); // Shed the first part. 
-          int actionId = actionIdStr.toInt();
-          Serial.print("[DEBUG] stateGet request received. actionId is: ");
-          Serial.println(actionId);
-          moduleStateUpdate(actionId);
+          handleStateGet(currentLine);
         }
         else if(currentLine.startsWith("GET /moduleUpdate/") && currentLine.endsWith(" ")){
-          // Get the rest of the first line. 
-          String actionsAndPins = currentLine;
-          actionsAndPins.replace("GET /moduleUpdate/", ""); // Shed the first part. 
-          Serial.print("[DEBUG] Given action and pin information from server. actionsAndPins is: ");
-          Serial.println(actionsAndPins);
-
-          // Convert from String to string
-          char buf[actionsAndPins.length()];
-          actionsAndPins.toCharArray(buf, sizeof(buf));
-          char *p = buf;
-          char *str;
-          int i = 0;
-          while ((str = strtok_r(p, "/", &p)) != NULL){ // delimiter is /
-            if(i == 0){
-              // First item is always the id. 
-              roomId = atoi(str);
-            }
-            else{
-              if(i%2 == 0){
-                // Even. (i.e. 2, 4, 6...)
-                // Since this is always the second of the pair, 
-                // we know the aciton already exists. check it and
-                // initialize the pin accordingly. 
-                pins[(i-1)/2] = atoi(str);
-
-                if(actions[(i-1)/2] <= remote20 && actions[(i-1)/2] >= remote1){
-                  // Servo usage.
-                  initializeServo((i-1)/2);
-                }
-                else {
-                  initializePin((i-1)/2);
-                }
-              }
-              else{
-                // Odd. (1, 3, 5...)
-                actions[i/2] = atoi(str);
-                // Initialize the state. This initial state depends on the 
-                // action type. 
-                if(actions[i/2] <= remote20 && actions[i/2] >= remote1){
-                  states[i/2] = 10; // 10 is off, 11 is active, 12 is on. 
-                }
-                else{
-                  states[i/2] = 0; // Default as binary.
-                }
-              }
-            }
-            i++;
-          }
-          Serial.print("[DEBUG] roomId: ");
-          Serial.println(roomId);
-          Serial.print("[DEBUG] Actions: ");
-          for(int i = 0; i < actionsAndPinsMax; i++)
-          {
-            int actionId = actions[i];
-            if(actionId != -1){
-              Serial.print(actionId);
-              Serial.print(" ");
-            }
-          }
-          Serial.println("");
-          Serial.print("[DEBUG] Pins: ");
-          for(int i = 0; i < actionsAndPinsMax; i++)
-          {
-            int pin = pins[i];
-            if(pin != -1){
-              Serial.print(pin);
-              Serial.print(" ");
-            }
-          }
-          Serial.println("");
-          Serial.print("[DEBUG] States: ");
-          for(int i = 0; i < actionsAndPinsMax; i++)
-          {
-            int state = states[i];
-            if(state != -1){
-              Serial.print(state);
-              Serial.print(" ");
-            }
-          }
-          Serial.println("");
-          // We've now populated our actions and pins array and
-          // are ready to go. 
-
-          // Send our initial state notification to web server.
-          initialStateUpdate();
+          handleModuleUpdate(currentLine);
         }
       }
     }
     // close the connection:
     client.stop();
   }
+}
+
+void handleStateToggle(String currentLine){
+  String actionId;
+  int actionIdInt;
+  String toState;
+  int toStateInt;
+
+  // Get the rest of the first line. 
+  String actionIdAndToState = currentLine;
+  actionIdAndToState.replace("GET /stateToggle/", ""); // Shed the first part. 
+  Serial.print("[DEBUG] Received stateToggle command from server. actionIdAndToState is: ");
+  Serial.println(actionIdAndToState);
+
+  // Convert from String to string
+  char buf[actionIdAndToState.length()];
+  actionIdAndToState.toCharArray(buf, sizeof(buf));
+  char *p = buf;
+  char *str;
+  int i = 0;
+  while (((str = strtok_r(p, "/", &p)) != NULL) && i < 2){ // delimiter is /
+    if(i == 0){
+      actionId = str;
+      actionIdInt = actionId.toInt();
+    }
+    else if(i == 1){
+      toState = str;
+      toStateInt = toState.toInt();
+    }
+    i++;
+  }
+
+  // Get the id of the action.
+  int actionIndex = findActionId(actionIdInt);
+
+  if(actionIndex >= 0){
+    if (states[actionIndex] != toStateInt) { 
+      Serial.print("[DEBUG] Instructed to toggle action " + actionId + " from state ");
+      Serial.print(states[actionIndex]);
+      Serial.print(" to " + toState + ". Executing on pin ");
+      Serial.print(pins[actionIndex]);
+      Serial.println("...");
+
+      if(actions[actionIndex] <= remote20 && actions[actionIndex] >= remote1){
+        Serial.println("[DEBUG] Activating Servo...");
+        // 10 off, 11 active, 12 on. 
+        if(toStateInt == 12 || toStateInt == 10){
+          // If we're ready, let's become active. 
+          servoPressButton(actionIndex, toStateInt);
+        }
+        else{
+          Serial.println("[WARNING] Illegal action was requested! Ignoring...");
+        }
+      }
+      else{
+        // Default binary 0, 1. 
+        if(toStateInt == 1){
+          Serial.println("[DEBUG] Turning on...");
+          // If it's off, turn it on. 
+          digitalWrite(pins[actionIndex], HIGH);
+          states[actionIndex] = 1;
+        }
+        else{
+          Serial.println("[DEBUG] Turning off...");
+          // If it's on, turn it off
+          digitalWrite(pins[actionIndex], LOW);
+          states[actionIndex] = 0;
+        }
+        // Inform the web server.
+        moduleStateUpdate(actionIdInt);
+      }
+    }
+    else{
+      Serial.print("[WARNING] Instructed to toggle action " + actionId + " from state ");
+      Serial.print(states[actionIndex]);
+      Serial.println(" to " + toState + ". Request Ignored.");
+    }
+  }
+  else{
+    Serial.print("[WARNING] Instructed to toggle action " + actionId + ", but actionId does is not Implemented!");
+  }
+}
+
+void handleStateGet(String currentLine){
+  String actionIdStr = currentLine;
+  actionIdStr.replace("GET /stateGet/", ""); // Shed the first part. 
+  int actionId = actionIdStr.toInt();
+  Serial.print("[DEBUG] stateGet request received. actionId is: ");
+  Serial.println(actionId);
+  moduleStateUpdate(actionId);
+}
+
+void handleModuleUpdate(String currentLine){
+  // Get the rest of the first line. 
+  String actionsAndPins = currentLine;
+  actionsAndPins.replace("GET /moduleUpdate/", ""); // Shed the first part. 
+  Serial.print("[DEBUG] Given action and pin information from server. actionsAndPins is: ");
+  Serial.println(actionsAndPins);
+
+  // Convert from String to string
+  char buf[actionsAndPins.length()];
+  actionsAndPins.toCharArray(buf, sizeof(buf));
+  char *p = buf;
+  char *str;
+  int i = 0;
+  while ((str = strtok_r(p, "/", &p)) != NULL){ // delimiter is /
+    if(i == 0){
+      // First item is always the id. 
+      roomId = atoi(str);
+    }
+    else{
+      if(i%2 == 0){
+        // Even. (i.e. 2, 4, 6...)
+        // Since this is always the second of the pair, 
+        // we know the aciton already exists. check it and
+        // initialize the pin accordingly. 
+        pins[(i-1)/2] = atoi(str);
+
+        if(actions[(i-1)/2] <= remote20 && actions[(i-1)/2] >= remote1){
+          // Servo usage.
+          initializeServo((i-1)/2);
+        }
+        else {
+          initializePin((i-1)/2);
+        }
+      }
+      else{
+        // Odd. (1, 3, 5...)
+        actions[i/2] = atoi(str);
+        // Initialize the state. This initial state depends on the 
+        // action type. 
+        if(actions[i/2] <= remote20 && actions[i/2] >= remote1){
+          states[i/2] = 10; // 10 is off, 11 is active, 12 is on. 
+        }
+        else{
+          states[i/2] = 0; // Default as binary.
+        }
+      }
+    }
+    i++;
+  }
+  Serial.print("[DEBUG] roomId: ");
+  Serial.println(roomId);
+  Serial.print("[DEBUG] Actions: ");
+  for(int i = 0; i < actionsAndPinsMax; i++)
+  {
+    int actionId = actions[i];
+    if(actionId != -1){
+      Serial.print(actionId);
+      Serial.print(" ");
+    }
+  }
+  Serial.println("");
+  Serial.print("[DEBUG] Pins: ");
+  for(int i = 0; i < actionsAndPinsMax; i++)
+  {
+    int pin = pins[i];
+    if(pin != -1){
+      Serial.print(pin);
+      Serial.print(" ");
+    }
+  }
+  Serial.println("");
+  Serial.print("[DEBUG] States: ");
+  for(int i = 0; i < actionsAndPinsMax; i++)
+  {
+    int state = states[i];
+    if(state != -1){
+      Serial.print(state);
+      Serial.print(" ");
+    }
+  }
+  Serial.println("");
+  // We've now populated our actions and pins array and
+  // are ready to go. 
+
+  // Send our initial state notification to web server.
+  initialStateUpdate();
 }
 
 // Helper function. Given an actionId, get the index of

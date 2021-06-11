@@ -47,13 +47,13 @@ class Room {
   // Given action Id and toState, execute Module code if found in dict
   // AND if the state is not what is currently stored. Otherwise ignore.
   // Returns true or false depending on execution status. 
-  actionToggle(actionId, toState){
+  actionToggle(actionId, toState, virtual = false){
     if(actionId in this.actionsDict){
       var moduleId = this.actionsDict[actionId];
       if(moduleId in this.modulesDict){
         var module = this.modulesDict[moduleId];
 
-        return module.actionToggle(actionId, toState);
+        return module.actionToggle(actionId, toState, virtual);
       }
       else 
         console.log("[ERROR] actionToggle failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");

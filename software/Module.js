@@ -69,11 +69,11 @@ class Module {
   // the state (if it is a valid new state). Returns true if action was
   // successful, false if something went wrong (i.e. given state is
   // actually current)
-  async actionToggle(actionId, toState){
+  async actionToggle(actionId, toState, virtual = false){
     var stateRetVal = this.getActionState(actionId);
     if(stateRetVal != null && stateRetVal != toState){ 
       // Verified that the action is correct. Execute the action.
-      return await this.requestGetStateToggle(actionId, toState);
+      return await this.requestGetStateToggle(actionId, toState, virtual);
     }
     else
       console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.ipAddress + ".");
@@ -87,13 +87,20 @@ class Module {
   }
 
   // Sends a request to the arduino to change to a new state. Returns
-  // true if the action was succesfully received (200).
-  async requestGetStateToggle(actionId, toState){
+  // true if the action was succesfully received (200). Also accepts
+  // virtual boolean to specify whether to not execute physical
+  // action. 
+  async requestGetStateToggle(actionId, toState, virtual = false){
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
+      if(virtual){
+        apiResponse = await fetch('http://' + this.ipAddress + '/stateVirtualToggle/' + actionId + '/' + toState); 
+      }
+      else{
+        apiResponse = await fetch('http://' + this.ipAddress + '/stateToggle/' + actionId + '/' + toState); 
+      }
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("[DEBUG] requestGetStateToggle (module " +this.ipAddress+ ") returned in " + timeDiff/1000 + " seconds.");

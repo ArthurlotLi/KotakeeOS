@@ -106,10 +106,12 @@ class Home {
   }
 
   // Given roomId, actionId, and toState, kick off the process. 
-  actionToggle(roomId, actionId, toState){
+  // Accepts virtual boolean to specify not to execute physical
+  // action to resolve desynchronization issues. 
+  actionToggle(roomId, actionId, toState, virtual = false){
     if(this.getRoom(roomId) != null){
       var room = this.getRoom(roomId);
-      return room.actionToggle(actionId, toState);
+      return room.actionToggle(actionId, toState, virtual);
     }
     else
       console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
