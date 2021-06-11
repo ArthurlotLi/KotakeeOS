@@ -10,6 +10,7 @@
 */
 #include <SPI.h>
 #include <WiFiNINA.h>
+#include <Servo.h>
 
 #include "arduino_secrets.h" 
 
@@ -17,12 +18,23 @@ char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;   
 int keyIndex = 0;     
 
+// Constants to keep up to date with server and app logic. 
+// Actionst that do not fall within these bounds are 
+// considered binary 0 1 states. 
+const int remote1 = 250;
+const int remote20 = 269;
+
+const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
+const int servoActive = 0;
+const int servoActionWait = 1000; // time to move arm between neutral and active. 
+
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
 const int actionsAndPinsMax = 25;
 int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int states[actionsAndPinsMax];
+Servo servos[actionsAndPinsMax];
 
 int roomId = -1;
 
@@ -157,18 +169,35 @@ void loop() {
               Serial.print(" to " + toState + ". Executing on pin ");
               Serial.print(pins[actionIndex]);
               Serial.println("...");
-              if(toStateInt == 1){
-                // If it's off, turn it on. 
-                digitalWrite(pins[actionIndex], HIGH);
-                states[actionIndex] = 1;
+
+              if(actions[actionIndex] <= remote20 && actions[actionIndex] >= remote1){
+                Serial.println("[DEBUG] Activating Servo...");
+                // 10 ready, 11 active. 
+                if(toStateInt == 11){
+                  // If we're ready, let's become active. 
+                  servoPressButton(actionIndex);
+                }
+                else{
+                  Serial.println("[WARNING] Illegal action was requested! Ignoring...");
+                }
               }
               else{
-                // If it's on, turn it off
-                digitalWrite(pins[actionIndex], LOW);
-                states[actionIndex] = 0;
+                // Default binary 0, 1. 
+                if(toStateInt == 1){
+                  Serial.println("[DEBUG] Turning on...");
+                  // If it's off, turn it on. 
+                  digitalWrite(pins[actionIndex], HIGH);
+                  states[actionIndex] = 1;
+                }
+                else{
+                  Serial.println("[DEBUG] Turning off...");
+                  // If it's on, turn it off
+                  digitalWrite(pins[actionIndex], LOW);
+                  states[actionIndex] = 0;
+                }
+                // Inform the web server.
+                moduleStateUpdate(actionIdInt);
               }
-              // Inform the web server.
-              moduleStateUpdate(actionIdInt);
             }
             else{
               Serial.print("[WARNING] Instructed to toggle action " + actionId + " from state ");
@@ -210,14 +239,30 @@ void loop() {
             else{
               if(i%2 == 0){
                 // Even. (i.e. 2, 4, 6...)
+                // Since this is always the second of the pair, 
+                // we know the aciton already exists. check it and
+                // initialize the pin accordingly. 
                 pins[(i-1)/2] = atoi(str);
+
+                if(actions[(i-1)/2] <= remote20 && actions[(i-1)/2] >= remote1){
+                  // Servo usage.
+                  initializeServo((i-1)/2);
+                }
+                else {
+                  initializePin((i-1)/2);
+                }
               }
               else{
                 // Odd. (1, 3, 5...)
                 actions[i/2] = atoi(str);
-                states[i/2] = 0; // Initialize all states. 
-                // TODO: For states that aren't binary, initialize them
-                // here given the actionId. 
+                // Initialize the state. This initial state depends on the 
+                // action type. 
+                if(actions[i/2] <= remote20 && actions[i/2] >= remote1){
+                  states[i/2] = 10; // 10 is ready, 11 is active. 
+                }
+                else{
+                  states[i/2] = 0; // Default as binary.
+                }
               }
             }
             i++;
@@ -244,11 +289,18 @@ void loop() {
             }
           }
           Serial.println("");
+          Serial.print("[DEBUG] States: ");
+          for(int i = 0; i < actionsAndPinsMax; i++)
+          {
+            int state = states[i];
+            if(state != -1){
+              Serial.print(state);
+              Serial.print(" ");
+            }
+          }
+          Serial.println("");
           // We've now populated our actions and pins array and
           // are ready to go. 
-
-          // Initialize all pins.
-          initializePins();
 
           // Send our initial state notification to web server.
           initialStateUpdate();
@@ -274,16 +326,34 @@ int findActionId(int actionId){
 }
 
 // For all pins in the pins array, initialize them. 
+// TODO: Obsolete.
 void initializePins(){
   for(int i = 0; i < actionsAndPinsMax; i++){
     int pin = pins[i];
     if(pin > 0){
-      pinMode(pin, OUTPUT);
-      Serial.print("[DEBUG] initialized pin ");
-      Serial.print(pin);
-      Serial.println(" with OUTPUT for actionId " + actions[i]);
+      initializePin(i);
     }
   }
+}
+
+// Takes in given actionIndex The latter is only for
+// Serial debugging. 
+void initializePin(int actionIndex){
+  pinMode(pins[actionIndex], OUTPUT);
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pins[actionIndex]);
+  Serial.print(" with OUTPUT for actionId ");
+  Serial.println(actions[actionIndex]);
+}
+
+
+void initializeServo(int actionIndex){
+  Servo newServo;
+  servos[actionIndex] = newServo;
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pins[actionIndex]);
+  Serial.print(" with a Servo object for actionId ");
+  Serial.println(actions[actionIndex]);
 }
 
 // Call moduleStateUpdate for all implemented actions.
@@ -294,6 +364,30 @@ void initialStateUpdate(){
       moduleStateUpdate(actionId);
     }
   }
+}
+
+// Given an action index that is presumably for a remote action,
+// Set ourselves as state active, notify the server, perform 
+// the action, return to neutral state, and notify the server
+// again. 
+void servoPressButton(int actionIndex){
+  int pin = pins[actionIndex];
+  Servo servo = servos[actionIndex];
+  // Notify the server of our new state. 
+  states[actionIndex] = 11; // 11 = active.
+  moduleStateUpdate(actions[actionIndex]);
+
+  // Activate the servo. We expect to be in neutral.
+  servo.attach(pin);
+  servo.write(servoActive);
+  delay(servoActionWait);
+  servo.write(servoNeutral);
+  delay(servoActionWait);
+  servo.detach();
+
+  // Notify the server of our new state. 
+  states[actionIndex] = 10; // 10 = ready.
+  moduleStateUpdate(actions[actionIndex]);
 }
 
 // Given current state of given actionId, notify the web server!

@@ -125,7 +125,7 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
 const module3LRActions = [actions.REMOTE1];
-const module3LRPins = [13];
+const module3LRPins = [12];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 

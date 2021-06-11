@@ -26,6 +26,7 @@
                 "/Users/arthur/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/variants/nano_33_iot",
                 "/Users/arthur/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/libraries/SPI",
                 "/Users/arthur/Documents/Arduino/libraries/WiFiNINA/src",
+                "/Users/arthur/Documents/Arduino/libraries/Servo/src",
                 "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1",
                 "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/arm-none-eabi",
                 "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/backward",
