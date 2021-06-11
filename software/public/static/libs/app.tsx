@@ -39,6 +39,26 @@ const actions = {
   CURTAINS3: 152,
   CURTAINS4: 153,
   CURTAINS5: 154,
+  REMOTE1: 250,
+  REMOTE2: 251,
+  REMOTE3: 252,
+  REMOTE4: 253,
+  REMOTE5: 254,
+  REMOTE6: 255,
+  REMOTE7: 256,
+  REMOTE8: 257,
+  REMOTE9: 258,
+  REMOTE10: 259,
+  REMOTE11: 260,
+  REMOTE12: 261,
+  REMOTE13: 262,
+  REMOTE14: 263,
+  REMOTE15: 264,
+  REMOTE16: 265,
+  REMOTE17: 266,
+  REMOTE18: 267,
+  REMOTE19: 268,
+  REMOTE20: 269,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -73,6 +93,46 @@ const actionsAsStrings = {
   "2.152": "",
   "2.153": "",
   "2.154": "",
+  "1.250": "",
+  "1.251": "",
+  "1.252": "",
+  "1.253": "",
+  "1.254": "",
+  "1.255": "",
+  "1.256": "",
+  "1.257": "",
+  "1.258": "",
+  "1.259": "",
+  "1.260": "",
+  "1.261": "",
+  "1.262": "",
+  "1.263": "",
+  "1.264": "",
+  "1.265": "",
+  "1.266": "",
+  "1.267": "",
+  "1.268": "",
+  "1.269": "",
+  "2.250": "TV Power On",
+  "2.251": "",
+  "2.252": "",
+  "2.253": "",
+  "2.254": "",
+  "2.255": "",
+  "2.256": "",
+  "2.257": "",
+  "2.258": "",
+  "2.259": "",
+  "2.260": "",
+  "2.261": "",
+  "2.262": "",
+  "2.263": "",
+  "2.264": "",
+  "2.265": "",
+  "2.266": "",
+  "2.267": "",
+  "2.268": "",
+  "2.269": "",
 }
 
 const dayOfWeek = [
@@ -311,16 +371,25 @@ export class App extends React.Component {
     }
     // Highest Lighting and Lowest Lighting are expected to be
     // numerical bounds for general category. 
-    //if(actionId <= actions.LIGHTING5 && actionId >= actions.LIGHTING1){
+    if(parseInt(actionId) <= actions.REMOTE1 && parseInt(actionId) >= actions.REMOTE19){
+      if(currentState == 10) {
+        toState = 11;
+      }
+      else{
+        // Note this shouldn't ever happen unless it's by accident.
+        // we still let it pass through the system, though. 
+        toState = 10;
+      }
+    }
+    else{
+      // We default to a binary paradigm.
       if(currentState == 0){
         toState = 1;
       }
       else {
         toState = 0;
       }
-    //}
-    // TODO: handle additional actionIds. We will make this a 
-    // whitelist, not a blacklist. 
+    }
 
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
@@ -388,7 +457,7 @@ export class App extends React.Component {
 
         <div id="app-modules">
           <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.CURTAINS1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.CURTAINS1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
         </div>
 
