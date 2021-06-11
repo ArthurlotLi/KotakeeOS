@@ -344,6 +344,12 @@ export class App extends React.Component {
               else if(actionState == "0"){
                 button.style.backgroundColor = '#a60000';  // Red
               }
+              else if(actionState == "10"){
+                button.style.backgroundColor = 'blue';  // Blue
+              }
+              else if(actionState == "11"){
+                button.style.backgroundColor = 'yellow';  // Yellow
+              }
             }
             else{
               console.log("WARNING: updateActionStates attempted to find a button with id " + buttonId + " that did not exist!");
