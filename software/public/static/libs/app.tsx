@@ -191,6 +191,7 @@ export class App extends React.Component {
     this.updateHomeStatus = this.updateHomeStatus.bind(this);
     this.updateActionStates = this.updateActionStates.bind(this);
     this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
+    this.featureAllLights = this.featureAllLights.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
@@ -524,6 +525,7 @@ export class App extends React.Component {
             var actionState = parseInt(room[actionId]);
             if(turnAllOn){
               if(actionState != 1 && actionState != 12 && actionState != 22){
+                console.log("DEBUG")
                 this.moduleToggle(roomId, actionId);
               }
             }
