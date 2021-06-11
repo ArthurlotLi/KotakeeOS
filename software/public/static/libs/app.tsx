@@ -19,6 +19,9 @@ const currentURL = window.location.href;
 const splitURL = currentURL.split("/");
 const apiURL = splitURL[0] + "//" + splitURL[2]; 
 
+const defaultBackgroundColor = "#303030";
+const virtualBackgroundColor = "#c77e00";
+
 /*
   Enums to keep constant with server logic. 
 */
@@ -165,18 +168,15 @@ export class App extends React.Component {
       actionStates: null,
       lastUpdateActionStates: null,
       lastUpdateHomeStatus: null,
+      virtualMode: false,
     };
 
     // Binding functions to "this"
     this.updateTime = this.updateTime.bind(this);
     this.updateHomeStatus = this.updateHomeStatus.bind(this);
     this.updateActionStates = this.updateActionStates.bind(this);
+    this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
   }
-
-  // BIG TODO: migrate both updateWeather to webserver, so all 
-  // applications have a centralized weather and time. This 
-  // allows for more calls to the weather API. Should be retrieved 
-  // via the single status web call.
 
   // Modify date state variables whenever called (timer-linked.)
   updateTime(){
@@ -353,6 +353,9 @@ export class App extends React.Component {
               else if(actionState == "12"){
                 button.style.backgroundColor = '#03a100';  // Orange
               }
+              else {
+                button.style.backgroundColor = '#222222';  // Default null color.
+              }
             }
             else{
               console.log("WARNING: updateActionStates attempted to find a button with id " + buttonId + " that did not exist!");
@@ -406,7 +409,12 @@ export class App extends React.Component {
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/moduleToggle/" +roomId + "/"  + actionId + "/" + toState);
+      if(this.state.virtualMode){
+        apiResponse = await fetch(apiURL + "/moduleVirtualToggle/" +roomId + "/"  + actionId + "/" + toState);
+      }
+      else{
+        apiResponse = await fetch(apiURL + "/moduleToggle/" +roomId + "/"  + actionId + "/" + toState);
+      }
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: Module Lighting Bedroom call (bedroomModule1) returned in " + timeDiff/1000 + " seconds.");
@@ -419,6 +427,23 @@ export class App extends React.Component {
     }
     else{
       console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Enter and exit the debug mode, which allows users to manually
+  // specify current states for 10 11 12 actions. 
+  async toggleVirtualMode(){
+    await this.setState({
+      virtualMode: !this.state.virtualMode,
+    });
+    this.updateActionStates(); // requery server having reset our states. 
+    var body = document.getElementById("body");
+    // Change the color schemes accordingly. 
+    if(this.state.virtualMode){
+      body.style.backgroundColor = virtualBackgroundColor;
+    }
+    else{
+      body.style.backgroundColor = defaultBackgroundColor;
     }
   }
 
@@ -448,7 +473,8 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          Santa Clara, CA
+          <div>Santa Clara, CA</div>
+          <div><button id={"app-location-debug"} onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
         </div>
 
         <div id="app-clock">

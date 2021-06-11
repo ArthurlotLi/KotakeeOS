@@ -31,6 +31,19 @@ button{
   padding: 0.5vw;
   margin: 0.3vw;
 }
+
+/* Button overrides for this unique button. */
+#app-location-debug{
+  background-color: #222222;
+  color: var(--text-color);
+  width: 10vw;
+  padding: 0;
+  margin: 0;
+  height: 3vw;
+  text-align: center;
+  font-size: 1.5vw;
+}
+
 /*
 button:hover {
   background-color: var(--secondary-color);
