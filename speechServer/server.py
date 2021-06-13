@@ -147,6 +147,7 @@ def speakText(command):
 # Given a queried command from the google text recognition
 # API, parse and execute accordingly.
 def parseAndExecuteCommand(command):
+  global stopServer
   # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
   queries = []
 
