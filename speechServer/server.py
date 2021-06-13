@@ -35,6 +35,7 @@ stopServerPrompt = "Understood. Good night."
 
 # Initialize the recognizer
 r = sr.Recognizer()
+r2 = sr.Recognizer()
 engine = pyttsx3.init()
 
 # Kill swith
@@ -42,6 +43,9 @@ stopServer = False
 
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
+
+  r.pause_threshold = 0.2 # Small. We're only listening for a word.
+  r2.pause_threshold = 1.5 # Give it a larger pause threshold
   
   while stopServer is not True:
     listenForHotWord()
@@ -98,16 +102,16 @@ def listenForCommand():
         # Wait a moment to allow the recognizer to adjust
         # the energy threshold based on surrounding noise
         # level...
-        r.adjust_for_ambient_noise(source2)
+        r2.adjust_for_ambient_noise(source2)
         executeTextThread(hotWordReceiptPrompt)
         print("[DEBUG] Now Listening for Command...")
         start = time.time()
 
         # Listen for input
-        audio2 = r.listen(source2)
+        audio2 = r2.listen(source2)
 
         # Use Google's API to recognize the audio.
-        recognizedText = r.recognize_google(audio2)
+        recognizedText = r2.recognize_google(audio2)
 
         # String cleanup
         recognizedText = recognizedText.lower()
