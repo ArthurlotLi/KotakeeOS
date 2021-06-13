@@ -31,16 +31,22 @@ hotWordReceiptPrompt = "Yes?"
 successfulCommandPrompt = "Understood."
 cancellationPrompt = "Going back to sleep."
 failedCommandPrompt = "Sorry, I didn't understand that."
+stopServerPrompt = "Understood. Good night."
 
 # Initialize the recognizer
 r = sr.Recognizer()
 engine = pyttsx3.init()
 
+# Kill swith
+stopServer = False
+
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
   
-  while(1):
+  while stopServer is not True:
     listenForHotWord()
+  
+  print("Shutting down. Goodnight.")
 
 # When run, listens for a single command and executes
 # acceptable ones accordingly. 
@@ -69,7 +75,7 @@ def listenForHotWord():
       print("[DEBUG] Recognized hotword audio: '" + recognizedText + "' in " + str(end-start) + " ")
 
       # Parse recognized text
-      if(hotWord in recognizedText):
+      if stopServer is not True and hotWord in recognizedText:
         print("[DEBUG] Hotword recognized!")
         listenForCommand()
 
@@ -145,7 +151,11 @@ def parseAndExecuteCommand(command):
   queries = []
 
   # The silly command
-  if("everything" in command):
+  if ("good night" in command or "freeze all motor functions" in command):
+    stopServer = True
+    executeTextThread(stopServerPrompt)
+    return True
+  elif("everything" in command):
     if("off" in command):
       queries.append(webServerIpAddress + "/moduleToggle/1/50/0")
       queries.append(webServerIpAddress + "/moduleToggle/2/50/0")
