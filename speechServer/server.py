@@ -24,7 +24,7 @@ import threading
 webServerIpAddress = "http://192.168.0.197:8080"
 
 #hotWord = "iris"
-hotWord = "silver" # Triggers activation of google query. 
+hotWord = "california" # Triggers activation of google query. 
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
