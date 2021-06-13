@@ -120,6 +120,7 @@ def listenForCommand():
         # level...
         r2.adjust_for_ambient_noise(source2)
         executeTextThread(hotWordReceiptPrompt)
+        time.sleep(0.7) # Try not to detet the prompt. 
         print("[DEBUG] Now Listening for Command...")
         start = time.time()
 
