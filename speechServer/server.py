@@ -29,7 +29,7 @@ hotWord = "silver" # Triggers activation of google query.
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
 successfulCommandPrompt = "Understood."
-cancellationPrompt = "Okay, stopping."
+cancellationPrompt = "Going back to sleep."
 failedCommandPrompt = "Sorry, I didn't understand that."
 
 # Initialize the recognizer
@@ -82,40 +82,48 @@ def listenForHotWord():
 
 # Uses far more intelligent google API to parse a command. 
 def listenForCommand():
-  try:
-    # Specify the microphone as the input source.
-    with sr.Microphone() as source2:
-      # Wait a moment to allow the recognizer to adjust
-      # the energy threshold based on surrounding noise
-      # level...
-      r.adjust_for_ambient_noise(source2)
-      executeTextThread(hotWordReceiptPrompt)
-      print("[DEBUG] Now Listening for Command...")
-      start = time.time()
+  # Try three times, or until user cancels, or command was
+  # executed.
+  for i in range(3): 
+    try:
+      # Specify the microphone as the input source.
+      with sr.Microphone() as source2:
+        # Wait a moment to allow the recognizer to adjust
+        # the energy threshold based on surrounding noise
+        # level...
+        r.adjust_for_ambient_noise(source2)
+        executeTextThread(hotWordReceiptPrompt)
+        print("[DEBUG] Now Listening for Command...")
+        start = time.time()
 
-      # Listen for input
-      audio2 = r.listen(source2)
+        # Listen for input
+        audio2 = r.listen(source2)
 
-      # Use Google's API to recognize the audio.
-      recognizedText = r.recognize_google(audio2)
+        # Use Google's API to recognize the audio.
+        recognizedText = r.recognize_google(audio2)
 
-      # String cleanup
-      recognizedText = recognizedText.lower()
-      end = time.time()
+        # String cleanup
+        recognizedText = recognizedText.lower()
+        end = time.time()
 
-      print("[DEBUG] Recognized command audio: '" + recognizedText + "' in " + str(end-start) + " ")
+        print("[DEBUG] Recognized command audio: '" + recognizedText + "' in " + str(end-start) + " ")
 
-      # Parse recognized text
-      if any(x not in recognizedText for x in cancelWords):
-        parseAndExecuteCommand(recognizedText)
-      else:
-        executeTextThread(cancellationPrompt)
-        print("[DEBUG] User requested cancellation. Stopping command parsing...")
+        # Parse recognized text
+        if any(x not in recognizedText for x in cancelWords):
+          if parseAndExecuteCommand(recognizedText):
+            break
+        else:
+          print("[DEBUG] User requested cancellation. Stopping command parsing...")
+          break
 
-  except sr.RequestError as e:
-    print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
-  except sr.UnknownValueError:
-    print("[Warning] Last sentence was not understood.")
+    except sr.RequestError as e:
+      print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
+    except sr.UnknownValueError:
+      print("[Warning] Last sentence was not understood.")
+  
+  # Stopping. Let user know big brother google is no longer
+  # listening. 
+  executeTextThread(cancellationPrompt)
 
 def executeTextThread(command):
   textThread = threading.Thread(target=speakText, args=(command,), daemon=True).start()
@@ -188,9 +196,11 @@ def parseAndExecuteCommand(command):
       else:
         print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
     executeTextThread(successfulCommandPrompt)
+    return True
   else:
     executeTextThread(failedCommandPrompt)
-    print("[DEBUG] No valid command was received. Stopping command parsing...")
+    print("[DEBUG] No valid command was received.")
+    return False
 
 if __name__ == "__main__":
   runApplicationServer()
