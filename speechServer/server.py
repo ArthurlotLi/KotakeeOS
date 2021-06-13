@@ -82,6 +82,7 @@ def listenForHotWord():
 
 # Uses far more intelligent google API to parse a command. 
 def listenForCommand():
+  successfulCommand = False
   # Try three times, or until user cancels, or command was
   # executed.
   for i in range(3): 
@@ -114,6 +115,7 @@ def listenForCommand():
           break
         else:
           if parseAndExecuteCommand(recognizedText):
+            successfulCommand = True
             break
 
     except sr.RequestError as e:
@@ -123,7 +125,8 @@ def listenForCommand():
   
   # Stopping. Let user know big brother google is no longer
   # listening. 
-  executeTextThread(cancellationPrompt)
+  if not successfulCommand:
+    executeTextThread(cancellationPrompt)
 
 def executeTextThread(command):
   textThread = threading.Thread(target=speakText, args=(command,), daemon=True).start()
