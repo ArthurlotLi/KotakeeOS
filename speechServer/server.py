@@ -132,36 +132,51 @@ def speakText(command):
 def parseAndExecuteCommand(command):
   # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
   queries = []
-  
-  if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
-    if("off" in command):
-      queries.append(webServerIpAddress + "/moduleToggle/1/50/0") # query off first, because on is in one. 
-    elif("on" in command):
-      queries.append(webServerIpAddress + "/moduleToggle/1/50/1")
 
-  if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
+  # The silly command
+  if("everything" in command):
     if("off" in command):
+      queries.append(webServerIpAddress + "/moduleToggle/1/50/0")
       queries.append(webServerIpAddress + "/moduleToggle/2/50/0")
-    elif("on" in command):
-      queries.append(webServerIpAddress + "/moduleToggle/2/50/1")
-  
-  if("speaker" in command or "soundbar" in command):
-    if("off" in command):
       queries.append(webServerIpAddress + "/moduleToggle/2/250/10")
-    elif("on" in command):
-      queries.append(webServerIpAddress + "/moduleToggle/2/250/12")
-  
-  if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
-    if("off" in command):
       queries.append(webServerIpAddress + "/moduleToggle/2/251/10")
-    elif("on" in command):
-      queries.append(webServerIpAddress + "/moduleToggle/2/251/12")
-
-  if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
-    if("off" in command):
       queries.append(webServerIpAddress + "/moduleToggle/2/350/20")
     elif("on" in command):
+      queries.append(webServerIpAddress + "/moduleToggle/1/50/1")
+      queries.append(webServerIpAddress + "/moduleToggle/2/50/1")
+      queries.append(webServerIpAddress + "/moduleToggle/2/250/12")
+      queries.append(webServerIpAddress + "/moduleToggle/2/251/12")
       queries.append(webServerIpAddress + "/moduleToggle/2/350/22")
+  else:
+    if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
+      if("off" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/1/50/0") # query off first, because on is in one. 
+      elif("on" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/1/50/1")
+
+    if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
+      if("off" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/50/0")
+      elif("on" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/50/1")
+    
+    if("speaker" in command or "soundbar" in command):
+      if("off" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/250/10")
+      elif("on" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/250/12")
+    
+    if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
+      if("off" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/251/10")
+      elif("on" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/251/12")
+
+    if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
+      if("off" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/350/20")
+      elif("on" in command):
+        queries.append(webServerIpAddress + "/moduleToggle/2/350/22")
 
   if len(queries) > 0:
     # We have received a valid command. Query the server. 
