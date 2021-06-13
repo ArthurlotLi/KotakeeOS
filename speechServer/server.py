@@ -18,9 +18,14 @@ import pyttsx3
 import requests
 import time
 
+import threading
+
 # Application constants.
 webServerIpAddress = "http://192.168.0.197:8080"
-hotWord = "iris" # Triggers activation of google query. 
+
+hotWord = "iris"
+#hotWord = "silver" # Triggers activation of google query. 
+
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
 successfulCommandPrompt = "Understood."
@@ -29,6 +34,7 @@ failedCommandPrompt = "Sorry, I didn't understand that."
 
 # Initialize the recognizer
 r = sr.Recognizer()
+engine = pyttsx3.init()
 
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
@@ -46,7 +52,7 @@ def listenForHotWord():
       # the energy threshold based on surrounding noise
       # level...
       r.adjust_for_ambient_noise(source2)
-      print("[DEBUG] Now Listening for Hotword...")
+      print("[DEBUG] Now Listening for Hotword '"+hotWord+"' ...")
       start = time.time()
 
       # Listen for input
@@ -60,7 +66,6 @@ def listenForHotWord():
       end = time.time()
 
       print("[DEBUG] Recognized hotword audio: '" + recognizedText + "' in " + str(end-start) + " ")
-      #speakText(recognizedText)
 
       # Parse recognized text
       if(hotWord in recognizedText):
@@ -81,7 +86,7 @@ def listenForCommand():
       # the energy threshold based on surrounding noise
       # level...
       r.adjust_for_ambient_noise(source2)
-      speakText(hotWordReceiptPrompt)
+      executeTextThread(hotWordReceiptPrompt)
       print("[DEBUG] Now Listening for Command...")
       start = time.time()
 
@@ -101,7 +106,7 @@ def listenForCommand():
       if any(x not in recognizedText for x in cancelWords):
         parseAndExecuteCommand(recognizedText)
       else:
-        speakText(cancellationPrompt)
+        executeTextThread(cancellationPrompt)
         print("[DEBUG] User requested cancellation. Stopping command parsing...")
 
   except sr.RequestError as e:
@@ -109,60 +114,64 @@ def listenForCommand():
   except sr.UnknownValueError:
     print("[Warning] Last sentence was not understood.")
 
-
+def executeTextThread(command):
+  textThread = threading.Thread(target=speakText, args=(command,), daemon=True).start()
   
 # Convert text to speech using pyttsx3 engine. 
 def speakText(command):
-  engine = pyttsx3.init()
+  if engine._inLoop:
+    engine.endLoop()
   engine.say(command)
-  #engine.runAndWait()
+  engine.runAndWait()
 
 # Given a queried command from the google text recognition
 # API, parse and execute accordingly.
 def parseAndExecuteCommand(command):
   # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
+  queries = []
   
   if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
     if("off" in command):
-      query = webServerIpAddress + "/moduleToggle/1/50/0" # query off first, because on is in one. 
+      queries.append(webServerIpAddress + "/moduleToggle/1/50/0") # query off first, because on is in one. 
     elif("on" in command):
-      query = webServerIpAddress + "/moduleToggle/1/50/1"
+      queries.append(webServerIpAddress + "/moduleToggle/1/50/1")
 
   if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
     if("off" in command):
-      query = webServerIpAddress + "/moduleToggle/2/50/0"
+      queries.append(webServerIpAddress + "/moduleToggle/2/50/0")
     elif("on" in command):
-      query = webServerIpAddress + "/moduleToggle/2/50/1"
+      queries.append(webServerIpAddress + "/moduleToggle/2/50/1")
   
   if("speaker" in command or "soundbar" in command):
     if("off" in command):
-      query = webServerIpAddress + "/moduleToggle/2/250/10"
+      queries.append(webServerIpAddress + "/moduleToggle/2/250/10")
     elif("on" in command):
-      query = webServerIpAddress + "/moduleToggle/2/250/12"
+      queries.append(webServerIpAddress + "/moduleToggle/2/250/12")
   
   if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
     if("off" in command):
-      query = webServerIpAddress + "/moduleToggle/2/251/10"
+      queries.append(webServerIpAddress + "/moduleToggle/2/251/10")
     elif("on" in command):
-      query = webServerIpAddress + "/moduleToggle/2/251/12"
+      queries.append(webServerIpAddress + "/moduleToggle/2/251/12")
 
   if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
     if("off" in command):
-      query = webServerIpAddress + "/moduleToggle/2/350/20"
+      queries.append(webServerIpAddress + "/moduleToggle/2/350/20")
     elif("on" in command):
-      query = webServerIpAddress + "/moduleToggle/2/350/22"
+      queries.append(webServerIpAddress + "/moduleToggle/2/350/22")
 
-  if query is not None:
+  if len(queries) > 0:
     # We have received a valid command. Query the server. 
-    print("[DEBUG] Valid command received. Sending query: " + query)
-    response = requests.get(query)
-    speakText(successfulCommandPrompt)
-    if(response.status_code == 200):
-      print("[DEBUG] Request received successfully.")
-    else:
-      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    for query in queries:
+      print("[DEBUG] Sending query: " + query)
+      response = requests.get(query)
+      if(response.status_code == 200):
+        print("[DEBUG] Request received successfully.")
+      else:
+        print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    executeTextThread(successfulCommandPrompt)
   else:
-    speakText(failedCommandPrompt)
+    executeTextThread(failedCommandPrompt)
     print("[DEBUG] No valid command was received. Stopping command parsing...")
 
 if __name__ == "__main__":
