@@ -171,7 +171,7 @@ def parseAndExecuteCommand(command):
       elif("on" in command):
         queries.append(webServerIpAddress + "/moduleToggle/2/50/1")
     
-    if("speaker" in command or "soundbar" in command):
+    if("speaker" in command or "soundbar" in command or ("sound" in command and "bar" in command)):
       if("off" in command):
         queries.append(webServerIpAddress + "/moduleToggle/2/250/10")
       elif("on" in command):
