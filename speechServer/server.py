@@ -24,7 +24,8 @@ import threading
 webServerIpAddress = "http://192.168.0.197:8080"
 
 #hotWord = "iris"
-hotWord = "california" # Triggers activation of google query. 
+#hotWord = "california" # Triggers activation of google query. 
+hotWords = ["california", "america", "initial", "system", "iris"]
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
@@ -62,7 +63,7 @@ def listenForHotWord():
       # the energy threshold based on surrounding noise
       # level...
       r.adjust_for_ambient_noise(source2)
-      print("[DEBUG] Now Listening for Hotword '"+hotWord+"' ...")
+      print("[DEBUG] Now Listening for Hotword(s): "+str(hotWords)+" ...")
       start = time.time()
 
       # Listen for input
@@ -79,7 +80,7 @@ def listenForHotWord():
       print("[DEBUG] Recognized hotword audio: '" + recognizedText + "' in " + str(end-start) + " ")
 
       # Parse recognized text
-      if stopServer is not True and hotWord in recognizedText:
+      if stopServer is not True and any(x in recognizedText for x in hotWords):
         print("[DEBUG] Hotword recognized!")
         listenForCommand()
 
