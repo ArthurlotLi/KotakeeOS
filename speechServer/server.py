@@ -158,7 +158,7 @@ def parseAndExecuteCommand(command):
   # The silly command
   if ("good night" in command or "freeze all motor functions" in command or "goodnight" in command):
     executeTextThread(stopServerPrompt)
-    time.sleep(10) # Enough time to allow the speech prompt to complete. 
+    time.sleep(5) # Enough time to allow the speech prompt to complete. 
     stopServer = True
     return True
   elif("everything" in command):
