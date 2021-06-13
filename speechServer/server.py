@@ -44,8 +44,8 @@ stopServer = False
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
 
-  r.pause_threshold = 0.2 # Small. We're only listening for a word.
-  r2.pause_threshold = 1.5 # Give it a larger pause threshold
+  r.pause_threshold = 0.5 # Small. We're only listening for a word.
+  r2.pause_threshold = 1.0 # Give it a larger pause threshold
   
   while stopServer is not True:
     listenForHotWord()
