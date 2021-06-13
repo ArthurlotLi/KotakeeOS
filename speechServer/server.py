@@ -151,7 +151,7 @@ def parseAndExecuteCommand(command):
   queries = []
 
   # The silly command
-  if ("good night" in command or "freeze all motor functions" in command):
+  if ("good night" in command or "freeze all motor functions" in command or "goodnight" in command):
     stopServer = True
     executeTextThread(stopServerPrompt)
     return True
