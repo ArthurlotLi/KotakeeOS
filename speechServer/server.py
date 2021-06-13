@@ -109,12 +109,12 @@ def listenForCommand():
         print("[DEBUG] Recognized command audio: '" + recognizedText + "' in " + str(end-start) + " ")
 
         # Parse recognized text
-        if any(x not in recognizedText for x in cancelWords):
-          if parseAndExecuteCommand(recognizedText):
-            break
-        else:
+        if any(x in recognizedText for x in cancelWords):
           print("[DEBUG] User requested cancellation. Stopping command parsing...")
           break
+        else:
+          if parseAndExecuteCommand(recognizedText):
+            break
 
     except sr.RequestError as e:
       print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
