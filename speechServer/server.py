@@ -134,10 +134,14 @@ def listenForCommand():
   if successfulCommand is False:
     executeTextThread(cancellationPrompt)
 
+# Non-blocking text to speech. Do be warned this
+# might interefere with the speech recognition. 
 def executeTextThread(command):
   textThread = threading.Thread(target=speakText, args=(command,), daemon=True).start()
   
-# Convert text to speech using pyttsx3 engine. 
+# Convert text to speech using pyttsx3 engine.
+# Note calling this by itself causes a block
+# on the main thread. 
 def speakText(command):
   if engine._inLoop:
     engine.endLoop()
@@ -154,7 +158,8 @@ def parseAndExecuteCommand(command):
   # The silly command
   if ("good night" in command or "freeze all motor functions" in command or "goodnight" in command):
     stopServer = True
-    executeTextThread(stopServerPrompt)
+    # Blocking call, because we're shutting down. 
+    speakText(stopServerPrompt)
     return True
   elif("everything" in command):
     if("off" in command):
