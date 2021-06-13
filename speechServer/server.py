@@ -125,7 +125,7 @@ def listenForCommand():
   
   # Stopping. Let user know big brother google is no longer
   # listening. 
-  if not successfulCommand:
+  if successfulCommand is False:
     executeTextThread(cancellationPrompt)
 
 def executeTextThread(command):
