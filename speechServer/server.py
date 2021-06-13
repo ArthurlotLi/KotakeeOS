@@ -23,8 +23,8 @@ import threading
 # Application constants.
 webServerIpAddress = "http://192.168.0.197:8080"
 
-hotWord = "iris"
-#hotWord = "silver" # Triggers activation of google query. 
+#hotWord = "iris"
+hotWord = "silver" # Triggers activation of google query. 
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
@@ -56,7 +56,8 @@ def listenForHotWord():
       start = time.time()
 
       # Listen for input
-      audio2 = r.listen(source2)
+      #r.dynamic_energy_threshold = False
+      audio2 = r.listen(source2, timeout = 5.0, phrase_time_limit=5.0)
 
       # Use offline CMU Sphinx recognizer
       recognizedText = r.recognize_sphinx(audio2)
@@ -75,7 +76,9 @@ def listenForHotWord():
   except sr.RequestError as e:
     print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
   except sr.UnknownValueError:
-    print("[Warning] Last sentence was not understood.")
+    pass
+  except sr.WaitTimeoutError:
+    pass
 
 # Uses far more intelligent google API to parse a command. 
 def listenForCommand():
