@@ -91,6 +91,9 @@ def listenForHotWord():
       if stopServer is not True and any(x in recognizedText for x in hotWords):
         print("[DEBUG] Hotword recognized!")
         listenForCommand()
+      elif stopServer is not True and "thank you" in recognizedText or "thanks" in recognizedText:
+        # For fun. 
+        executeTextThread("You're welcome.")
 
   except sr.RequestError as e:
     print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
