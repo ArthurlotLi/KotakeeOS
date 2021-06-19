@@ -1,0 +1,32 @@
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+KotakeeOS - Home Management System
+Speech Recognition Application Server
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+Description:
+
+Root program for speech recognition application server designed to interface 
+with the kotakeeOS Web Server. This sends requests to activate-deactivate 
+modules just like any other regular web application. 
+
+Currently utilizes python speechrecognition library.
+
+------------------------------------------------------------------------------
+Prerequisites
+------------------------------------------------------------------------------
+
+1. Python3
+2. python3 -m pip install speechrecognition
+3. python3 -m pip install pyttsx3
+4. brew install portaudio
+5. python3 -m pip install pyaudio
+
+If using PocketSphinx: 
+
+6. brew install swig
+7. brew install openal-soft
+8. Note the stuff you may need to do to install pockeshpinx manually.
+
+https://github.com/bambocher/pocketsphinx-python/issues/28
