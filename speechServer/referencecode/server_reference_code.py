@@ -156,7 +156,7 @@ def listenForHotWord():
   firstRun = True
 
   try:
-    while run:
+    while run and stopServer is False:
       if firstRun:
         print("[DEBUG] Now listening...")
         firstRun = False
