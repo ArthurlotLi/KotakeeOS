@@ -426,6 +426,7 @@ def parseAndExecuteCommand(command):
     if(homeStatus is not None):
       weatherString = "It is currently " + str(int(homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(homeStatus["weatherData"]["weather"][0]["main"]) + ", with a maximum of " + str(int(homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(homeStatus["weatherData"]["main"]["humidity"]) + " percent."
       executeTextThread(weatherString)
+      time.sleep(10) # Enough time to allow the speech prompt to complete. 
       return True
   elif("everything" in command):
     if("off" in command):
