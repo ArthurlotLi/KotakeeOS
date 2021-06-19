@@ -76,6 +76,7 @@ def create_dataset():
       negatives.append(negative)
 
   if(len(activates) > 0 and len(backgrounds) > 0 and len(negatives) > 0):
+    # We have all the data.
     return
   else:
     print("[ERROR] Did not find data samples for activates, backgrounds, and negatives!")
