@@ -64,6 +64,7 @@ webServerIpAddress = "http://192.168.0.197:8080"
 #hotWords = ["california", "america", "initial", "initialize", "system", "iris"]
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
+stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "turn off", "deactivate"]
 hotWordReceiptPrompt = "Yes?"
 successfulCommandPrompt = "Understood."
 cancellationPrompt = "Going back to sleep."
@@ -313,9 +314,9 @@ def listenForCommand():
   # done by the time the user says the command. 
   executeQueryServerThread()
 
-  # Try three times, or until user cancels, or command was
+  # Try two times, or until user cancels, or command was
   # executed.
-  for i in range(3): 
+  for i in range(2): 
     try:
       # Specify the microphone as the input source.
       with sr.Microphone() as source2:
@@ -417,7 +418,7 @@ def parseAndExecuteCommand(command):
   # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
   queries = []
 
-  if ("good night" in command or "freeze all motor functions" in command or "goodnight" in command):
+  if any(x in command for x in stopServerCommands):
     executeTextThread(stopServerPrompt)
     time.sleep(5) # Enough time to allow the speech prompt to complete. 
     stopServer = True
