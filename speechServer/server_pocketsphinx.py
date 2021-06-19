@@ -1,15 +1,20 @@
 #
-# sever.py
+# sever_pocketsphinx.py
+#
+# [OBSOLETE!]
 #
 # Root program for speech recognition application server designed
 # to interface with the kotakeeOS Web Server. This sends requests
 # to activate-deactivate modules just like any other regular 
 # web application. 
 #
+# Utilize pocketsphinx as a sort of "brute force" way of implementing
+# Hotword detection. 
+#
 # Initial code based off of:
 # https://www.geeksforgeeks.org/python-convert-speech-to-text-and-text-to-speech/
 #
-# Usage: python3 server.py
+# Usage: python3 server_pocketsphinx.py
 #
 
 import speech_recognition as sr
