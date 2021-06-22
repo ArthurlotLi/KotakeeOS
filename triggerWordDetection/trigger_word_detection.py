@@ -15,13 +15,17 @@
 # https://www.dlology.com/blog/how-to-do-real-time-trigger-word-detection-with-keras/
 # https://github.com/Tony607/Keras-Trigger-Word 
 #
-# Usage: python3 trigger_word_detection.py
+# Usage Examples: 
+# python3 trigger_word_detection.py 10 1  <- Creates dataset of size 10 iter 1
+# python3 trigger_word_detection.py -d 0 1 <- -d Specifies not to create a dataset.c
 #
 
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import os
 from pydub import AudioSegment
+
+import argparse
 
 import numpy as np
 from pydub import AudioSegment
@@ -41,11 +45,15 @@ Ty = 1375 # The number of time steps in the output of our model
 # 1. Load the wav files that will make the dataset.
 # 2. Dynamically generate the dataset.
 # 3. Train the model with the generated dataset.
-# 3. Save the model.
-def main():
-  print("[DEBUG] Initializing main...")
+# 4. Save the model.
+#
+# Takes in two arguments:
+# generateDataset (True/False)
+# datasetSize (int) - Will be ignored if generateDataset is False. 
+def main(generateDataset, datasetSize, iternum):
+  print("[INFO] Initializing main...")
   dataset = None
-  dataset = create_dataset()
+  dataset = create_dataset(generateDataset, datasetSize, iternum)
   if dataset is not None:
     model = None
     model = train_model(dataset)
@@ -61,82 +69,62 @@ def main():
 # 2. Dynamically generate the dataset.
 # Expects raw data to be in the raw_data folder in subfolders
 # named activates, backgrounds, and negatives. 
-def create_dataset():
-  print("[DEBUG] Running create_dataset...")
+def create_dataset(generateDataset, datasetSize, iternum):
+  print("[INFO] Running create_dataset...")
 
   # Load audio segments using pydub 
   activates, negatives, backgrounds = load_raw_audio()
 
-  # Examples of the loaded raw audio. 
-  print("backgrounds len: " + str(len(backgrounds[0])))    # Should be 10,000, since it is a 10 sec clip
-  print("activates[0] len: " + str(len(activates[0])))     # Maybe around 1000, since an "activate" audio clip is usually around 1 sec (but varies a lot)
-  print("activates[1] len: " + str(len(activates[1])))     # Different "activate" clips can have different lengths 
-  print("negatives[0] len: " + str(len(negatives[0])))
-  print("negatives[1] len: " + str(len(negatives[1])))
-
-  # Demonstration of is_overlapping
-  #overlap1 = is_overlapping((950, 1430), [(2000, 2550), (260, 949)])
-  #overlap2 = is_overlapping((2305, 2950), [(824, 1532), (1900, 2305), (3424, 3656)])
-  #print("Overlap 1 = ", overlap1)
-  #print("Overlap 2 = ", overlap2)
-
-  # Demonstration of insert_audio_clip (will generate insert_test.wav).
-  #np.random.seed(5)
-  #audio_clip, segment_time = insert_audio_clip(backgrounds[0], activates[0], [(3790, 4400)])
-  #audio_clip.export("insert_test.wav", format="wav")
-  #print("Segment Time: ", segment_time)
-  #IPython.display.Audio("insert_test.wav")
-
-  # Demonstration of insert_ones
-  #arr1 = insert_ones(np.zeros((1, Ty)), 9700)
-  #plt.plot(insert_ones(arr1, 4251)[0,:])
-  #plt.show()
-  #print("sanity checks:", arr1[0][1333], arr1[0][634], arr1[0][635])
-
-  # Demonstration of create_training_example. (will generate train.wav).
-  #x, y = create_training_example(backgrounds[0], activates, negatives)
-  #print("y.shape is:", y.shape)
-
-  # This was just to plot/figure out what y[0] was. It plotted
-  # weird (like a spectrograph for some reason) but can be
-  # confirmed to be a list of 0s and 1s. 
-  #plt.plot(y[0])
-  # print out what y[0] is (labels))
-  #np.set_printoptions(threshold=sys.maxsize)
-  #print(y[0])
-  #f = open("train.txt", "w")
-  #f.write(str(y[0]))
-  #f.close()
-  #plt.show()
-
   # To generate our dataset: select a random background and push that
   # into the create_training_example loop. Repeat this for as many times
   # as you'd like. Write all that stuff to a file and you're done? 
-  clips_to_generate = 10
-  final_x = None
-  final_y = None
-  array_x = []
-  array_y = []
-  for i in range(clips_to_generate):
-    random_indices = np.random.randint(len(backgrounds), size=1)
-    random_background = random_indices[0]
-    x, y = create_training_example(backgrounds[random_background], activates, negatives)
-    array_x.append(x)
-    array_y.append(y)
-  # A nice little learning moment here for numpy arrays. You can use
-  # array() to create a new dimension, while concatenate() and vstack()
-  # work on existing dimensions. 
-  final_x = np.array(array_x)
-  final_y = np.array(array_y)
-  
-  print("final_x.shape is:", final_x.shape)  
-  print("final_y.shape is:", final_y.shape)    
+  clips_to_generate = datasetSize
 
-  # Save the generated datasets to file. 
-  np.save("./XY_train/X.npy", final_x)
-  np.save("./XY_train/Y.npy", final_y)
+  # Ask for confirmation, because we might be overwriting stuff.
+  promptInput = None
+  if generateDataset:
+    while promptInput is None or (promptInput != "y" and promptInput != "n"):
+      promptInput = input("[NOTICE] A new training dataset of size " +str(clips_to_generate)+" will be generated. Continue? (y/n)\n")
+      promptInput = promptInput.lower()
+    
+    if promptInput == "y":
+      print("[INFO] Initiating dataset generation...")
+      final_x = None
+      final_y = None
+      array_x = []
+      array_y = []
+      for i in range(clips_to_generate):
+        print("[DEBUG] Generating clip " + str(i) + "...")
+        random_indices = np.random.randint(len(backgrounds), size=1)
+        random_background = random_indices[0]
+        x, y = create_training_example(backgrounds[random_background], activates, negatives)
+        if x.shape == (101, 5511) and y.shape == (1, 1375):
+          array_x.append(x)
+          array_y.append(y)
+        else:
+          print("[WARNING] Generated x and y of incorrect shapes! Discarding...")
+      # A nice little learning moment here for numpy arrays. You can use
+      # array() to create a new dimension, while concatenate() and vstack()
+      # work on existing dimensions. 
+      print("[INFO] Combining all generated x arrays...")
+      final_x = np.array(array_x)
+      print("[INFO] Combining all generated y arrays...")
+      final_y = np.array(array_y)
+      
+      print("[DEBUG] final_x.shape is:", final_x.shape)  
+      print("[DEBUG] final_y.shape is:", final_y.shape)    
 
-  print("[DEBUG]Successfully saved final_x and final_y to XY_train folder.")
+      # Save the generated datasets to file. 
+      print("[INFO] Saving final_x to file...")
+      np.save("./XY_train/X_"+str(iternum)+".npy", final_x)
+      print("[INFO] Saving final_y to file...")
+      np.save("./XY_train/Y_"+str(iternum)+".npy", final_y)
+
+      print("[INFO] Successfully saved X_"+str(iternum)+".npy and Y_"+str(iternum)+".npy to XY_train folder.")
+    else:
+      print("[INFO] Skipping dataset generation...")
+  else:
+    print("[INFO] Skipping dataset generation...")
 
   return
 
@@ -353,4 +341,14 @@ def save_model(model):
 
 
 if __name__ == "__main__":
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('datasetSize')
+  parser.add_argument('iternum')
+  parser.add_argument('-d', action='store_false', default=True)
+  args = parser.parse_args()
+
+  datasetSize = int(args.datasetSize)
+  iternum = int(args.iternum)
+  generateDataset = args.d
+
+  main(generateDataset, datasetSize, iternum)
