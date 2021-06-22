@@ -43,6 +43,8 @@ from tensorflow.keras.layers import Dense, Activation, Dropout, Input, Masking, 
 from tensorflow.keras.layers import GRU, Bidirectional, BatchNormalization, Reshape
 from tensorflow.keras.optimizers import Adam
 
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+
 Tx = 5511 # The number of time steps input to the model from the spectrogram
 n_freq = 101 # Number of frequencies input to the model at each time step of the spectrogram
 Ty = 1375 # The number of time steps in the output of our model
@@ -354,11 +356,42 @@ def train_model(X, Y):
 
   model.summary()
 
-  opt = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, decay=0.01)
-  model.compile(loss='binary_crossentropy', optimizer=opt, metrics=["accuracy"])
+  # Tuning parameters that can be tweaked. 
+  dropout_level = 0.25
+  learning_rate = 0.01
+  loss_function = 'binary_crossentropy'
+  epochs = 1
+  batch_size=5
+  validation_split = 0.2
+  rlr_patience = 50
+  rlr_factor = 0.5
+  es_patience = 80
+  es_min_delta = 1e-10
+  verbose = True
 
-  print("[INFO] Training the model on X and Y...")
-  model.fit(X, Y, batch_size = 5, epochs=1)
+  #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
+  opt = Adam(learning_rate=learning_rate)
+
+  # Compiling the Neural Network with all of this, using adam optimizer. 
+  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+
+  # With the model created, it is time to begin training it. 
+  
+  # Define early stopping to save time (don't train if nothing's improving.)
+  es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
+
+  # Similarily, start spinning down the learning rate when a plateau has been detected.
+  rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
+
+  # Define checkpointing so that we can revert in time if we end up worse than we were before. 
+  mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
+
+  # Let's start training!! 
+  history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+
+  best_accuracy = min(history.history['accuracy'])
+
+  print("\nModel training complete. Best accuracy: " + str(best_accuracy))
 
   #loss, acc = model.evaluate(X_dev, Y_dev)
   #print("[INFO] Dev set accuracy = ", acc) 
