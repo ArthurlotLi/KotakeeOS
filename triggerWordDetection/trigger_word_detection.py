@@ -16,8 +16,8 @@
 # https://github.com/Tony607/Keras-Trigger-Word 
 #
 # Usage Examples: 
-# python3 trigger_word_detection.py 10 1  <- Creates dataset of size 10 iter 1
-# python3 trigger_word_detection.py -d 0 1 <- -d Specifies not to create a dataset.c
+# python3 trigger_word_detection.py 25 1  <- Creates dataset of size 10 iter 1
+# python3 trigger_word_detection.py -d 0 1 <- -d Specifies not to create a dataset and loads dataset with iter 1. 
 #
 
 import matplotlib.pyplot as plt
@@ -75,6 +75,10 @@ def create_dataset(generateDataset, datasetSize, iternum):
   # Load audio segments using pydub 
   activates, negatives, backgrounds = load_raw_audio()
 
+  # What we output for the model to use. 
+  final_x = None
+  final_y = None
+
   # To generate our dataset: select a random background and push that
   # into the create_training_example loop. Repeat this for as many times
   # as you'd like. Write all that stuff to a file and you're done? 
@@ -89,8 +93,6 @@ def create_dataset(generateDataset, datasetSize, iternum):
     
     if promptInput == "y":
       print("[INFO] Initiating dataset generation...")
-      final_x = None
-      final_y = None
       array_x = []
       array_y = []
       for i in range(clips_to_generate):
@@ -126,7 +128,15 @@ def create_dataset(generateDataset, datasetSize, iternum):
   else:
     print("[INFO] Skipping dataset generation...")
 
-  return
+  if final_x is None and final_y is None:
+    print("[INFO] Loading existing dataset file ./XY_train/X_"+str(iternum)+".npy...")
+    final_x = np.load("./XY_train/X_"+str(iternum)+".npy")
+    print("[INFO] Loading existing dataset file ./XY_train/Y_"+str(iternum)+".npy...")
+    final_y = np.load("./XY_train/Y_"+str(iternum)+".npy")
+    print("[DEBUG] final_x.shape is:", final_x.shape)  
+    print("[DEBUG] final_y.shape is:", final_y.shape) 
+
+  return final_x, final_y
 
 def get_random_time_segment(segment_ms):
   """
