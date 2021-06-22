@@ -42,28 +42,38 @@ n_freq = 101 # Number of frequencies input to the model at each time step of the
 Ty = 1375 # The number of time steps in the output of our model
 
 # Primary function that executes the main steps:
-# 1. Load the wav files that will make the dataset.
-# 2. Dynamically generate the dataset.
-# 3. Train the model with the generated dataset.
-# 4. Save the model.
+# A) Dataset Processing
+#   1. Load the wav files that will make the dataset.
+#   2. Dynamically generate the dataset.
+# B) Model Processing
+#    3. Train the model with the generated dataset.
+#    4. Save the model.
 #
 # Takes in two arguments:
 # generateDataset (True/False)
 # datasetSize (int) - Will be ignored if generateDataset is False. 
 def main(generateDataset, datasetSize, iternum):
   print("[INFO] Initializing main...")
-  dataset = None
-  dataset = create_dataset(generateDataset, datasetSize, iternum)
-  if dataset is not None:
+  x = None
+  y = None
+  x, y = create_dataset(generateDataset, datasetSize, iternum)
+  if x is not None and y is not None:
     model = None
-    model = train_model(dataset)
+    model = train_model(x, y)
     if model is not None:
-      save_model(model)
+      result = save_model(model)
+      if result:
+        print("[INFO] Program finished successfully! Goodnight...")
+      else:
+        print("[ERROR] Unable to save the model! Execution failed.")
     else:
       print("[ERROR] model was None! Execution failed.")
   else:
-      print("[ERROR] dataset was None! Execution failed.")
+      print("[ERROR] datasets x and/or y was None! Execution failed.")
 
+#
+# A) DATASET CREATION AND PROCESSING
+#
 
 # 1. Load wav files that will make the dataset
 # 2. Dynamically generate the dataset.
@@ -101,8 +111,8 @@ def create_dataset(generateDataset, datasetSize, iternum):
         random_background = random_indices[0]
         x, y = create_training_example(backgrounds[random_background], activates, negatives)
         if x.shape == (101, 5511) and y.shape == (1, 1375):
-          array_x.append(x)
-          array_y.append(y)
+          array_x.append(np.transpose(x, (1, 0)))
+          array_y.append(np.transpose(y, (1, 0))) # We want to go from (1, 1375) to (1375, 1)
         else:
           print("[WARNING] Generated x and y of incorrect shapes! Discarding...")
       # A nice little learning moment here for numpy arrays. You can use
@@ -157,8 +167,6 @@ def get_random_time_segment(segment_ms):
   
   return (segment_start, segment_end)
 
-# GRADED FUNCTION: is_overlapping
-
 def is_overlapping(segment_time, previous_segments):
   """
   Checks if the time of a segment overlaps with the times of existing segments.
@@ -185,8 +193,6 @@ def is_overlapping(segment_time, previous_segments):
   ### END CODE HERE ###
 
   return overlap
-
-# GRADED FUNCTION: insert_audio_clip
 
 def insert_audio_clip(background, audio_clip, previous_segments):
   """
@@ -231,8 +237,6 @@ def insert_audio_clip(background, audio_clip, previous_segments):
   
   return new_background, segment_time
 
-# GRADED FUNCTION: insert_ones
-
 def insert_ones(y, segment_end_ms):
   """
   Update the label vector y. The labels of the 50 output steps strictly after the end of the segment 
@@ -259,8 +263,6 @@ def insert_ones(y, segment_end_ms):
   ### END CODE HERE ###
   
   return y
-
-# GRADED FUNCTION: create_training_example
 
 def create_training_example(background, activates, negatives):
   """
@@ -334,20 +336,21 @@ def create_training_example(background, activates, negatives):
   
   return x, y
 
+#
+# B) MODEL CREATION AND TRAINING
+#
+
 # 3. Train the model with the generated model.
-def train_model(dataset):
+def train_model(x, y):
   print("[DEBUG] Running train_model...")
   pass
 
-# 4. Make test predictions with the brand new model.
-def execute_model(model):
-  print("[DEBUG] Running execute_model...")
-  pass
-
-# 5. Save the model.
+# 4. Save the model.
+#
+# Returns true or false depending on execution status. 
 def save_model(model):
   print("[DEBUG] Running save_model...")
-  pass
+  return False
 
 
 if __name__ == "__main__":
