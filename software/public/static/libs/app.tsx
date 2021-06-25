@@ -588,13 +588,19 @@ export class App extends React.Component {
         <div id="app-modules-row1">
           <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE10} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE10) }}></button>
         </div>
 
         <div id="app-modules-row2">
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE15} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE15) }}></button>
+        </div>
+
+        <div id="app-modules-row3">
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE16} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE16) }}></button>
         </div>
 
         <div id="app-home-status">
