@@ -161,8 +161,8 @@ const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
 // Arduino 5 Bathroom
-const module5BAId = 4; // Internal server use only. 
-const module5BARoomId = rooms.LIVINGROOM; 
+const module5BAId = 5; // Internal server use only. 
+const module5BARoomId = rooms.BATHROOM; 
 const module5BAActions = [actions.SWITCH1];
 const module5BAPins = [10.11];
 const module5BAIpAddress = "0.0.0.0"; // TODO.
@@ -179,7 +179,7 @@ const bathroomModules = [module5BA];
 const bathroom = new Room(rooms.BATHROOM,bathroomModules);
 
 // Home
-const homeRooms = [bedroom, livingRoom];
+const homeRooms = [bedroom, livingRoom, bathroom];
 const homeZipCode = "95051"
 const home = new Home(homeRooms, homeZipCode, {}, HOME_STATUS, ACTION_STATES, publisher); // Start with no weather data. 
 
