@@ -83,6 +83,10 @@ const rooms = {
   BATHROOM: 3,
 }
 
+// pubsub topic names
+const HOME_STATUS = 'homeStatus';
+const ACTION_STATES = 'actionStates';
+
 // End enums
 
 /*
