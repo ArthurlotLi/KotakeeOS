@@ -165,7 +165,7 @@ const module5BAId = 5; // Internal server use only.
 const module5BARoomId = rooms.BATHROOM; 
 const module5BAActions = [actions.SWITCH1];
 const module5BAPins = [10.11];
-const module5BAIpAddress = "0.0.0.0"; // TODO.
+const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Rooms (add objects here)
