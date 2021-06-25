@@ -160,12 +160,23 @@ const module4LRPins = [12, 10.11, 9];
 const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
+// Arduino 5 Bathroom
+const module5BAId = 4; // Internal server use only. 
+const module5BARoomId = rooms.LIVINGROOM; 
+const module5BAActions = [actions.SWITCH1];
+const module5BAPins = [10.11];
+const module5BAIpAddress = "0.0.0.0"; // TODO.
+const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroom = new Room(rooms.BEDROOM,bedroomModules);
+
 const livingRoomModules = [module2LR, module3LR, module4LR];
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
+
+const bathroomModules = [module5BA];
+const bathroom = new Room(rooms.BATHROOM,bathroomModules);
 
 // Home
 const homeRooms = [bedroom, livingRoom];
