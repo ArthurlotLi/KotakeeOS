@@ -76,9 +76,9 @@ button:hover {
 
 #app-clock {
   position: fixed;
-  top: 23%;
+  top: 21%;
   left: 50%;
-  transform: translate(-50%, -30%);
+  transform: translate(-50%, -28%);
 }
 
 #app-clock-time{
