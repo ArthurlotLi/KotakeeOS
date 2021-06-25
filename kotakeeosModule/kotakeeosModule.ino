@@ -5,8 +5,6 @@
 
   Universal code base for all KotakeeOS arduino nodes with logic for all 
   nodes included. TODO: Add more info and flush out design.
-
-  Seriously, this is a terrible web server, write a better one! 
 */
 #include <SPI.h>
 #include <WiFiNINA.h>
@@ -25,6 +23,9 @@ const int remote1 = 250;
 const int remote20 = 269;
 const int switch1 = 350;
 const int switch5 = 354;
+const int inputActionThreshold = 5000; // ActionIds greater than this number are treated as inputs. 
+const int motion1 = 5050;
+const int motion5 = 5054;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
@@ -297,7 +298,7 @@ void handleModuleUpdate(String currentLine){
           pins[(i-1)/2] = atoi(str);
           initializeServos((i-1)/2);
         }
-        if(actions[(i-1)/2] <= switch5 && actions[(i-1)/2] >= switch1){
+        else if(actions[(i-1)/2] <= switch5 && actions[(i-1)/2] >= switch1){
           // We expect, in the case of two pins, a 4 digit
           // string regardless. 
           char pin1Str[3];
@@ -309,6 +310,10 @@ void handleModuleUpdate(String currentLine){
           pins[(i-1)/2] = atoi(pin1Str);
           pins2[(i-1)/2] = atoi(pin2Str);
           initializeServos((i-1)/2);
+        }
+        else if(actions[(i-1)/2] >= inputActionThreshold){
+          // TODO: Handle motion sensor, temperature, door.
+          // Initialize the pin to take in input and to do something if it does receive input. 
         }
         else {
           pins[(i-1)/2] = atoi(str);
@@ -325,6 +330,10 @@ void handleModuleUpdate(String currentLine){
         }
         else if(actions[i/2] <= switch5 && actions[i/2] >= switch1){
           states[i/2] = 20; // 20 is off, 21 is active, 22 is on. 
+        }
+        else if(actions[i/2] >= inputActionThreshold){
+          // TODO: Handle motion sensor, temperature, door. 
+          states[i/2] = 0;
         }
         else{
           states[i/2] = 0; // Default as binary.

@@ -56,6 +56,23 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  // Input enums. Are considered "actions" but are treated entirely differently. 
+  // Seperated from actions by 5000. Do not need to be known by client.
+  MOTION1: 5050,
+  MOTION2: 5051,
+  MOTION3: 5052,
+  MOTION4: 5053,
+  MOTION5: 5054,
+  DOOR1: 5150,
+  DOOR2: 5151,
+  DOOR3: 5152,
+  DOOR4: 5153,
+  DOOR5: 5154,
+  TEMP1: 5250,
+  TEMP2: 5251,
+  TEMP3: 5252,
+  TEMP4: 5253,
+  TEMP5: 5254,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -63,11 +80,8 @@ const actions = {
 const rooms = {
   BEDROOM: 1,
   LIVINGROOM: 2,
+  BATHROOM: 3,
 }
-
-// pubsub topic names
-const HOME_STATUS = 'homeStatus';
-const ACTION_STATES = 'actionStates';
 
 // End enums
 
@@ -137,8 +151,8 @@ const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, mod
 // Arduino 4 Living Room
 const module4LRId = 4; // Internal server use only. 
 const module4LRRoomId = rooms.LIVINGROOM; 
-const module4LRActions = [actions.REMOTE2, actions.SWITCH1];
-const module4LRPins = [12, 10.11];
+const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3];
+const module4LRPins = [12, 10.11, 9];
 const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
@@ -228,6 +242,22 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleStateUpdate GET request received. Arguments: " + JSON.stringify(req.params));
   // Update the module status.
   home.moduleStateUpdate(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
+  return res.status(200).send();
+});
+
+// Handle requests from modules to report input (actions > 5000).
+// Motion detection, temperature reports, door open/close, etc.
+// Ex) http://192.168.0.197/moduleInput/1/5050/0
+app.get('/moduleInput/:roomId/:actionId/:value', (req, res) => {
+  console.log("[DEBUG] /moduleInput GET request received. Arguments: " + JSON.stringify(req.params));
+  // Update the module status.
+  // TODO: handle this properly. Depending on the actionId, handle that accordingly.
+  // For example, when motion is detected, turn on a light. Another example, when
+  // temperature is reported, turn on the AC if it is too hot. Another example, 
+  // when the door is opened and then closed, execute alarm beeps until user
+  // confirms identity. 
+  // Basically, this is where all the REALLY fun stuff happens! 
+  //home.moduleStateUpdate(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
   return res.status(200).send();
 });
 

@@ -135,7 +135,7 @@ def runApplicationServer(iternum):
 
   # Load pretrained model
   #tf.compat.v1.disable_v2_behavior() # model trained in tf1
-  #model = tf.compat.v1.keras.models.load_model('./models/tr_model.h5')
+  #model = tf.compat.v1.keras.models.load_model('../../triggerWordDetection/models/tr_model_'+str(iternum) +'.h5')
 
   # Load our model. 
   model = load_model('../../triggerWordDetection/models/tr_model_'+str(iternum) +'.h5')

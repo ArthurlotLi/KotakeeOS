@@ -170,7 +170,8 @@ def get_random_time_segment(segment_ms):
   # TODO: Here I just randomly threw in 1000 so as to make sure that, if
   # a positive is inserted into the latest possible moment, there will
   # still be silence left over to fill with positive labels. 
-  segment_start = np.random.randint(low=0, high=10000-segment_ms-1000)   # Make sure segment doesn't run past the 10sec background 
+  #segment_start = np.random.randint(low=0, high=10000-segment_ms-1000)   # Make sure segment doesn't run past the 10sec background 
+  segment_start = np.random.randint(low=0, high=10000-segment_ms) # Maybe this change was causing the model to freak out? 
   segment_end = segment_start + segment_ms - 1
   
   return (segment_start, segment_end)
@@ -300,8 +301,8 @@ def create_training_example(background, activates, negatives):
   previous_segments = []
   ### END CODE HERE ###
   
-  # Select 0-3 random "activate" audio clips from the entire list of "activates" recordings
-  number_of_activates = np.random.randint(0, 4)
+  # Select 0-4 random "activate" audio clips from the entire list of "activates" recordings
+  number_of_activates = np.random.randint(0, 5)
   print("[DEBUG] Attempting to insert", number_of_activates, "activates.")
   random_indices = np.random.randint(len(activates), size=number_of_activates)
   random_activates = [activates[i] for i in random_indices]
@@ -319,8 +320,8 @@ def create_training_example(background, activates, negatives):
         y = insert_ones(y, segment_end_ms=segment_end)
   ### END CODE HERE ###
 
-  # Select 0-3 random negatives audio recordings from the entire list of "negatives" recordings
-  number_of_negatives = np.random.randint(0, 4)
+  # Select 0-2 random negatives audio recordings from the entire list of "negatives" recordings
+  number_of_negatives = np.random.randint(0, 3)
   random_indices = np.random.randint(len(negatives), size=number_of_negatives)
   random_negatives = [negatives[i] for i in random_indices]
   print("[DEBUG] Attempting to insert", number_of_negatives, "negatives.")
@@ -357,20 +358,25 @@ def train_model(X, Y):
   model.summary()
 
   # Tuning parameters that can be tweaked. 
-  dropout_level = 0.25
-  learning_rate = 0.01
+  learning_rate = 0.001
   loss_function = 'binary_crossentropy'
-  epochs = 1
-  batch_size=5
+  epochs = 500
+  batch_size=250
   validation_split = 0.2
-  rlr_patience = 50
+  rlr_patience = 7
   rlr_factor = 0.5
-  es_patience = 80
+  es_patience = 6
   es_min_delta = 1e-10
   verbose = True
 
+  # A simplified version
+  #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
+  #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+  #history = model.fit(X, Y, epochs=epochs, verbose=verbose, batch_size=batch_size)
+
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
-  opt = Adam(learning_rate=learning_rate)
+  #opt = Adam(learning_rate=learning_rate)
+  opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
 
   # Compiling the Neural Network with all of this, using adam optimizer. 
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])

@@ -2,3 +2,4 @@
 /software/public/static/libs/dist
 /kotakeeosModule/arduino_secrets.h
 /triggerWordDetection/XY_train
+/triggerWordDetection/XY_dev
