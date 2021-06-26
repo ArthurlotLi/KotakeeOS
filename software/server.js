@@ -271,7 +271,7 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 // Handle requests from modules to report input (actions > 5000).
 // Motion detection, temperature reports, door open/close, etc.
 // Ex) http://192.168.0.197/moduleInput/1/5050/0
-app.get('/moduleInput/:roomId/:actionId/:value', (req, res) => {
+app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleInput GET request received. Arguments: " + JSON.stringify(req.params));
   // Update the module status.
   // TODO: handle this properly. Depending on the actionId, handle that accordingly.
@@ -281,7 +281,40 @@ app.get('/moduleInput/:roomId/:actionId/:value', (req, res) => {
   // confirms identity. 
   // Basically, this is where all the REALLY fun stuff happens! 
   //home.moduleStateUpdate(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
-  return res.status(200).send();
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    var toState = parseInt(req.params.toState);
+    if(roomId != null && actionId != null && toState != null){
+
+      // TODO: This is placeholder code! Make this scalable and a property of each room!
+      // As in map an actionId to another action Id in the class object itself. 
+      // Also implement timers and stuff to deactivate and handle motion being detected in other
+      // rooms when no more motion is being detected in this room. 
+      const debugPlaceholderRoom3 = {
+        5050: [350]
+      };
+
+      if(debugPlaceholderRoom3[actionId] != null){
+        var actionsToTrigger = debugPlaceholderRoom3[actionId];
+        for(var i = 0; i < actionsToTrigger.length; i++){
+          var actionIdToTrigger = actionsToTrigger[i];
+          if(toState == 1){
+            var actionToggleState = 22;
+            // Motion was detected.
+            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+          }
+          else{
+            // Motion was not detected. For now, do nothing. 
+          }
+        }
+      }
+
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
 });
 
 // Handle requests from clients to fetch module States. This
