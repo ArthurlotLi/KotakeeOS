@@ -155,8 +155,8 @@ const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, mod
 // Arduino 4 Living Room
 const module4LRId = 4; // Internal server use only. 
 const module4LRRoomId = rooms.LIVINGROOM; 
-const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3];
-const module4LRPins = [12, 10.11, 9];
+const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3, actions.MOTION1];
+const module4LRPins = [12, 10.11, 9, 8];
 const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
@@ -294,9 +294,26 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
       const debugPlaceholderRoom3 = {
         5050: [350]
       };
+      const debugPlaceholderRoom2 = {
+        5050: [350]
+      };
 
       if(debugPlaceholderRoom3[actionId] != null){
         var actionsToTrigger = debugPlaceholderRoom3[actionId];
+        for(var i = 0; i < actionsToTrigger.length; i++){
+          var actionIdToTrigger = actionsToTrigger[i];
+          if(toState == 1){
+            var actionToggleState = 22;
+            // Motion was detected.
+            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+          }
+          else{
+            // Motion was not detected. For now, do nothing. 
+          }
+        }
+      }
+      else if(debugPlaceholderRoom2[actionId] != null){
+        var actionsToTrigger = debugPlaceholderRoom2[actionId];
         for(var i = 0; i < actionsToTrigger.length; i++){
           var actionIdToTrigger = actionsToTrigger[i];
           if(toState == 1){
