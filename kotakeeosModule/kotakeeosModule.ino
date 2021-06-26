@@ -31,6 +31,12 @@ const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
 const int servoActionWait = 600; // time to move arm between neutral and active.
 
+// Sanity mechanism. if we request to send an input status to the server 
+// within this elapsed time frame, we will declare that specific pin
+// unplugged and forcefully delete that action/pin/state etc from our
+// memory. 
+const unsigned long fatalInputPinMillis = 200; 
+
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
 const int actionsAndPinsMax = 25;
@@ -38,6 +44,9 @@ int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int pins2[actionsAndPinsMax]; // Subsequent pin arrays for actions that use more than one. 
 int states[actionsAndPinsMax];
+// Used to detect and shut down a pin that isn't connected so we don't
+// unintentinally DDOS our own web server. 
+unsigned long millisInput[actionsAndPinsMax];
 
 int roomId = -1;
 
@@ -62,6 +71,7 @@ void setup() {
     pins[i] = -1;
     pins2[i] = -1;
     states[i] = -1;
+    millisInput[i] = 0;
   }
 
   Serial.begin(9600);      // initialize serial communication
@@ -175,12 +185,6 @@ void readInputs(){
     if(actions[i] != -1 && actions[i] > inputActionThreshold){
       // We have an action that is an input!
       int sensorValue = digitalRead(pins[i]);
-      Serial.print("[DEBUG] For actionId ");
-      Serial.print(actions[i]);
-      Serial.print(" at pin ");
-      Serial.print(pins[i]);
-      Serial.print(", read sensorValue of: ");
-      Serial.println(sensorValue);
 
       // TODO: With this sensor value, depending on the action
       // value, do something with it. 
@@ -192,7 +196,13 @@ void readInputs(){
             // If this is our first time detecting thermal rad after
             // no motion, report that.
             states[i] = 1;
-            //moduleInput(actions[i]);
+            moduleInput(actions[i]);
+            Serial.print("[DEBUG] For actionId ");
+            Serial.print(actions[i]);
+            Serial.print(" at pin ");
+            Serial.print(pins[i]);
+            Serial.print(", read sensorValue of: ");
+            Serial.println(sensorValue);
           }
           else{
             // Preserve the existing state otherwise.
@@ -205,7 +215,13 @@ void readInputs(){
             // If we were sensing thermal rad and now we aren't
             // anymore, report that. 
             states[i] = 0;
-            //moduleInput(actions[i]);
+            moduleInput(actions[i]);
+            Serial.print("[DEBUG] For actionId ");
+            Serial.print(actions[i]);
+            Serial.print(" at pin ");
+            Serial.print(pins[i]);
+            Serial.print(", read sensorValue of: ");
+            Serial.println(sensorValue);
           }
           else{
             // Preserve the existing state otherwise.
@@ -617,8 +633,8 @@ void moduleStateUpdate(int actionId){
 
 // Given a need to report input to the web server, do so!
 // Takes in actionId (int) and sends the "state," aka the 
-// sensorValue. Basically identical to moduleStateUpdate
-// but has a very different context. 
+// sensorValue. Is also in charge of shutting down a pin
+// that is spamming requests.  
 void moduleInput(int actionId) {
   WiFiClient webServer;
 
@@ -631,6 +647,21 @@ void moduleInput(int actionId) {
   String toState = String(states[i]);
   String actionIdStr = String(actionId);
   String roomIdStr = String(roomId);
+
+  if(millis() - millisInput[i] < fatalInputPinMillis){
+    // Sanity check. If we're attempting to query the server for a second
+    // time within the fatalInputPinMillis timespan for this particular
+    // pin, shut the entire action down. 
+    Serial.println("[ERROR] moduleInput was queried too many times at once! Eliminating "+ roomIdStr+ " and actionId "+actionIdStr+".");
+    actions[i] = -1;
+    pins[i] = -1;
+    pins2[i] = -1;
+    states[i] = -1;
+    millisInput[i] = -1;
+    return;
+  }
+  // Otherwise we're good.
+  millisInput[i] = millis();
 
   // Make a basic HTTP request:
   if(webServer.connect(webServerIpAddress, webServerPort)){
