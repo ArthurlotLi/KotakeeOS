@@ -29,7 +29,7 @@ const int motion5 = 5054;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
-const int servoActionWait = 600; // time to move arm between neutral and active. 
+const int servoActionWait = 600; // time to move arm between neutral and active.
 
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
@@ -98,11 +98,16 @@ void setup() {
 
 
 void loop() {
+  readInputs(); // Read inputs if we need to. 
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
+      // Read inputs if we need to for each client connected loop as well,
+      // just in case so as to not block or lose any input. 
+      readInputs(); 
+
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
         //Serial.write(c);                    // print it out the serial monitor
@@ -157,6 +162,52 @@ void loop() {
     }
     // close the connection:
     client.stop();
+  }
+}
+
+// Called regularily with each loop - both the main loop and
+// the client.connected loop to ensure no input is blocked or
+// delayed. 
+void readInputs(){
+  // Go through all currently implemented actions. If any
+  // are > 5000, they have a pin that must be read for input.
+  for(int i = 0; i < actionsAndPinsMax; i++){
+    if(actions[i] > inputActionThreshold){
+      // We have an action that is an input!
+      int sensorValue = digitalRead(pins[i]);
+
+      // TODO: With this sensor value, depending on the action
+      // value, do something with it. 
+
+      // Handle Motion data.
+      if(actions[i] <= motion5 && actions[i] >= motion1){
+        if(sensorValue == 1){
+          if(states[i] == 0){
+            // If this is our first time detecting thermal rad after
+            // no motion, report that.
+            states[i] = 1;
+            moduleInput(actions[i]);
+          }
+          else{
+            // Preserve the existing state otherwise.
+            states[i] = 1;
+          }
+        }
+        else {
+          // No thermal radiation detected. 
+          if(states[i] == 1){
+            // If we were sensing thermal rad and now we aren't
+            // anymore, report that. 
+            states[i] = 0;
+            moduleInput(actions[i]);
+          }
+          else{
+            // Preserve the existing state otherwise.
+            states[i] = 0;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -312,8 +363,9 @@ void handleModuleUpdate(String currentLine){
           initializeServos((i-1)/2);
         }
         else if(actions[(i-1)/2] >= inputActionThreshold){
-          // TODO: Handle motion sensor, temperature, door.
-          // Initialize the pin to take in input and to do something if it does receive input. 
+          // Initialize the pin as input rather than output. 
+          pins[(i-1)/2] = atoi(str);
+          initializePinInput((i-1)/2);
         }
         else {
           pins[(i-1)/2] = atoi(str);
@@ -332,7 +384,7 @@ void handleModuleUpdate(String currentLine){
           states[i/2] = 20; // 20 is off, 21 is active, 22 is on. 
         }
         else if(actions[i/2] >= inputActionThreshold){
-          // TODO: Handle motion sensor, temperature, door. 
+          // For input actions, we're still using 0 as our default state.
           states[i/2] = 0;
         }
         else{
@@ -418,6 +470,16 @@ void initializePin(int actionIndex){
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pins[actionIndex]);
   Serial.print(" with OUTPUT for actionId ");
+  Serial.println(actions[actionIndex]);
+}
+
+// Takes in actionindex to initialize a Pin for input,
+// rather than output. 
+void initializePinInput(int actionIndex){
+  pinMode(pins[actionIndex], INPUT);
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pins[actionIndex]);
+  Serial.print(" with INPUT for actionId ");
   Serial.println(actions[actionIndex]);
 }
 
@@ -544,6 +606,36 @@ void moduleStateUpdate(int actionId){
   }
   else{
     Serial.println("[ERROR] querying Web Server with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
+  }
+}
+
+// Given a need to report input to the web server, do so!
+// Takes in actionId (int) and sends the "state," aka the 
+// sensorValue. Basically identical to moduleStateUpdate
+// but has a very different context. 
+void moduleInput(int actionId) {
+  WiFiClient webServer;
+
+  int i = findActionId(actionId);
+  if(i < 0){
+    Serial.print("[ERROR] moduleInput was unable to find actionId ");
+    Serial.println(actionId);
+  }
+
+  String toState = String(states[i]);
+  String actionIdStr = String(actionId);
+  String roomIdStr = String(roomId);
+
+  // Make a basic HTTP request:
+  if(webServer.connect(webServerIpAddress, webServerPort)){
+    webServer.println("GET /moduleInput/"+roomIdStr+"/"+actionIdStr+"/" + toState);
+    webServer.println("Connection: close");
+    webServer.println();
+    Serial.println("[DEBUG] moduleInput Queried Web Server successfully with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + ".");
+    webServer.stop();
+  }
+  else{
+    Serial.println("[ERROR] moduleInput failed querying Web Server with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
 

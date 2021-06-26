@@ -168,11 +168,19 @@ const module5BAPins = [10.11, 6.9];
 const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
+// Arduino 6 LR
+const module6LRId = 6; // Internal server use only. 
+const module6LRRoomId = rooms.LIVINGROOM; 
+const module6LRActions = [actions.MOTION1];
+const module6LRPins = [12];
+const module6LRIpAddress = "192.168.0.186";
+const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
+
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroom = new Room(rooms.BEDROOM,bedroomModules);
 
-const livingRoomModules = [module2LR, module3LR, module4LR];
+const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
 
 const bathroomModules = [module5BA];
