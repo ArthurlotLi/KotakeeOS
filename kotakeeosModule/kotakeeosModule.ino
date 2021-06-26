@@ -172,9 +172,15 @@ void readInputs(){
   // Go through all currently implemented actions. If any
   // are > 5000, they have a pin that must be read for input.
   for(int i = 0; i < actionsAndPinsMax; i++){
-    if(actions[i] > inputActionThreshold){
+    if(actions[i] != -1 && actions[i] > inputActionThreshold){
       // We have an action that is an input!
       int sensorValue = digitalRead(pins[i]);
+      Serial.print("[DEBUG] For actionId ");
+      Serial.print(actions[i]);
+      Serial.print(" at pin ");
+      Serial.print(pins[i]);
+      Serial.print(", read sensorValue of: ");
+      Serial.println(sensorValue);
 
       // TODO: With this sensor value, depending on the action
       // value, do something with it. 
@@ -186,7 +192,7 @@ void readInputs(){
             // If this is our first time detecting thermal rad after
             // no motion, report that.
             states[i] = 1;
-            moduleInput(actions[i]);
+            //moduleInput(actions[i]);
           }
           else{
             // Preserve the existing state otherwise.
@@ -199,7 +205,7 @@ void readInputs(){
             // If we were sensing thermal rad and now we aren't
             // anymore, report that. 
             states[i] = 0;
-            moduleInput(actions[i]);
+            //moduleInput(actions[i]);
           }
           else{
             // Preserve the existing state otherwise.
