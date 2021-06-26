@@ -183,7 +183,7 @@ const actionsAsStrings = {
   "3.268": "",
   "3.269": "",
   "3.350": "Bathroom Light",
-  "3.351": "",
+  "3.351": "Bathroom Fan",
   "3.352": "",
   "3.353": "",
   "3.354": "",
@@ -630,7 +630,7 @@ export class App extends React.Component {
         <div id="app-modules-row2">
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
           <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE15} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE15) }}></button>
+          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
         </div>
 
         <div id="app-modules-row3">
