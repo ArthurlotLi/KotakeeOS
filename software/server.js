@@ -343,8 +343,8 @@ const motionTimeoutValue = 10000; // If we don't see motion detected in this int
 var timeOfLastMotion = {};
 
 function motionTimeout(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState){
-  timeOfLastMotion = timeOfLastMotion[actionId];
-  if(timeOfLastMotion == null || timeOfLastMotion == timeOfTimeoutMotion){
+  var timeOfLastActionMotion = timeOfLastMotion[actionId];
+  if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
     // If we haven't seen any more movement between the time the timout
     // was started and now.
     home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
