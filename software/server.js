@@ -305,8 +305,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
           if(toState == 1){
             var actionToggleState = 22;
             // Motion was detected.
-            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            setTimeout(motionTimeout, motionTimeoutValue, new Date(), roomId, actionIdToTrigger, 20);
+            timeOfLastMotion = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -321,7 +321,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             var actionToggleState = 22;
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            setTimeout(motionTimeout, motionTimeoutValue, new Date(), roomId, actionIdToTrigger, 20);
+            timeOfLastMotion = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
