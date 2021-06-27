@@ -306,8 +306,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             var actionToggleState = 22;
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion[actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[actionId], actionId, roomId, actionIdToTrigger, 20);
+            timeOfLastMotion[roomId + "." + actionId] = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -322,8 +322,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             var actionToggleState = 22;
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion[actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[actionId], actionId, roomId, actionIdToTrigger, 20);
+            timeOfLastMotion[roomId + "." + actionId] = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -343,8 +343,8 @@ const motionTimeoutValue = 10000; // If we don't see motion detected in this int
 var timeOfLastMotion = {};
 
 function motionTimeout(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState){
-  console.log("[DEBUG] checking timeOfTimeoutMotion " + timeOfTimeoutMotion + " with timeOfLastMotion " + timeOfLastMotion[actionId]);
-  var timeOfLastActionMotion = timeOfLastMotion[actionId];
+  console.log("[DEBUG] checking timeOfTimeoutMotion " + timeOfTimeoutMotion + " with timeOfLastMotion " + timeOfLastMotion[roomId + "." + actionId]);
+  var timeOfLastActionMotion = timeOfLastMotion[roomId + "." + actionId];
   if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
     // If we haven't seen any more movement between the time the timout
     // was started and now.
