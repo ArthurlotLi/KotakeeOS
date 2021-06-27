@@ -305,6 +305,7 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
           if(toState == 1){
             var actionToggleState = 22;
             // Motion was detected.
+            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
             timeOfLastMotion = new Date();
             setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, roomId, actionIdToTrigger, 20);
           }
