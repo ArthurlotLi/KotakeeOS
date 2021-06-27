@@ -307,7 +307,7 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
             timeOfLastMotion[actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, actionId, roomId, actionIdToTrigger, 20);
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[actionId], actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -323,7 +323,7 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
             timeOfLastMotion[actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, actionId, roomId, actionIdToTrigger, 20);
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[actionId], actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -343,6 +343,7 @@ const motionTimeoutValue = 10000; // If we don't see motion detected in this int
 var timeOfLastMotion = {};
 
 function motionTimeout(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState){
+  console.log("[DEBUG] checking timeOfTimeoutMotion " + timeOfTimeoutMotion + " with timeOfLastMotion " + timeOfLastMotion[actionId]);
   var timeOfLastActionMotion = timeOfLastMotion[actionId];
   if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
     // If we haven't seen any more movement between the time the timout
