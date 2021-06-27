@@ -339,7 +339,7 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
 });
 
 // TODO: This is also proof of concept code to be moved to Modules. 
-const motionTimeoutValue = 20000; // If we don't see motion detected in this interval. 
+const motionTimeoutValue = 10000; // If we don't see motion detected in this interval. 
 var timeOfLastMotion = null;
 
 function motionTimeout(timeOfTimeoutMotion, roomId, actionIdToTrigger, actionToggleState){
