@@ -306,8 +306,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             var actionToggleState = 22;
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, roomId, actionIdToTrigger, 20);
+            timeOfLastMotion[actionId] = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -322,8 +322,8 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
             var actionToggleState = 22;
             // Motion was detected.
             home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, roomId, actionIdToTrigger, 20);
+            timeOfLastMotion[actionId] = new Date();
+            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion, actionId, roomId, actionIdToTrigger, 20);
           }
           else{
             // Motion was not detected. For now, do nothing. 
@@ -340,9 +340,10 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
 
 // TODO: This is also proof of concept code to be moved to Modules. 
 const motionTimeoutValue = 10000; // If we don't see motion detected in this interval. 
-var timeOfLastMotion = null;
+var timeOfLastMotion = {};
 
-function motionTimeout(timeOfTimeoutMotion, roomId, actionIdToTrigger, actionToggleState){
+function motionTimeout(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState){
+  timeOfLastMotion = timeOfLastMotion[actionId];
   if(timeOfLastMotion == null || timeOfLastMotion == timeOfTimeoutMotion){
     // If we haven't seen any more movement between the time the timout
     // was started and now.
