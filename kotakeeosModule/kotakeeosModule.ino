@@ -227,7 +227,7 @@ void readInputs(){
           // Door was open and now it is closed!
           inputDetected = true;
           states[i] = 1;
-           // Time to send a report to the server. 
+          // Time to send a report to the server. 
           moduleInput(actions[i]);
         }
         else if (sensorValue == 0 && states[i] == 1){
@@ -665,7 +665,7 @@ void moduleInput(int actionId) {
   String actionIdStr = String(actionId);
   String roomIdStr = String(roomId);
 
-  if(millis() - millisInput[i] < fatalInputPinMillis){
+  /*if(millis() - millisInput[i] < fatalInputPinMillis){
     // Sanity check. If we're attempting to query the server for a second
     // time within the fatalInputPinMillis timespan for this particular
     // pin, shut the entire action down. 
@@ -676,7 +676,7 @@ void moduleInput(int actionId) {
     states[i] = -1;
     millisInput[i] = -1;
     return;
-  }
+  }*/
   // Otherwise we're good.
   millisInput[i] = millis();
 
