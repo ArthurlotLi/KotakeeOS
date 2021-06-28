@@ -78,6 +78,9 @@ void setup() {
     millisInput[i] = 0;
   }
 
+  // Debug pin for indiciating stuff. 
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(9600);      // initialize serial communication
   Serial.println("[DEBUG] KotakeeOS Arduino Module booting...");
 
@@ -183,6 +186,7 @@ void loop() {
 // the client.connected loop to ensure no input is blocked or
 // delayed. 
 void readInputs(){
+  bool inputDetected = false;
   // Go through all currently implemented actions. If any
   // are > 5000, they have a pin that must be read for input.
   for(int i = 0; i < actionsAndPinsMax; i++){
@@ -196,6 +200,8 @@ void readInputs(){
       // Handle Motion data.
       if(actions[i] <= motion5 && actions[i] >= motion1){
         if(sensorValue == 1){
+          // Indicate motion sensor information.
+          inputDetected = true;
           states[i] = 1;
         }
 
@@ -213,6 +219,13 @@ void readInputs(){
         }
       }
     }
+  }
+
+  if(inputDetected){
+    digitalWrite(LED_BUILTIN, HIGH); 
+  }
+  else{
+    digitalWrite(LED_BUILTIN, LOW); 
   }
 }
 

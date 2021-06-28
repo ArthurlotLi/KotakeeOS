@@ -291,12 +291,23 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
       // As in map an actionId to another action Id in the class object itself. 
       // Also implement timers and stuff to deactivate and handle motion being detected in other
       // rooms when no more motion is being detected in this room. 
-      const debugPlaceholderRoom3 = {
+      var debugPlaceholderRoom3 = {
         5050: [350]
       };
-      const debugPlaceholderRoom2 = {
+      var debugPlaceholderRoom2 = {
         5050: [350]
       };
+      // TODO: Again, PoC code... use different lighting modules during certian times of day. 
+      var date = new Date();
+      var currentHour = date.getHours(); 
+      var currentMinutes = date.getHours(); 
+      // 9:00pm = 21.
+      if(currentHour >= 21 || currentHour <= 5){
+        // Overwrite.
+        debugPlaceholderRoom3 = {
+          5050: [50]
+        };
+      }
 
       if(debugPlaceholderRoom3[actionId] != null){
         var actionsToTrigger = debugPlaceholderRoom3[actionId];
