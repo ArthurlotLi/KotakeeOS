@@ -171,8 +171,8 @@ const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, mod
 // Arduino 6 LR
 const module6LRId = 6; // Internal server use only. 
 const module6LRRoomId = rooms.LIVINGROOM; 
-const module6LRActions = [actions.MOTION1];
-const module6LRPins = [8];
+const module6LRActions = [actions.DOOR1];
+const module6LRPins = [2];
 const module6LRIpAddress = "192.168.0.186";
 const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
 

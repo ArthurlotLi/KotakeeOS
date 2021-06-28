@@ -26,6 +26,8 @@ const int switch5 = 354;
 const int inputActionThreshold = 5000; // ActionIds greater than this number are treated as inputs. 
 const int motion1 = 5050;
 const int motion5 = 5054;
+const int door1 = 5150;
+const int door5 = 5154;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
@@ -217,6 +219,25 @@ void readInputs(){
 
           states[i] = 0; // Reset the state back to zero between now and the next report. 
         }
+      }
+
+      // Handle Door data
+      else if(actions[i] <= door5 && actions[i] >= door1){
+        if(sensorValue == 1 && states[i] == 0){
+          // Door was open and now it is closed!
+          inputDetected = true;
+          states[i] = 1;
+           // Time to send a report to the server. 
+          moduleInput(actions[i]);
+        }
+        else if (sensorValue == 0 && states[i] == 1){
+          // Door was closed and now it is open!
+          inputDetected = true;
+          states[i] = 0;
+          // Time to send a report to the server. 
+          moduleInput(actions[i]);
+        }
+        // Otherwise, no change, do nothing. 
       }
     }
   }
