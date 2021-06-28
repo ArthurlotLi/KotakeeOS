@@ -37,6 +37,10 @@ const int servoActionWait = 600; // time to move arm between neutral and active.
 // memory. 
 const unsigned long fatalInputPinMillis = 200; 
 
+// Time between reports (Buckets of time after which, if we see motion 
+// detected, we'll send a query to the server.)
+const unsigned long inputMillisReport = 500;
+
 // Hard coded array since we can only handle up to 25 actions
 // (arduinos only have up so many I/O pins. )
 const int actionsAndPinsMax = 25;
@@ -192,41 +196,20 @@ void readInputs(){
       // Handle Motion data.
       if(actions[i] <= motion5 && actions[i] >= motion1){
         if(sensorValue == 1){
-          if(states[i] == 0){
-            // If this is our first time detecting thermal rad after
-            // no motion, report that.
-            states[i] = 1;
-            moduleInput(actions[i]);
-            Serial.print("[DEBUG] For actionId ");
-            Serial.print(actions[i]);
-            Serial.print(" at pin ");
-            Serial.print(pins[i]);
-            Serial.print(", read sensorValue of: ");
-            Serial.println(sensorValue);
-          }
-          else{
-            // Preserve the existing state otherwise.
-            states[i] = 1;
-          }
+          states[i] = 1;
         }
-        else {
-          // No thermal radiation detected. 
-          if(states[i] == 1){
-            // If we were sensing thermal rad and now we aren't
-            // anymore, report that. 
-            states[i] = 0;
-            moduleInput(actions[i]);
-            Serial.print("[DEBUG] For actionId ");
-            Serial.print(actions[i]);
-            Serial.print(" at pin ");
-            Serial.print(pins[i]);
-            Serial.print(", read sensorValue of: ");
-            Serial.println(sensorValue);
-          }
-          else{
-            // Preserve the existing state otherwise.
-            states[i] = 0;
-          }
+
+        if(states[i] == 1 && millis() - millisInput[i] >= inputMillisReport){
+          // Time to send a report to the server. 
+          moduleInput(actions[i]);
+          Serial.print("[DEBUG] For actionId ");
+          Serial.print(actions[i]);
+          Serial.print(" at pin ");
+          Serial.print(pins[i]);
+          Serial.print(", read sensorValue of: ");
+          Serial.println(sensorValue);
+
+          states[i] = 0; // Reset the state back to zero between now and the next report. 
         }
       }
     }
