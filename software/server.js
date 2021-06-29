@@ -186,16 +186,18 @@ const livingRoomInputActions = {
   5050: {
     "function" : "timeout",
     1: {
-      "duration" : 20000,
       "start":{
         350: 22,
       },
       "timeout": {
-        350: 20,
+        350: { 
+          "duration" : 20000,
+          "toState": 20
+        },
       },
     },
   },
-};
+}
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
 const bathroomModules = [module5BA];
