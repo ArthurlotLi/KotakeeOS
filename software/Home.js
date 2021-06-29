@@ -283,14 +283,14 @@ class Home {
     if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
       // We'll reset the action state of the input state to 0 upon 
       // successful timeout. 
-      this.moduleStateUpdate(parseInt(roomId), parseInt(actionId), parseInt(0));
+      this.moduleStateUpdate(roomId, actionId, 0);
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
         for(var blockActionId in blockDict){
           var blockActionIdState = blockDict[blockActionId];
           // Get the state of that particular module action. 
-          var actionState = this.getActionState(roomId, actionId);
+          var actionState = this.getActionState(roomId, blockActionId);
           if(actionState != null && actionState == blockActionIdState){
             console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
             return;
