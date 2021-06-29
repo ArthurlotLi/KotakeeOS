@@ -69,6 +69,9 @@ class Home {
     this.publisher = publisher
     this.lastUpdateHomeStatus = null;
     this.lastUpdateActionStates = null;
+
+    // Because it's a callback! 
+    this.inputTimeoutCallback = this.inputTimeoutCallback.bind(this);
   }
 
   // Returns various general data.
@@ -274,22 +277,6 @@ class Home {
     }*/
   }
 
-   // Given roomId, actionId, and toState, update the state of 
-  // a module. This will initiate a topic update for ACTION_STATES.
-  async moduleStateUpdate(roomId, actionId, toState){
-    if(this.getRoom(roomId) != null){
-      var room = this.getRoom(roomId);
-      var updateStatus = await room.moduleStateUpdate(actionId, toState);
-      if(updateStatus){
-        this.lastUpdateActionStates = new Date().getTime();
-        console.log("[DEBUG] moduleStateUpdate succeeded. New lastUpdateActionStates is: " + this.lastUpdateActionStates + ".");
-      }
-    }
-    else
-      console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
-    return false;
-  }
-
   // Function called on at timeout. Expects the current time at time 
   // of timeout call, actionId and roomId, 
   inputTimeoutCallback(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState, room, blockDict){
@@ -318,6 +305,22 @@ class Home {
       // was started and now.
       this.actionToggle(roomId, actionIdToTrigger, actionToggleState);
     }
+  }
+
+  // Given roomId, actionId, and toState, update the state of 
+  // a module. This will initiate a topic update for ACTION_STATES.
+  async moduleStateUpdate(roomId, actionId, toState){
+    if(this.getRoom(roomId) != null){
+      var room = this.getRoom(roomId);
+      var updateStatus = await room.moduleStateUpdate(actionId, toState);
+      if(updateStatus){
+        this.lastUpdateActionStates = new Date().getTime();
+        console.log("[DEBUG] moduleStateUpdate succeeded. New lastUpdateActionStates is: " + this.lastUpdateActionStates + ".");
+      }
+    }
+    else
+      console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
+    return false;
   }
 
   topicPublishActionStates() {
