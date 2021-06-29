@@ -203,8 +203,13 @@ class Home {
     var startDict = stateInputActions["start"];
     if(startDict != null){
       for(var startActionId in startDict){
-        var startActionIdToState = startDict[startActionId];
-        this.actionToggle(roomId, startActionId, startActionIdToState);
+        var startActionIdDict = startDict[startActionId];
+        // Verify time requirements if they are present. 
+        if((startActionIdDict["timeMaxHr"] == null && startActionIdDict["timeMaxMin"] == null 
+          && startActionIdDict["timeMinHr"] == null && startActionIdDict["timeMinMin"] == null)|| 
+          checkTimeRequirements(startActionIdDict["timeMaxHr"], startActionIdDict["timeMaxMin"], startActionIdDict["timeMinHr"], startActionIdDict["timeMinMin"] )){
+          this.actionToggle(roomId, startActionId, startActionIdDict["toState"]);
+        }
       }
     }
 
@@ -216,35 +221,49 @@ class Home {
     if(timeoutDict != null){
       for(var timeoutActionId in timeoutDict){
         var timeoutActionIdDict = timeoutDict[timeoutActionId];
-        var timeoutActionIdToState = timeoutActionIdDict['toState'];
+        // Verify time requirements if they are present. 
+        if((timeoutActionIdDict["timeMaxHr"] == null && timeoutActionIdDict["timeMaxMin"] == null 
+          && timeoutActionIdDict["timeMinHr"] == null && timeoutActionIdDict["timeMinMin"] == null)|| 
+          checkTimeRequirements(timeoutActionIdDict["timeMaxHr"], timeoutActionIdDict["timeMaxMin"], timeoutActionIdDict["timeMinHr"], timeoutActionIdDict["timeMinMin"] )){
+          var timeoutActionIdToState = timeoutActionIdDict['toState'];
 
-        // Mandatory attributes
-        var duration = timeoutActionIdDict["duration"];
-        if(duration == null){
-          console.log("[ERROR] moduleInputTimeout failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" and timeoutActionId " +timeoutActionIdDict+ " does not have a duration for state " +toState +"!");
-          return false;
+          // Mandatory attributes
+          var duration = timeoutActionIdDict["duration"];
+          if(duration == null){
+            console.log("[ERROR] moduleInputTimeout failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" and timeoutActionId " +timeoutActionIdDict+ " does not have a duration for state " +toState +"!");
+            return false;
+          }
+
+          var currentTime = new Date();
+          // Save it in the room object. 
+          room.insertIntoInputActionsTimeoutTimes(actionId, currentTime);
+          // Create timeout callback with read duration plus arguments. 
+          setTimeout(this.inputTimeoutCallback, duration, currentTime, actionId, roomId, timeoutActionId, timeoutActionIdToState, room, blockDict);
         }
-
-
-        var currentTime = new Date();
-        // Save it in the room object. 
-        room.insertIntoInputActionsTimeoutTimes(actionId, currentTime);
-        // Create timeout callback with read duration plus arguments. 
-        setTimeout(this.inputTimeoutCallback, duration, currentTime, actionId, roomId, timeoutActionId, timeoutActionIdToState, room, blockDict);
       }
     }
+  }
 
-    // TODO: Again, PoC code... use different lighting modules during certian times of day. 
-    /*var date = new Date();
-    var currentHour = date.getHours(); 
-    var currentMinutes = date.getHours(); 
-    // 9:00pm = 21.
-    if(currentHour >= 21 || currentHour <= 5){
-      // Overwrite.
-      debugPlaceholderRoom3 = {
-        5050: [50]
-      };
-    }*/
+  // Helper function, given timeMaxHr, timeMaxMin, timeMinHr, and timeMinMin,
+  // Check if the current time is valid. True for yes, False for no. 
+  checkTimeRequirements(timeMaxHr, timeMaxMin, timeMinHr, timeMinMin){
+    // Because of sanity, I'm going to get rid of the off by one here. 
+    // This way when I say 20, I actually mean 8 o clock and not 9. 
+    timeMaxHr = timeMaxHr - 1;
+    timeMaxMin = timeMaxMin - 1;
+    timeMinHr = timeMinHr - 1;
+    timeMinMin = timeMinMin - 1;
+
+    var date = new Date();
+    var currentHrs = date.getHours(); // 0 - 23
+    var currentMins = date.getMinutes(); // 0 - 60
+
+    if((currentHrs < timeMaxHr && currentHrs > timeMinHr) || 
+      (currentHrs == timeMaxHr && currentMins <= timeMaxMin) ||
+      (currentHrs == timeMinHr && currentMins >= timeMinMin)){
+      return true;
+    }
+    return false;
   }
 
   // Function called on at timeout. Expects the current time at time 

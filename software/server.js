@@ -187,7 +187,9 @@ const livingRoomInputActions = {
     "function" : "timeout",
     1: {
       "start":{
-        350: 22,
+        350: {
+          "toState": 22,
+        },
       },
       "timeout": {
         350: { 
@@ -201,17 +203,6 @@ const livingRoomInputActions = {
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
 const bathroomModules = [module5BA];
-// Input logic. Kinda hard to follow, but allows for super ganular
-// functionality given an input. Here's an example. 5050 is the
-// input action to handle. The function is timeout, so we're looking
-// for predetermined values here and there. When the input is 1, 
-// we set the following actions to the given state, in this case,
-// we turn 350 on at state 22. We ignore all other inputs, as 1
-// is the only one we specify. In handling 1, we look for "timeout"
-// and "block", the latter of which is optional. For "timeout" specifies
-// what to do when the specified time runs out, in this case, we turn
-// 350 off at state 20. "block" specifies what action states, if any,
-// prevent the timeout. Oh, and we also specify a custom duration here. 
 const bathroomInputActions = {
   // Motion sensor (Turn on bathroom light)
   // Turn lights on on motion. Turn off after timeout. Do not turn 
@@ -219,19 +210,64 @@ const bathroomInputActions = {
   5050: {
     "function" : "timeout",
     1: {
-      //"timeOfDayMin": 6,
-      //"timeOfDayMax": 20,
       "start":{
-        350: 22,
+        350: {
+          "toState": 22,
+          "timeMaxHr": 20,
+          "timeMaxMin": 30,
+          "timeMinHr": 6,
+          "timeMinMin": 0,
+        },
+        // Red light First half of night
+        50: {
+          "toState": 1,
+          "timeMaxHr": 24,
+          "timeMaxMin": 60,
+          "timeMinHr": 20,
+          "timeMinMin": 31,
+        },
+        // Red light Second half of night
+        50: {
+          "toState": 1,
+          "timeMaxHr": 5,
+          "timeMaxMin": 60,
+          "timeMinHr": 0,
+          "timeMinMin": 0,
+        },
       },
       "timeout": {
         350: { 
           "duration" : 16000,
-          "toState": 20
+          "toState": 20,
+          "timeMaxHr": 20,
+          "timeMaxMin": 31,
+          "timeMinHr": 6,
+          "timeMinMin": 1,
+        },
+        // Red light First half of night
+        50: {
+          "duration" : 13000,
+          "toState": 1,
+          "timeMaxHr": 24,
+          "timeMaxMin": 60,
+          "timeMinHr": 20,
+          "timeMinMin": 32,
+        },
+        // Red light Second half of night
+        50: {
+          "duration" : 13000,
+          "toState": 1,
+          "timeMaxHr": 6,
+          "timeMaxMin": 00,
+          "timeMinHr": 0,
+          "timeMinMin": 0,
         },
       },
       "block": {
         350: {
+          5150: 1,
+        },
+        50: {
           5150: 1,
         },
       }
@@ -247,8 +283,31 @@ const bathroomInputActions = {
       "timeout": {
         350: { 
           "duration" : 16000,
-          "toState": 20
+          "toState": 20,
+          "timeMaxHr": 20,
+          "timeMaxMin": 30,
+          "timeMinHr": 6,
+          "timeMinMin": 0,
         },
+        // Red light First half of night
+        50: {
+          "duration" : 13000,
+          "toState": 1,
+          "timeMaxHr": 24,
+          "timeMaxMin": 60,
+          "timeMinHr": 20,
+          "timeMinMin": 32,
+        },
+        // Red light Second half of night
+        50: {
+          "duration" : 13000,
+          "toState": 1,
+          "timeMaxHr": 6,
+          "timeMaxMin": 00,
+          "timeMinHr": 0,
+          "timeMinMin": 0,
+        },
+        // Vent fan
         351: { 
           "duration" : 30000,
           "toState": 20
@@ -262,8 +321,32 @@ const bathroomInputActions = {
     },
     1:{
       "start": {
-        350: 22,
-        351: 22,
+        350: { // Turn on the light 
+          "toState": 22,
+          "timeMaxHr": 20,
+          "timeMaxMin": 30,
+          "timeMinHr": 6,
+          "timeMinMin": 0,
+        },
+        // Red light First half of night
+        50: {
+          "toState": 1,
+          "timeMaxHr": 24,
+          "timeMaxMin": 60,
+          "timeMinHr": 20,
+          "timeMinMin": 31,
+        },
+        // Red light Second half of night
+        50: {
+          "toState": 1,
+          "timeMaxHr": 5,
+          "timeMaxMin": 60,
+          "timeMinHr": 0,
+          "timeMinMin": 0,
+        },
+        351: { // Turn on the vent
+          "toState": 22,
+        },
       },
     }
   }
