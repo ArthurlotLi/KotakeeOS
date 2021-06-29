@@ -260,11 +260,13 @@ class Home {
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
+        console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
         for(var subjectActionId in blockDict){
           for(var blockActionId in blockDict){
             var blockActionIdState = blockDict[blockActionId];
             // Get the state of that particular module action. 
             var actionState = this.getActionState(roomId, blockActionId);
+            console.log("actionState is " + actionState + ", blockAcitonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
             if(actionState != null && parseInt(actionState) == parseInt(blockActionIdState) && parseInt(subjectActionId) == parseInt(actionIdToTrigger)){
               console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
               return;
