@@ -226,14 +226,6 @@ const bathroomInputActions = {
           "timeMinHr": 20,
           "timeMinMin": 31,
         },
-        // Red light Second half of night
-        50: {
-          "toState": 1,
-          "timeMaxHr": 5,
-          "timeMaxMin": 59,
-          "timeMinHr": 0,
-          "timeMinMin": 0,
-        },
       },
       "timeout": {
         350: { 
@@ -252,15 +244,6 @@ const bathroomInputActions = {
           "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 32,
-        },
-        // Red light Second half of night
-        50: {
-          "duration" : 13000,
-          "toState": 1,
-          "timeMaxHr": 6,
-          "timeMaxMin": 00,
-          "timeMinHr": 0,
-          "timeMinMin": 0,
         },
       },
       "block": {
@@ -298,15 +281,6 @@ const bathroomInputActions = {
           "timeMinHr": 20,
           "timeMinMin": 32,
         },
-        // Red light Second half of night
-        50: {
-          "duration" : 13000,
-          "toState": 1,
-          "timeMaxHr": 6,
-          "timeMaxMin": 00,
-          "timeMinHr": 0,
-          "timeMinMin": 0,
-        },
         // Vent fan
         351: { 
           "duration" : 30000,
@@ -335,14 +309,6 @@ const bathroomInputActions = {
           "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 31,
-        },
-        // Red light Second half of night
-        50: {
-          "toState": 1,
-          "timeMaxHr": 5,
-          "timeMaxMin": 59,
-          "timeMinHr": 0,
-          "timeMinMin": 0,
         },
         351: { // Turn on the vent
           "toState": 22,
