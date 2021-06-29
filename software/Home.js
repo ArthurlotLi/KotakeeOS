@@ -262,8 +262,9 @@ class Home {
       if(blockDict != null){
         console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
         for(var subjectActionId in blockDict){
-          for(var blockActionId in blockDict){
-            var blockActionIdState = blockDict[blockActionId];
+          var subjectDict = subjectActionId[subjectActionId];
+          for(var blockActionId in subjectDict){
+            var blockActionIdState = subjectDict[blockActionId];
             // Get the state of that particular module action. 
             var actionState = this.getActionState(roomId, blockActionId);
             console.log("actionState is " + actionState + ", blockAcitonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
