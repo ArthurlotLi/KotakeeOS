@@ -39,7 +39,7 @@ class Module {
         console.log("[ERROR] Module getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
     }
     else 
-      console.log("[ERROR] Module getActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ". Actions dict is: " + JSON.stringify(actions));
+      console.log("[ERROR] Module getActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ". Actions dict is: " + JSON.stringify(this.actions));
     return false;
   }
 
