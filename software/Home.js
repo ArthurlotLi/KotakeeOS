@@ -253,12 +253,12 @@ class Home {
     var currentHrs = date.getHours(); // 0 - 23
     var currentMins = date.getMinutes(); // 0 - 59
 
-    console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
+    //console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
 
     if((currentHrs < timeMaxHr && currentHrs > timeMinHr) || 
       (currentHrs == timeMaxHr && currentMins <= timeMaxMin) ||
       (currentHrs == timeMinHr && currentMins >= timeMinMin)){
-      console.log("[DEBUG] ...Passed!");
+      //console.log("[DEBUG] ...Passed!");
       return true;
     }
     return false;
