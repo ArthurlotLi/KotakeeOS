@@ -31,7 +31,7 @@ class Module {
   // Given an actionId, return current state. Returns null if actionId
   // does not exist for this module (not implemented).
   getActionState(actionId){
-    if(this.actions.includes(actionId)){
+    if(this.actions.includes(parseInt(actionId))){
       if(actionId in this.statesDict){
         return this.statesDict[actionId]; 
       }
