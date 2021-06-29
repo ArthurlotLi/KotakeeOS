@@ -207,7 +207,7 @@ class Home {
     var startDict = stateInputActions["start"];
     if(startDict != null){
       for(var startActionId in startDict){
-        startActionIdToState = startDict[startActionId];
+        var startActionIdToState = startDict[startActionId];
         this.actionToggle(roomId, startActionId, startActionIdToState);
       }
     }
@@ -219,7 +219,7 @@ class Home {
     var timeoutDict = stateInputActions["timeout"];
     if(timeoutDict != null){
       for(var timeoutActionId in timeoutDict){
-        timeoutActionIdToState = timeoutDict[startActionId];
+        var timeoutActionIdToState = timeoutDict[startActionId];
         var currentTime = new Date();
         // Save it in the room object. 
         room.insertIntoInputActionsTimeoutTimes(actionId, currentTime);
@@ -288,7 +288,7 @@ class Home {
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
         for(var blockActionId in blockDict){
-          blockActionIdState = blockDict[blockActionId];
+          var blockActionIdState = blockDict[blockActionId];
           // Get the state of that particular module action. 
           var actionState = this.getActionState(roomId, actionId);
           if(actionState != null && actionState == blockActionIdState){
