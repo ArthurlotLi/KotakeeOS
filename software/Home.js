@@ -105,17 +105,203 @@ class Home {
     return null;
   }
 
+  // Returns either null or the action state of a room's 
+  // action. 
+  getActionState(roomId, actionId){
+    var room = this.getRoom(roomId);
+    if(room != null){
+      return room.getActionState(actionId);
+    }
+    else
+      console.log("[ERROR] getActionState failed! roomId " + roomId + " does not exist.");
+    return null;
+  }
+
   // Given roomId, actionId, and toState, kick off the process. 
   // Accepts virtual boolean to specify not to execute physical
   // action to resolve desynchronization issues. 
   actionToggle(roomId, actionId, toState, virtual = false){
-    if(this.getRoom(roomId) != null){
-      var room = this.getRoom(roomId);
+    var room = this.getRoom(roomId);
+    if(room != null){
       return room.actionToggle(actionId, toState, virtual);
     }
     else
       console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
     return false;
+  }
+
+  // Given roomId, actionId, and toState, use stored room 
+  // variables to execute some sort of function upon input. 
+  moduleInput(roomId, actionId, toState){
+    // SANITY CHECKS. SO MANY SANTIY CHECKS.  
+    var room = this.getRoom(roomId);
+    if(room == null){
+      console.log("[ERROR] moduleInput failed! roomId " + roomId + " does not exist.");
+      return false;
+    }
+    var inputActions = room.getInputActions();
+    if(inputActions == null || Object.keys(inputActions).length <= 0){
+      console.log("[ERROR] moduleInput failed! roomId " + roomId + " has an empty inputActions array!");
+      return false;
+    }
+    var actionInputActions = inputActions[actionId]; // A funny name, I know. 
+    if(actionInputActions == null){
+      console.log("[ERROR] moduleInput failed! roomId " + roomId + " does not have an inputActions entry for actionId " +actionId+"!");
+      return false;
+    }
+    var inputFunction = actionInputActions["function"]
+    if(inputFunction == null){
+      console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
+      return false;
+    }
+    var stateInputActions = actionInputActions[toState]
+    if(stateInputActions == null){
+      console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
+      return false;
+    }
+
+    // If we survived the great filter, let's act depending 
+    // on the function given.
+    switch(inputFunction){
+      case "timeout":
+        return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
+      //case "none":
+        //break;
+      default:
+        console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+        return false;
+    }
+  }
+
+  // Handle timeout input request. We expect to be completely
+  // sane at this point, having gone through the moduleInput
+  // funnel. We handle inputs with a number of keywords, some 
+  // optional some not, listed here. 
+  //
+  // Handle timeouts - execute certain actions at the start
+  // and "timeout". A "timeout" is defined as there having 
+  // been no further reports from the specified actionId
+  // and roomId between the time of start and time after 
+  // timeout duration. If there was, the timeout expires 
+  // with no action taken.
+  //
+  // Additionally, there is the option to block a timeout action
+  // even if a valid timeout event is detected - a sort of 
+  // override. 
+  //
+  // Expects usual trio from get request plus stateInputActions
+  // from the room actionInput object. 
+  moduleInputTimeout(roomId, actionId, toState, stateInputActions, room){
+    // Given the stateInputActions value, kick off the timeout
+    // functionality depending on what attributes are present.
+
+    // Mandatory attributes
+    var duration = stateInputActions["duration"];
+    if(duration == null){
+      console.log("[ERROR] moduleInputTimeout failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a duration for state " +toState +"!");
+      return false;
+    }
+
+    // Optional attributes
+    // Start - actions to do immediately upon timeout start. 
+    var startDict = stateInputActions["start"];
+    if(startDict != null){
+      for(startActionId in startDict){
+        startActionIdToState = startDict[startActionId];
+        this.actionToggle(roomId, startActionId, startActionIdToState);
+      }
+    }
+
+    // Block - optional. Gets thrown into inputTimeoutCallback. 
+    var blockDict = stateInputActions["block"];
+
+    // Timeout - actions to do once the timeout expires start. 
+    var timeoutDict = stateInputActions["timeout"];
+    if(timeoutDict != null){
+      for(timeoutActionId in timeoutDict){
+        timeoutActionIdToState = timeoutDict[startActionId];
+        var currentTime = new Date();
+        // Save it in the room object. 
+        room.insertIntoInputActionsTimeoutTimes(actionId, currentTime);
+        // Create timeout callback with read duration plus arguments. 
+        setTimeout(this.inputTimeoutCallback, duration, currentTime, actionId, roomId, timeoutActionId, timeoutActionIdToState, room, blockDict);
+      }
+    }
+
+    // TODO: Again, PoC code... use different lighting modules during certian times of day. 
+    /*var date = new Date();
+    var currentHour = date.getHours(); 
+    var currentMinutes = date.getHours(); 
+    // 9:00pm = 21.
+    if(currentHour >= 21 || currentHour <= 5){
+      // Overwrite.
+      debugPlaceholderRoom3 = {
+        5050: [50]
+      };
+    }*/
+/*
+    if(debugPlaceholderRoom3[actionId] != null){
+      var actionsToTrigger = debugPlaceholderRoom3[actionId];
+      for(var i = 0; i < actionsToTrigger.length; i++){
+        var actionIdToTrigger = actionsToTrigger[i];
+        if(toState == 1){
+          var actionToggleState = 22;
+          // Motion was detected.
+          home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+          timeOfLastMotion[roomId + "." + actionId] = new Date();
+          setTimeout(this.inputTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
+        }
+        else{
+          // Motion was not detected. For now, do nothing. 
+        }
+      }
+    }
+    else if(debugPlaceholderRoom2[actionId] != null){
+      var actionsToTrigger = debugPlaceholderRoom2[actionId];
+      for(var i = 0; i < actionsToTrigger.length; i++){
+        var actionIdToTrigger = actionsToTrigger[i];
+        if(toState == 1){
+          var actionToggleState = 22;
+          // Motion was detected.
+          home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+          timeOfLastMotion[roomId + "." + actionId] = new Date();
+          setTimeout(this.inputTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
+        }
+        else{
+          // Motion was not detected. For now, do nothing. 
+        }
+      }
+    }*/
+  }
+
+  // Function called on at timeout. Expects the current time at time 
+  // of timeout call, actionId and roomId, 
+  inputTimeoutCallback(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState, room, blockDict){
+    var timeOfLastActionMotion = room.getInputActionsTimeoutTimes()[actionId];
+    // Check if we've received no more inputs for this action since 
+    // timeOfTimeoutMotion. 
+    if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
+      // We'll reset the action state of the input state to 0 upon 
+      // successful timeout. 
+      this.moduleStateUpdate(roomId, actionId, 0);
+
+      // Check the blockDict before we execute the timeout action. 
+      if(blockDict != null){
+        for(blockActionId in blockDict){
+          blockActionIdState = blockDict[blockActionId];
+          // Get the state of that particular module action. 
+          var actionState = this.getActionState(roomId, actionId);
+          if(actionState != null && actionState == blockActionIdState){
+            console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
+            return;
+          }
+        }
+      }
+      console.log("[DEBUG] inputTimeoutCallback timeOfTimeoutMotion is null or equal to timeOfLastMotion for room " + roomId + " action " + actionId);
+      // If we haven't seen any more movement between the time the timout
+      // was started and now.
+      this.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+    }
   }
 
   // Given roomId, actionId, and toState, update the state of 
@@ -124,16 +310,6 @@ class Home {
     if(this.getRoom(roomId) != null){
       var room = this.getRoom(roomId);
       var updateStatus = await room.moduleStateUpdate(actionId, toState);
-      if(this.publisher != null){
-          if( updateStatus){
-          // The state actually changed. 
-          console.log("[DEBUG] moduleStateUpdate succeeded. Updating Topic ACTION_STATES.");
-          this.topicPublishActionStates();
-        }
-        else{
-          console.log("[DEBUG] moduleStateUpdate did nothing. Not updating ACTION_STATES.");
-        }
-      }
       if(updateStatus){
         this.lastUpdateActionStates = new Date().getTime();
         console.log("[DEBUG] moduleStateUpdate succeeded. New lastUpdateActionStates is: " + this.lastUpdateActionStates + ".");

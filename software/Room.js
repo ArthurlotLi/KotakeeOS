@@ -7,8 +7,9 @@ const fetch = require("node-fetch");
 
 // Each room contains room enum as well as an array of modules. 
 class Room {
-  constructor(roomId, modules){
+  constructor(roomId, modules, inputActions){
     this.roomId = roomId;
+    this.inputActions = inputActions;
     // Create two dictionaries - one indexed by actionId, the other
     // by moduleId. 
     var actionsDict = {};
@@ -28,6 +29,21 @@ class Room {
     this.modulesDict = modulesDict;
     this.modulesCount = modulesCount;
     console.log("[DEBUG] Created room id " + roomId+ " with the following info:\nactionsDict " + JSON.stringify(actionsDict) + "\nmodulesDict " + JSON.stringify(modulesDict) + "\nmodulesCount " + modulesCount);
+    
+    // Used to store Dates for inputActionsTimeout. 
+    this.inputActionsTimeoutTimes = {};
+  }
+
+  getInputActions(){
+    return this.inputActions;
+  }
+
+  getInputActionsTimeoutTimes(){
+    return this.inputActionsTimeoutTimes;
+  }
+
+  insertIntoInputActionsTimeoutTimes(key, value){
+    this.inputActionsTimeoutTimes[key] = value
   }
 
   // Given an ipAddress, go through all modules in this room and
@@ -124,6 +140,24 @@ class Room {
       }
     }
     return response;
+  }
+
+  // Returns either null or the action state of a room's 
+  // action. 
+  getActionState(actionId){
+    if(actionId in this.actionsDict){
+      var moduleId = this.actionsDict[actionId];
+      if(moduleId in this.modulesDict){
+        var module = this.modulesDict[moduleId];
+
+        return module.getActionState(actionId);
+      }
+      else 
+        console.log("[ERROR] getActionState failed! actionId " + actionId + " WAS found, but the saved moduleId "+ moduleId +" does not exist in room " + this.roomId + ".");
+    }
+    else 
+      console.log("[ERROR] getActionState failed! actionId " + actionId + " does not exist in room " + this.roomId + ".");
+    return null;
   }
 }
 

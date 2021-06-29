@@ -178,13 +178,78 @@ const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, mod
 
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
-const bedroom = new Room(rooms.BEDROOM,bedroomModules);
+const bedroomInputActions = {};
+const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
 const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
-const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules);
+const livingRoomInputActions = {
+  5050: {
+    "function" : "timeout",
+    1: {
+      "duration" : 20000,
+      "start":{
+        350: 22,
+      },
+      "timeout": {
+        350: 20,
+      },
+    },
+  },
+};
+const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
 const bathroomModules = [module5BA];
-const bathroom = new Room(rooms.BATHROOM,bathroomModules);
+// Input logic. Kinda hard to follow, but allows for super ganular
+// functionality given an input. Here's an example. 5050 is the
+// input action to handle. The function is timeout, so we're looking
+// for predetermined values here and there. When the input is 1, 
+// we set the following actions to the given state, in this case,
+// we turn 350 on at state 22. We ignore all other inputs, as 1
+// is the only one we specify. In handling 1, we look for "timeout"
+// and "block", the latter of which is optional. For "timeout" specifies
+// what to do when the specified time runs out, in this case, we turn
+// 350 off at state 20. "block" specifies what action states, if any,
+// prevent the timeout. Oh, and we also specify a custom duration here. 
+const bathroomInputActions = {
+  // Motion sensor (Turn on bathroom light)
+  // Turn lights on on motion. Turn off after timeout. Do not turn 
+  // off lights if door is closed. 
+  5050: {
+    "function" : "timeout",
+    1: {
+      //"timeOfDayMin": 6,
+      //"timeOfDayMax": 20,
+      "duration" : 16000,
+      "start":{
+        350: 22,
+      },
+      "timeout": {
+        350: 20,
+      },
+      "block": {
+        5150: 1,
+      }
+    },
+  },
+  // Door (Timeout after it is opened.)
+  // Turn lights and vent on if closed, without timeout. When door is
+  // opened, do nothing, but start timeout counter to shut down lights.
+  // Do not shut down lights if motion is being detected inside. 
+  /*5150: {
+    "function" : "timeout",
+    0: {
+      "duration" : 16000,
+      "timeout": {
+        350: 20,
+        351: 20,
+      },
+      "block": {
+        5050: 1,
+      }
+    },
+  }*/
+};
+const bathroom = new Room(rooms.BATHROOM,bathroomModules, bathroomInputActions);
 
 // Home
 const homeRooms = [bedroom, livingRoom, bathroom];
@@ -270,98 +335,26 @@ app.get('/moduleStateUpdate/:roomId/:actionId/:toState', (req, res) => {
 
 // Handle requests from modules to report input (actions > 5000).
 // Motion detection, temperature reports, door open/close, etc.
+// This is basically where all the fun (and more complicated)
+// stuff happens. 
 // Ex) http://192.168.0.197/moduleInput/1/5050/0
 app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
   console.log("[DEBUG] /moduleInput GET request received. Arguments: " + JSON.stringify(req.params));
-  // Update the module status.
-  // TODO: handle this properly. Depending on the actionId, handle that accordingly.
-  // For example, when motion is detected, turn on a light. Another example, when
-  // temperature is reported, turn on the AC if it is too hot. Another example, 
-  // when the door is opened and then closed, execute alarm beeps until user
-  // confirms identity. 
-  // Basically, this is where all the REALLY fun stuff happens! 
-  //home.moduleStateUpdate(parseInt(req.params.roomId), parseInt(req.params.actionId), parseInt(req.params.toState));
   if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
     var roomId = parseInt(req.params.roomId);
     var actionId = parseInt(req.params.actionId);
     var toState = parseInt(req.params.toState);
     if(roomId != null && actionId != null && toState != null){
-
-      // TODO: This is placeholder code! Make this scalable and a property of each room!
-      // As in map an actionId to another action Id in the class object itself. 
-      // Also implement timers and stuff to deactivate and handle motion being detected in other
-      // rooms when no more motion is being detected in this room. 
-      var debugPlaceholderRoom3 = {
-        5050: [350]
-      };
-      var debugPlaceholderRoom2 = {
-        5050: [350]
-      };
-      // TODO: Again, PoC code... use different lighting modules during certian times of day. 
-      var date = new Date();
-      var currentHour = date.getHours(); 
-      var currentMinutes = date.getHours(); 
-      // 9:00pm = 21.
-      if(currentHour >= 21 || currentHour <= 5){
-        // Overwrite.
-        debugPlaceholderRoom3 = {
-          5050: [50]
-        };
-      }
-
-      if(debugPlaceholderRoom3[actionId] != null){
-        var actionsToTrigger = debugPlaceholderRoom3[actionId];
-        for(var i = 0; i < actionsToTrigger.length; i++){
-          var actionIdToTrigger = actionsToTrigger[i];
-          if(toState == 1){
-            var actionToggleState = 22;
-            // Motion was detected.
-            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion[roomId + "." + actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
-          }
-          else{
-            // Motion was not detected. For now, do nothing. 
-          }
-        }
-      }
-      else if(debugPlaceholderRoom2[actionId] != null){
-        var actionsToTrigger = debugPlaceholderRoom2[actionId];
-        for(var i = 0; i < actionsToTrigger.length; i++){
-          var actionIdToTrigger = actionsToTrigger[i];
-          if(toState == 1){
-            var actionToggleState = 22;
-            // Motion was detected.
-            home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-            timeOfLastMotion[roomId + "." + actionId] = new Date();
-            setTimeout(motionTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
-          }
-          else{
-            // Motion was not detected. For now, do nothing. 
-          }
-        }
-      }
-
+      // We always update the state in memory regardless of what additional
+      // things we do with the input. 
+      home.moduleStateUpdate(roomId, actionId, toState);
+      home.moduleInput(roomId, actionId, toState)
       // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
       return res.status(200).send();
     }
   }
   return res.status(400).send();
 });
-
-// TODO: This is also proof of concept code to be moved to Modules. 
-const motionTimeoutValue = 20000; // If we don't see motion detected in this interval. 
-var timeOfLastMotion = {};
-
-function motionTimeout(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState){
-  console.log("[DEBUG] checking timeOfTimeoutMotion " + timeOfTimeoutMotion + " with timeOfLastMotion " + timeOfLastMotion[roomId + "." + actionId]);
-  var timeOfLastActionMotion = timeOfLastMotion[roomId + "." + actionId];
-  if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
-    // If we haven't seen any more movement between the time the timout
-    // was started and now.
-    home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-  }
-}
 
 // Handle requests from clients to fetch module States. This
 // should be called frequently (every few seconds).
