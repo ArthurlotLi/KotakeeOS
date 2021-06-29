@@ -283,7 +283,7 @@ class Home {
     if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
       // We'll reset the action state of the input state to 0 upon 
       // successful timeout. 
-      this.moduleStateUpdate(roomId, actionId, 0);
+      this.moduleStateUpdate(parseInt(roomId), parseInt(actionId), parseInt(0));
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
