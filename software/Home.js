@@ -215,7 +215,7 @@ class Home {
     var timeoutDict = stateInputActions["timeout"];
     if(timeoutDict != null){
       for(var timeoutActionId in timeoutDict){
-        var timeoutActionIdDict = timeoutDict[startActionId];
+        var timeoutActionIdDict = timeoutDict[timeoutActionId];
         var timeoutActionIdToState = timeoutActionIdDict['toState'];
 
         // Mandatory attributes
