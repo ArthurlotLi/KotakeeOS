@@ -239,11 +239,11 @@ const bathroomInputActions = {
         // Red light First half of night
         50: {
           "duration" : 13000,
-          "toState": 1,
+          "toState": 0,
           "timeMaxHr": 23,
           "timeMaxMin": 59,
           "timeMinHr": 20,
-          "timeMinMin": 32,
+          "timeMinMin": 31,
         },
       },
       "block": {
