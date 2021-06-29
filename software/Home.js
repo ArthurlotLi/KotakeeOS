@@ -206,7 +206,7 @@ class Home {
     // Start - actions to do immediately upon timeout start. 
     var startDict = stateInputActions["start"];
     if(startDict != null){
-      for(startActionId in startDict){
+      for(var startActionId in startDict){
         startActionIdToState = startDict[startActionId];
         this.actionToggle(roomId, startActionId, startActionIdToState);
       }
@@ -218,7 +218,7 @@ class Home {
     // Timeout - actions to do once the timeout expires start. 
     var timeoutDict = stateInputActions["timeout"];
     if(timeoutDict != null){
-      for(timeoutActionId in timeoutDict){
+      for(var timeoutActionId in timeoutDict){
         timeoutActionIdToState = timeoutDict[startActionId];
         var currentTime = new Date();
         // Save it in the room object. 
@@ -287,7 +287,7 @@ class Home {
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
-        for(blockActionId in blockDict){
+        for(var blockActionId in blockDict){
           blockActionIdState = blockDict[blockActionId];
           // Get the state of that particular module action. 
           var actionState = this.getActionState(roomId, actionId);
