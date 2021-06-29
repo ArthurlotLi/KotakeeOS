@@ -250,7 +250,7 @@ const bathroomInputActions = {
           "toState": 20
         },
         351: { 
-          "duration" : 8000,
+          "duration" : 30000,
           "toState": 20
         },
       },
