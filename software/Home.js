@@ -293,7 +293,6 @@ class Home {
         for(var blockActionId in blockDict){
           var blockActionIdState = blockDict[blockActionId];
           // Get the state of that particular module action. 
-          console.log("YEET");
           var actionState = this.getActionState(roomId, blockActionId);
           if(actionState != null && actionState == blockActionIdState){
             console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");

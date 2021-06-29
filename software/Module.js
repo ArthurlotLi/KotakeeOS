@@ -4,6 +4,7 @@
   interface with the arduino modules themselves. 
 */
 
+const { json } = require("express");
 const fetch = require("node-fetch");
 
 // Each module contains an array of supported actions and an ipAddress.
@@ -35,10 +36,10 @@ class Module {
         return this.statesDict[actionId]; 
       }
       else 
-        console.log("[ERROR] getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
+        console.log("[ERROR] Module getActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
     }
     else 
-      console.log("[ERROR] getActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ".");
+      console.log("[ERROR] Module getActionState failed! actionId " + actionId + " is not implemented for module " + this.ipAddress + ". Actions dict is: " + JSON.stringify(actions));
     return false;
   }
 
