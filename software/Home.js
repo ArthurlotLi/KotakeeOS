@@ -262,7 +262,7 @@ class Home {
       if(blockDict != null){
         console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
         for(var subjectActionId in blockDict){
-          var subjectDict = subjectActionId[subjectActionId];
+          var subjectDict = blockDict[subjectActionId];
           for(var blockActionId in subjectDict){
             var blockActionIdState = subjectDict[blockActionId];
             // Get the state of that particular module action. 
