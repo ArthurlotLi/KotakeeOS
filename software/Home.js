@@ -207,7 +207,7 @@ class Home {
         // Verify time requirements if they are present. 
         if((startActionIdDict["timeMaxHr"] == null && startActionIdDict["timeMaxMin"] == null 
           && startActionIdDict["timeMinHr"] == null && startActionIdDict["timeMinMin"] == null)|| 
-          checkTimeRequirements(startActionIdDict["timeMaxHr"], startActionIdDict["timeMaxMin"], startActionIdDict["timeMinHr"], startActionIdDict["timeMinMin"] )){
+          this.checkTimeRequirements(startActionIdDict["timeMaxHr"], startActionIdDict["timeMaxMin"], startActionIdDict["timeMinHr"], startActionIdDict["timeMinMin"] )){
           this.actionToggle(roomId, startActionId, startActionIdDict["toState"]);
         }
       }
@@ -224,7 +224,7 @@ class Home {
         // Verify time requirements if they are present. 
         if((timeoutActionIdDict["timeMaxHr"] == null && timeoutActionIdDict["timeMaxMin"] == null 
           && timeoutActionIdDict["timeMinHr"] == null && timeoutActionIdDict["timeMinMin"] == null)|| 
-          checkTimeRequirements(timeoutActionIdDict["timeMaxHr"], timeoutActionIdDict["timeMaxMin"], timeoutActionIdDict["timeMinHr"], timeoutActionIdDict["timeMinMin"] )){
+          this.checkTimeRequirements(timeoutActionIdDict["timeMaxHr"], timeoutActionIdDict["timeMaxMin"], timeoutActionIdDict["timeMinHr"], timeoutActionIdDict["timeMinMin"] )){
           var timeoutActionIdToState = timeoutActionIdDict['toState'];
 
           // Mandatory attributes
