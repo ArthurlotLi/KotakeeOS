@@ -235,7 +235,7 @@ const bathroomInputActions = {
   // Turn lights and vent on if closed, without timeout. When door is
   // opened, do nothing, but start timeout counter to shut down lights.
   // Do not shut down lights if motion is being detected inside. 
-  /*5150: {
+  5150: {
     "function" : "timeout",
     0: {
       "duration" : 16000,
@@ -244,10 +244,19 @@ const bathroomInputActions = {
         351: 20,
       },
       "block": {
-        5050: 1,
-      }
+        350: {
+          5050: 1,
+        },
+      },
     },
-  }*/
+    1:{
+      "duration" : 0,
+      "start": {
+        350: 22,
+        351: 22,
+      },
+    }
+  }
 };
 const bathroom = new Room(rooms.BATHROOM,bathroomModules, bathroomInputActions);
 

@@ -242,39 +242,6 @@ class Home {
         5050: [50]
       };
     }*/
-/*
-    if(debugPlaceholderRoom3[actionId] != null){
-      var actionsToTrigger = debugPlaceholderRoom3[actionId];
-      for(var i = 0; i < actionsToTrigger.length; i++){
-        var actionIdToTrigger = actionsToTrigger[i];
-        if(toState == 1){
-          var actionToggleState = 22;
-          // Motion was detected.
-          home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-          timeOfLastMotion[roomId + "." + actionId] = new Date();
-          setTimeout(this.inputTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
-        }
-        else{
-          // Motion was not detected. For now, do nothing. 
-        }
-      }
-    }
-    else if(debugPlaceholderRoom2[actionId] != null){
-      var actionsToTrigger = debugPlaceholderRoom2[actionId];
-      for(var i = 0; i < actionsToTrigger.length; i++){
-        var actionIdToTrigger = actionsToTrigger[i];
-        if(toState == 1){
-          var actionToggleState = 22;
-          // Motion was detected.
-          home.actionToggle(roomId, actionIdToTrigger, actionToggleState);
-          timeOfLastMotion[roomId + "." + actionId] = new Date();
-          setTimeout(this.inputTimeout, motionTimeoutValue, timeOfLastMotion[roomId + "." + actionId], actionId, roomId, actionIdToTrigger, 20);
-        }
-        else{
-          // Motion was not detected. For now, do nothing. 
-        }
-      }
-    }*/
   }
 
   // Function called on at timeout. Expects the current time at time 
@@ -290,13 +257,15 @@ class Home {
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
-        for(var blockActionId in blockDict){
-          var blockActionIdState = blockDict[blockActionId];
-          // Get the state of that particular module action. 
-          var actionState = this.getActionState(roomId, blockActionId);
-          if(actionState != null && actionState == blockActionIdState){
-            console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
-            return;
+        for(var subjectActionId in blockDict){
+          for(var blockActionId in blockDict){
+            var blockActionIdState = blockDict[blockActionId];
+            // Get the state of that particular module action. 
+            var actionState = this.getActionState(roomId, blockActionId);
+            if(actionState != null && actionState == blockActionIdState && subjectActionId == actionIdToTrigger){
+              console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
+              return;
+            }
           }
         }
       }
