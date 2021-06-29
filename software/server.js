@@ -219,15 +219,19 @@ const bathroomInputActions = {
     1: {
       //"timeOfDayMin": 6,
       //"timeOfDayMax": 20,
-      "duration" : 16000,
       "start":{
         350: 22,
       },
       "timeout": {
-        350: 20,
+        350: { 
+          "duration" : 16000,
+          "toState": 20
+        },
       },
       "block": {
-        5150: 1,
+        350: {
+          5150: 1,
+        },
       }
     },
   },
@@ -237,11 +241,16 @@ const bathroomInputActions = {
   // Do not shut down lights if motion is being detected inside. 
   5150: {
     "function" : "timeout",
-    0: {
-      "duration" : 16000,
+    0: { // Door was opened after being closed. 
       "timeout": {
-        350: 20,
-        351: 20,
+        350: { 
+          "duration" : 16000,
+          "toState": 20
+        },
+        351: { 
+          "duration" : 8000,
+          "toState": 20
+        },
       },
       "block": {
         350: {
@@ -250,7 +259,6 @@ const bathroomInputActions = {
       },
     },
     1:{
-      "duration" : 0,
       "start": {
         350: 22,
         351: 22,

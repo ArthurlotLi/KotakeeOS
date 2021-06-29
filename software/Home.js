@@ -198,13 +198,6 @@ class Home {
     // Given the stateInputActions value, kick off the timeout
     // functionality depending on what attributes are present.
 
-    // Mandatory attributes
-    var duration = stateInputActions["duration"];
-    if(duration == null){
-      console.log("[ERROR] moduleInputTimeout failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a duration for state " +toState +"!");
-      return false;
-    }
-
     // Optional attributes
     // Start - actions to do immediately upon timeout start. 
     var startDict = stateInputActions["start"];
@@ -222,7 +215,17 @@ class Home {
     var timeoutDict = stateInputActions["timeout"];
     if(timeoutDict != null){
       for(var timeoutActionId in timeoutDict){
-        var timeoutActionIdToState = timeoutDict[startActionId];
+        var timeoutActionIdDict = timeoutDict[startActionId];
+        var timeoutActionIdToState = timeoutActionIdDict['toState'];
+
+        // Mandatory attributes
+        var duration = timeoutActionIdDict["duration"];
+        if(duration == null){
+          console.log("[ERROR] moduleInputTimeout failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" and timeoutActionId " +timeoutActionIdDict+ " does not have a duration for state " +toState +"!");
+          return false;
+        }
+
+
         var currentTime = new Date();
         // Save it in the room object. 
         room.insertIntoInputActionsTimeoutTimes(actionId, currentTime);
