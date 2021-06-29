@@ -260,17 +260,20 @@ class Home {
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
-        console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
+        //console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
         for(var subjectActionId in blockDict){
           var subjectDict = blockDict[subjectActionId];
-          for(var blockActionId in subjectDict){
-            var blockActionIdState = subjectDict[blockActionId];
-            // Get the state of that particular module action. 
-            var actionState = this.getActionState(roomId, blockActionId);
-            console.log("actionState is " + actionState + ", blockAcitonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
-            if(actionState != null && parseInt(actionState) == parseInt(blockActionIdState) && parseInt(subjectActionId) == parseInt(actionIdToTrigger)){
-              console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is equal to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
-              return;
+          if(parseInt(subjectActionId) == parseInt(actionIdToTrigger))
+          {
+            for(var blockActionId in subjectDict){
+              var blockActionIdState = subjectDict[blockActionId];
+              // Get the state of that particular module action. 
+              var actionState = this.getActionState(roomId, blockActionId);
+              //console.log("actionState is " + actionState + ", blockActonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
+              if(actionState != null && parseInt(actionState) == parseInt(blockActionIdState) ){
+                console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is EQUAL to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
+                return;
+              }
             }
           }
         }

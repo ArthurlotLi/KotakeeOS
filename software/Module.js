@@ -54,9 +54,9 @@ class Module {
           console.log("[DEBUG] setActionState overwriting state of " + currentState + " with " + toState + " for actionid " + actionId + " for module " + this.ipAddress + ".");
           return true;
         }
-        else {
-          console.log("[DEBUG] setActionState state " + currentState + " is equivalent to gotten state "+ toState + " for actionid " + actionId + " for module  " + this.ipAddress + ". Ignoring request.");
-        }
+        //else {
+          //console.log("[DEBUG] setActionState state " + currentState + " is equivalent to gotten state "+ toState + " for actionid " + actionId + " for module  " + this.ipAddress + ". Ignoring request.");
+        //}
       }
       else 
         console.log("[ERROR] setActionState failed! actionId " + actionId + " is implemented, but there is no statesDict entry for module" + this.ipAddress + ".");
@@ -76,8 +76,8 @@ class Module {
       // Verified that the action is correct. Execute the action.
       return await this.requestGetStateToggle(actionId, toState, virtual);
     }
-    else
-      console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.ipAddress + ".");
+    //else
+      //console.log("[WARNING] Provided toState \'" + toState + "\' for " + actionId + " conflicts with existing state \'"+stateRetVal+"\' for module " + this.ipAddress + ".");
     return false;
   }
 
