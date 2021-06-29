@@ -221,8 +221,8 @@ const bathroomInputActions = {
         // Red light First half of night
         50: {
           "toState": 1,
-          "timeMaxHr": 24,
-          "timeMaxMin": 60,
+          "timeMaxHr": 23,
+          "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 31,
         },
@@ -230,7 +230,7 @@ const bathroomInputActions = {
         50: {
           "toState": 1,
           "timeMaxHr": 5,
-          "timeMaxMin": 60,
+          "timeMaxMin": 59,
           "timeMinHr": 0,
           "timeMinMin": 0,
         },
@@ -248,8 +248,8 @@ const bathroomInputActions = {
         50: {
           "duration" : 13000,
           "toState": 1,
-          "timeMaxHr": 24,
-          "timeMaxMin": 60,
+          "timeMaxHr": 23,
+          "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 32,
         },
@@ -293,8 +293,8 @@ const bathroomInputActions = {
         50: {
           "duration" : 13000,
           "toState": 1,
-          "timeMaxHr": 24,
-          "timeMaxMin": 60,
+          "timeMaxHr": 23,
+          "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 32,
         },
@@ -331,8 +331,8 @@ const bathroomInputActions = {
         // Red light First half of night
         50: {
           "toState": 1,
-          "timeMaxHr": 24,
-          "timeMaxMin": 60,
+          "timeMaxHr": 23,
+          "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 31,
         },
@@ -340,7 +340,7 @@ const bathroomInputActions = {
         50: {
           "toState": 1,
           "timeMaxHr": 5,
-          "timeMaxMin": 60,
+          "timeMaxMin": 59,
           "timeMinHr": 0,
           "timeMinMin": 0,
         },

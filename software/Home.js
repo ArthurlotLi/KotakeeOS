@@ -249,11 +249,6 @@ class Home {
   checkTimeRequirements(timeMaxHr, timeMaxMin, timeMinHr, timeMinMin){
     // Because of sanity, I'm going to get rid of the off by one here. 
     // This way when I say 20, I actually mean 8 o clock and not 9. 
-    timeMaxHr = timeMaxHr - 1;
-    timeMaxMin = timeMaxMin - 1;
-    timeMinHr = timeMinHr - 1;
-    timeMinMin = timeMinMin - 1;
-
     var date = new Date();
     var currentHrs = date.getHours(); // 0 - 23
     var currentMins = date.getMinutes(); // 0 - 59
