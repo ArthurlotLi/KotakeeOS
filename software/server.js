@@ -199,6 +199,12 @@ const livingRoomInputActions = {
       },
     },
   },
+  5150:{
+    "function":"sound",
+    0: {
+      "file" : "./assets/testJingle.mp3"
+    }
+  }
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
