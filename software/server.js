@@ -181,7 +181,7 @@ const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
+const livingRoomModules = [module2LR, module3LR, module4LR];
 const livingRoomInputActions = {
   5050: {
     "function" : "timeout",
