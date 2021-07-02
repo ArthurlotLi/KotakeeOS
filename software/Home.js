@@ -4,6 +4,8 @@
 */
 
 const fetch = require("node-fetch");
+// OSX only (might break elsewhere). Only used for moduleInputSound. 
+const { exec } = require('child_process');
 
 // So we don't spam the server. Used only when the argument has been
 // provided on startup. 
@@ -168,12 +170,20 @@ class Home {
     switch(inputFunction){
       case "timeout":
         return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
-      //case "none":
-        //break;
+      case "sound":
+        return this.moduleInputSound(roomId, actionId, toState, stateInputActions);
+        break;
       default:
         console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
         return false;
     }
+  }
+
+  // A fun thing. Plays a sound.
+  moduleInputSound(roomId, actionId, toState, stateInputActions){
+    var soundFile = stateInputActions["file"];
+    // Works only in OSX.
+    exec('afplay ' + soundFile, null)
   }
 
   // Handle timeout input request. We expect to be completely

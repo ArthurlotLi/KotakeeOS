@@ -139,8 +139,8 @@ const module1BR = new Module(module1BRId, module1BRRoomId, module1BRActions, mod
 // Arduino 2 Living Room
 const module2LRId = 2; // Internal server use only. 
 const module2LRRoomId = rooms.LIVINGROOM; 
-const module2LRActions = [actions.LIGHTING1];
-const module2LRPins = [12];
+const module2LRActions = [actions.LIGHTING1, actions.DOOR1];
+const module2LRPins = [12, 2];
 const module2LRIpAddress = "192.168.0.160";
 const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, module2LRPins, module2LRIpAddress);
 
@@ -169,19 +169,19 @@ const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Arduino 6 LR
-const module6LRId = 6; // Internal server use only. 
+/*const module6LRId = 6; // Internal server use only. 
 const module6LRRoomId = rooms.LIVINGROOM; 
-const module6LRActions = [actions.DOOR1];
-const module6LRPins = [2];
+const module6LRActions = [];
+const module6LRPins = [];
 const module6LRIpAddress = "192.168.0.186";
-const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
+const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);*/
 
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
+const livingRoomModules = [module2LR, module3LR, module4LR];
 const livingRoomInputActions = {
   5050: {
     "function" : "timeout",
@@ -199,6 +199,12 @@ const livingRoomInputActions = {
       },
     },
   },
+  5150:{
+    "function":"sound",
+    0: {
+      "file" : "./assets/testJingle.mp3"
+    }
+  }
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
@@ -218,10 +224,10 @@ const bathroomInputActions = {
           "timeMinHr": 6,
           "timeMinMin": 0,
         },
-        // Red light First half of night
+        // Red light. 
         50: {
           "toState": 1,
-          "timeMaxHr": 23,
+          "timeMaxHr": 23 + 5,
           "timeMaxMin": 59,
           "timeMinHr": 20,
           "timeMinMin": 31,
