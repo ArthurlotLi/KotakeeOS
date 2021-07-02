@@ -219,26 +219,26 @@ const bathroomInputActions = {
       "start":{
         350: {
           "toState": 22,
-          "timeMaxHr": 20,
-          "timeMaxMin": 30,
+          "timeMaxHr": 21,
+          "timeMaxMin": 00,
           "timeMinHr": 6,
           "timeMinMin": 0,
         },
         // Red light. 
         50: {
           "toState": 1,
-          "timeMaxHr": 23 + 5,
+          "timeMaxHr": 23,
           "timeMaxMin": 59,
-          "timeMinHr": 20,
-          "timeMinMin": 31,
+          "timeMinHr": 21,
+          "timeMinMin": 01,
         },
       },
       "timeout": {
         350: { 
           "duration" : 16000,
           "toState": 20,
-          "timeMaxHr": 20,
-          "timeMaxMin": 31,
+          "timeMaxHr": 21,
+          "timeMaxMin": 00,
           "timeMinHr": 6,
           "timeMinMin": 1,
         },
@@ -248,8 +248,8 @@ const bathroomInputActions = {
           "toState": 0,
           "timeMaxHr": 23,
           "timeMaxMin": 59,
-          "timeMinHr": 20,
-          "timeMinMin": 31,
+          "timeMinHr": 21,
+          "timeMinMin": 01,
         },
       },
       "block": {
@@ -273,8 +273,8 @@ const bathroomInputActions = {
         350: { 
           "duration" : 16000,
           "toState": 20,
-          "timeMaxHr": 20,
-          "timeMaxMin": 30,
+          "timeMaxHr": 21,
+          "timeMaxMin": 00,
           "timeMinHr": 6,
           "timeMinMin": 0,
         },
@@ -284,8 +284,8 @@ const bathroomInputActions = {
           "toState": 0,
           "timeMaxHr": 23,
           "timeMaxMin": 59,
-          "timeMinHr": 20,
-          "timeMinMin": 32,
+          "timeMinHr": 21,
+          "timeMinMin": 01,
         },
         // Vent fan
         351: { 
@@ -303,8 +303,8 @@ const bathroomInputActions = {
       "start": {
         350: { // Turn on the light 
           "toState": 22,
-          "timeMaxHr": 20,
-          "timeMaxMin": 30,
+          "timeMaxHr": 21,
+          "timeMaxMin": 00,
           "timeMinHr": 6,
           "timeMinMin": 0,
         },
@@ -313,8 +313,8 @@ const bathroomInputActions = {
           "toState": 1,
           "timeMaxHr": 23,
           "timeMaxMin": 59,
-          "timeMinHr": 20,
-          "timeMinMin": 31,
+          "timeMinHr": 21,
+          "timeMinMin": 01,
         },
         351: { // Turn on the vent
           "toState": 22,
