@@ -73,6 +73,11 @@ const actions = {
   TEMP3: 5252,
   TEMP4: 5253,
   TEMP5: 5254,
+  ADMIN1: 5350, // Not meant to be connected to anything physical. For interactions between clients and webserver.
+  ADMIN2: 5351,
+  ADMIN3: 5352,
+  ADMIN4: 5353,
+  ADMIN5: 5354,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -147,8 +152,8 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 // Arduino 3 Living Room
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
-const module3LRActions = [actions.REMOTE1];
-const module3LRPins = [12];
+const module3LRActions = [actions.REMOTE1, actions.ADMIN1]; // Admin action that is inert for this module. 
+const module3LRPins = [12, -1];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
@@ -209,6 +214,12 @@ const livingRoomInputActions = {
     "function":"command",
     1: { // When the door is closed. 
       "command" : "afplay ./assets/testJingle.mp3"
+    }
+  },
+  5350:{
+    "function":"command",
+    1: { // Admin command of 1 from clients. 
+      "command" : "python3 ../speechServer/pocketsphinx/server_pocketsphinx.py"
     }
   }
 }

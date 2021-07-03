@@ -32,7 +32,7 @@ webServerIpAddress = "http://192.168.0.197:8080"
 
 #hotWord = "iris"
 #hotWord = "california" # Triggers activation of google query. 
-hotWords = ["california", "america", "initial", "initialize", "system", "iris"]
+hotWords = ["california"]
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
 hotWordReceiptPrompt = "Yes?"
@@ -40,6 +40,7 @@ successfulCommandPrompt = "Understood."
 cancellationPrompt = "Going back to sleep."
 failedCommandPrompt = "Sorry, I didn't understand that."
 stopServerPrompt = "Understood. Good night."
+startupPrompt = "Good morning, Speech Server initialized. Now listening for hotwords."
 
 # Initialize the recognizer
 r = sr.Recognizer()
@@ -57,6 +58,11 @@ homeStatusLastUpdate = 0
 
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
+
+  queryHomeStatus()
+  if(homeStatus is not None):
+    weatherString = " It is currently " + str(int(homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(homeStatus["weatherData"]["main"]["humidity"]) + " percent."
+    executeTextThread(startupPrompt + weatherString)
 
   r.pause_threshold = 0.5 # Small. We're only listening for a word.
   r2.pause_threshold = 1.0 # Give it a larger pause threshold
@@ -230,7 +236,7 @@ def parseAndExecuteCommand(command):
     return True
   elif("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
     if(homeStatus is not None):
-      weatherString = "It is currently " + str(int(homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(homeStatus["weatherData"]["weather"][0]["main"]) + ", with a maximum of " + str(int(homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(homeStatus["weatherData"]["main"]["humidity"]) + " percent."
+      weatherString = "It is currently " + str(int(homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(homeStatus["weatherData"]["main"]["humidity"]) + " percent."
       executeTextThread(weatherString)
       return True
   elif("everything" in command):
