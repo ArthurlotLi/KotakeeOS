@@ -205,6 +205,9 @@ export class App extends React.Component {
     // Various functions to ensure cleanliness.
     this.updateHomeStatusWorking = false;
     this.updateActionStatesWorking = false;
+
+    // TODO: Experimental feature helper. Don't kill my laptop please.
+    this.startedSpeechServer = false;
     
     // State
     this.state = {
@@ -575,6 +578,32 @@ export class App extends React.Component {
     }
   }
 
+  // Experimental - turn the server's speech server on. Can only do once
+  // after startup so as not to burn my laptop to the ground. 
+  async featureSpeechServer(){
+    if(this.startedSpeechServer == false){
+      var apiResponse = null;
+      var startTime, endTime; // We report in debug the api time.
+      try{
+        startTime = new Date();
+        apiResponse = await fetch(apiURL + "/moduleInput/2/5350/1");
+        endTime = new Date();
+        var timeDiff = endTime - startTime;
+        console.log("DEBUG: featureSpeechServer call returned in " + timeDiff/1000 + " seconds.");
+      }
+      catch(error){
+        console.log("ERROR: featureSpeechServer call failed!");
+      }
+      if(apiResponse.status == 200){
+        // TODO - do something to save the state in the web server...? 
+      }
+      else{
+        console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+      }
+    }
+    this.startedSpeechServer = true;
+  }
+
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it every second.
@@ -604,6 +633,7 @@ export class App extends React.Component {
           <div>Santa Clara, CA</div>
           <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
           <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
+          <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
         </div>
 
         <div id="app-clock">
