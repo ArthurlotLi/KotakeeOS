@@ -153,7 +153,7 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
 const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.LIGHTING2]; // Admin action that is inert for this module. 
-const module3LRPins = [12, -1, 11];
+const module3LRPins = [12, 0, 11];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
