@@ -35,6 +35,7 @@ webServerIpAddress = "http://192.168.0.197:8080"
 hotWords = ["california"]
 
 cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
+stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "turn off", "deactivate"]
 hotWordReceiptPrompt = "Yes?"
 successfulCommandPrompt = "Understood."
 cancellationPrompt = "Going back to sleep."
@@ -229,7 +230,7 @@ def parseAndExecuteCommand(command):
   # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
   queries = []
 
-  if ("good night" in command or "freeze all motor functions" in command or "goodnight" in command):
+  if any(x in command for x in stopServerCommands):
     executeTextThread(stopServerPrompt)
     time.sleep(5) # Enough time to allow the speech prompt to complete. 
     stopServer = True
