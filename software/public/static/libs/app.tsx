@@ -231,6 +231,7 @@ export class App extends React.Component {
     this.updateActionStates = this.updateActionStates.bind(this);
     this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
     this.featureAllLights = this.featureAllLights.bind(this);
+    this.featureSpeechServer = this.featureSpeechServer.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
