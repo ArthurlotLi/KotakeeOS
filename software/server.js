@@ -182,8 +182,6 @@ const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
 const livingRoomModules = [module2LR, module3LR, module4LR];
-// The following is a non-standard structure just meant to make 
-// things easier to configure. 
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
@@ -208,17 +206,15 @@ const livingRoomInputActions = {
     },
   },
   5150:{
-    "function":"sound",
+    "function":"command",
     1: { // When the door is closed. 
-      "file" : "./assets/testJingle.mp3"
+      "command" : "afplay ./assets/testJingle.mp3"
     }
   }
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
 const bathroomModules = [module5BA];
-// The following is a non-standard structure just meant to make 
-// things easier to configure. 
 const bathroomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
@@ -236,7 +232,6 @@ const bathroomInputActions = {
           "toState": 22,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
-        // Red light. 
         50: {
           "toState": 1,
           "timeBounds": bathroomInputActionsTimeBounds[50]
@@ -248,7 +243,6 @@ const bathroomInputActions = {
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
-        // Red light First half of night
         50: {
           "duration" : 13000,
           "toState": 0,
@@ -278,7 +272,6 @@ const bathroomInputActions = {
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
-        // Red light First half of night
         50: {
           "duration" : 13000,
           "toState": 0,

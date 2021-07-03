@@ -170,8 +170,8 @@ class Home {
     switch(inputFunction){
       case "timeout":
         return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
-      case "sound":
-        return this.moduleInputSound(roomId, actionId, toState, stateInputActions);
+      case "command":
+        return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
         break;
       default:
         console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
@@ -180,10 +180,10 @@ class Home {
   }
 
   // A fun thing. Plays a sound.
-  moduleInputSound(roomId, actionId, toState, stateInputActions){
-    var soundFile = stateInputActions["file"];
+  moduleExecuteCommand(roomId, actionId, toState, stateInputActions){
+    var command = stateInputActions["command"];
     // Works only in OSX.
-    exec('afplay ' + soundFile, null)
+    exec(command, null)
   }
 
   // Handle timeout input request. We expect to be completely
