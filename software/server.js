@@ -209,7 +209,7 @@ const livingRoomInputActions = {
   },
   5150:{
     "function":"sound",
-    0: {
+    1: { // When the door is closed. 
       "file" : "./assets/testJingle.mp3"
     }
   }

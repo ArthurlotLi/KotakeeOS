@@ -271,12 +271,12 @@ class Home {
       var timeMaxHr = parseInt(timeBounds[i*4+2]);
       var timeMaxMin = parseInt(timeBounds[i*4+3]);
 
-      console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
+      //console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
 
       if((currentHrs < timeMaxHr && currentHrs > timeMinHr) || 
       (currentHrs == timeMaxHr && currentMins <= timeMaxMin) ||
       (currentHrs == timeMinHr && currentMins >= timeMinMin)){
-        console.log("[DEBUG] ...Passed!");
+        //console.log("[DEBUG] ...Passed!");
         return true;
       }
     }
