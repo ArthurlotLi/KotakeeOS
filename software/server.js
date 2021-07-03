@@ -182,6 +182,12 @@ const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
 const livingRoomModules = [module2LR, module3LR, module4LR];
+// The following is a non-standard structure just meant to make 
+// things easier to configure. 
+const livingRoomInputActionsTimeBounds = {
+  // MinHr, MinMin, MaxHr, MaxMin
+  350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
+}
 const livingRoomInputActions = {
   5050: {
     "function" : "timeout",
@@ -189,12 +195,14 @@ const livingRoomInputActions = {
       "start":{
         350: {
           "toState": 22,
+          "timeBounds": livingRoomInputActionsTimeBounds[350],
         },
       },
       "timeout": {
         350: { 
           "duration" : 20000,
-          "toState": 20
+          "toState": 20,
+          "timeBounds": livingRoomInputActionsTimeBounds[350],
         },
       },
     },
@@ -209,6 +217,13 @@ const livingRoomInputActions = {
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
 const bathroomModules = [module5BA];
+// The following is a non-standard structure just meant to make 
+// things easier to configure. 
+const bathroomInputActionsTimeBounds = {
+  // MinHr, MinMin, MaxHr, MaxMin
+  350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
+  50: [21, 01, 23, 59, 5, 59, 0, 0],
+}
 const bathroomInputActions = {
   // Motion sensor (Turn on bathroom light)
   // Turn lights on on motion. Turn off after timeout. Do not turn 
@@ -219,37 +234,25 @@ const bathroomInputActions = {
       "start":{
         350: {
           "toState": 22,
-          "timeMaxHr": 21,
-          "timeMaxMin": 00,
-          "timeMinHr": 6,
-          "timeMinMin": 0,
+          "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         // Red light. 
         50: {
           "toState": 1,
-          "timeMaxHr": 23,
-          "timeMaxMin": 59,
-          "timeMinHr": 21,
-          "timeMinMin": 01,
+          "timeBounds": bathroomInputActionsTimeBounds[50]
         },
       },
       "timeout": {
         350: { 
           "duration" : 16000,
           "toState": 20,
-          "timeMaxHr": 21,
-          "timeMaxMin": 00,
-          "timeMinHr": 6,
-          "timeMinMin": 1,
+          "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         // Red light First half of night
         50: {
           "duration" : 13000,
           "toState": 0,
-          "timeMaxHr": 23,
-          "timeMaxMin": 59,
-          "timeMinHr": 21,
-          "timeMinMin": 01,
+          "timeBounds": bathroomInputActionsTimeBounds[50]
         },
       },
       "block": {
@@ -273,19 +276,13 @@ const bathroomInputActions = {
         350: { 
           "duration" : 16000,
           "toState": 20,
-          "timeMaxHr": 21,
-          "timeMaxMin": 00,
-          "timeMinHr": 6,
-          "timeMinMin": 0,
+          "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         // Red light First half of night
         50: {
           "duration" : 13000,
           "toState": 0,
-          "timeMaxHr": 23,
-          "timeMaxMin": 59,
-          "timeMinHr": 21,
-          "timeMinMin": 01,
+          "timeBounds": bathroomInputActionsTimeBounds[50]
         },
         // Vent fan
         351: { 
@@ -303,18 +300,12 @@ const bathroomInputActions = {
       "start": {
         350: { // Turn on the light 
           "toState": 22,
-          "timeMaxHr": 21,
-          "timeMaxMin": 00,
-          "timeMinHr": 6,
-          "timeMinMin": 0,
+          "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         // Red light First half of night
         50: {
           "toState": 1,
-          "timeMaxHr": 23,
-          "timeMaxMin": 59,
-          "timeMinHr": 21,
-          "timeMinMin": 01,
+          "timeBounds": bathroomInputActionsTimeBounds[50]
         },
         351: { // Turn on the vent
           "toState": 22,

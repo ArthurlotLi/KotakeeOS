@@ -146,22 +146,22 @@ class Home {
     }
     var inputActions = room.getInputActions();
     if(inputActions == null || Object.keys(inputActions).length <= 0){
-      console.log("[ERROR] moduleInput failed! roomId " + roomId + " has an empty inputActions array!");
+      console.log("[WARNING] moduleInput failed! roomId " + roomId + " has an empty inputActions array!");
       return false;
     }
     var actionInputActions = inputActions[actionId]; // A funny name, I know. 
     if(actionInputActions == null){
-      console.log("[ERROR] moduleInput failed! roomId " + roomId + " does not have an inputActions entry for actionId " +actionId+"!");
+      console.log("[WARNING] moduleInput failed! roomId " + roomId + " does not have an inputActions entry for actionId " +actionId+"!");
       return false;
     }
     var inputFunction = actionInputActions["function"]
     if(inputFunction == null){
-      console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
+      console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
       return false;
     }
     var stateInputActions = actionInputActions[toState]
     if(stateInputActions == null){
-      console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
+      console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
       return false;
     }
 
@@ -215,9 +215,7 @@ class Home {
       for(var startActionId in startDict){
         var startActionIdDict = startDict[startActionId];
         // Verify time requirements if they are present. 
-        if((startActionIdDict["timeMaxHr"] == null && startActionIdDict["timeMaxMin"] == null 
-          && startActionIdDict["timeMinHr"] == null && startActionIdDict["timeMinMin"] == null)|| 
-          this.checkTimeRequirements(startActionIdDict["timeMaxHr"], startActionIdDict["timeMaxMin"], startActionIdDict["timeMinHr"], startActionIdDict["timeMinMin"] )){
+        if(startActionIdDict["timeBounds"] == null || this.checkTimeRequirements(startActionIdDict["timeBounds"])){
           this.actionToggle(roomId, startActionId, startActionIdDict["toState"]);
         }
       }
@@ -232,9 +230,7 @@ class Home {
       for(var timeoutActionId in timeoutDict){
         var timeoutActionIdDict = timeoutDict[timeoutActionId];
         // Verify time requirements if they are present. 
-        if((timeoutActionIdDict["timeMaxHr"] == null && timeoutActionIdDict["timeMaxMin"] == null 
-          && timeoutActionIdDict["timeMinHr"] == null && timeoutActionIdDict["timeMinMin"] == null)|| 
-          this.checkTimeRequirements(timeoutActionIdDict["timeMaxHr"], timeoutActionIdDict["timeMaxMin"], timeoutActionIdDict["timeMinHr"], timeoutActionIdDict["timeMinMin"] )){
+        if(timeoutActionIdDict["timeBounds"] == null || this.checkTimeRequirements(timeoutActionIdDict["timeBounds"])){
           var timeoutActionIdToState = timeoutActionIdDict['toState'];
 
           // Mandatory attributes
@@ -254,22 +250,35 @@ class Home {
     }
   }
 
-  // Helper function, given timeMaxHr, timeMaxMin, timeMinHr, and timeMinMin,
-  // Check if the current time is valid. True for yes, False for no. 
-  checkTimeRequirements(timeMaxHr, timeMaxMin, timeMinHr, timeMinMin){
-    // Because of sanity, I'm going to get rid of the off by one here. 
-    // This way when I say 20, I actually mean 8 o clock and not 9. 
+  // Helper function, given an array that is a multiple a of 4
+  // structured as follows: [minHr, minMin,maxHr, maxMin (repeated)],
+  // will return true or false if the current time lands within
+  // an acceptable time. 
+  checkTimeRequirements(timeBounds){
     var date = new Date();
     var currentHrs = date.getHours(); // 0 - 23
     var currentMins = date.getMinutes(); // 0 - 59
 
-    //console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
+    if(timeBounds.length%4 != 0){
+      console.log("[ERROR] checkTimeRequirements failed - given timeBounds array was not a multiple of 4!");
+      return null;
+    }
 
-    if((currentHrs < timeMaxHr && currentHrs > timeMinHr) || 
+    var numBounds = timeBounds.length/4;
+    for(var i = 0; i < numBounds; i++){
+      var timeMinHr = parseInt(timeBounds[i*4]);
+      var timeMinMin = parseInt(timeBounds[i*4+1]);
+      var timeMaxHr = parseInt(timeBounds[i*4+2]);
+      var timeMaxMin = parseInt(timeBounds[i*4+3]);
+
+      console.log("[DEBUG] Checking time requirements " + timeMaxHr + ", " + timeMaxMin + ", " + timeMinHr + ", " + timeMinMin + " with current hours " + currentHrs + " and minutes " + currentMins + ".");
+
+      if((currentHrs < timeMaxHr && currentHrs > timeMinHr) || 
       (currentHrs == timeMaxHr && currentMins <= timeMaxMin) ||
       (currentHrs == timeMinHr && currentMins >= timeMinMin)){
-      //console.log("[DEBUG] ...Passed!");
-      return true;
+        console.log("[DEBUG] ...Passed!");
+        return true;
+      }
     }
     return false;
   }
