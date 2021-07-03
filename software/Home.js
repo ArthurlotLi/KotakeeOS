@@ -181,8 +181,21 @@ class Home {
 
   // A fun thing. Plays a sound.
   moduleExecuteCommand(roomId, actionId, toState, stateInputActions){
+    var block = stateInputActions["block"];
     var command = stateInputActions["command"];
     // Works only in OSX.
+    if(block != null){
+      for(var blockActionId in block){
+        var blockActionIdState = block[blockActionId];
+        var actionState = this.getActionState(roomId, blockActionId);
+        if(actionState == blockActionIdState){
+          // Execute command blocked successfully. 
+          console.log("[DEBUG] moduleExecuteCommand actionState of blockActionId " + blockActionId + " is EQUAL to blockActionIdState " + blockActionIdState + ". Not executing command " + command + ".");
+          return;
+        }
+      }
+    }
+    console.log("[DEBUG] Executing command: " + command);
     exec(command, null)
   }
 

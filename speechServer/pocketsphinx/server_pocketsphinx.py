@@ -60,6 +60,10 @@ homeStatusLastUpdate = 0
 def runApplicationServer():
   print("Initializing kotakeeOS speech application server...")
 
+  # Experimental - query the server to turn on the LED to signal
+  # Speech server is online. 
+  querySpeechServerLED(1)
+
   queryHomeStatus()
   if(homeStatus is not None):
     weatherString = " It is currently " + str(int(homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(homeStatus["weatherData"]["main"]["humidity"]) + " percent."
@@ -70,6 +74,10 @@ def runApplicationServer():
   
   while stopServer is not True:
     listenForHotWord()
+
+  # Experimental - query the server to turn on the LED to signal
+  # Speech server is no longer online. 
+  querySpeechServerLED(0)
   
   print("Shutting down. Goodnight.")
 
@@ -220,6 +228,17 @@ def queryHomeStatus():
     #print(str(homeStatus))
   elif(response.status_code != 204):
     print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+
+# Experimental - queries server to turn speech server signal light on/off. 
+def querySpeechServerLED(toState):
+  query = webServerIpAddress + "/moduleToggle/2/51/" + str(toState)
+  print("[DEBUG] Querying server: " + query)
+  response = requests.get(query)
+  if(response.status_code == 200):
+    print("[DEBUG] querySpeechServerLED request received successfully.")
+    #print(str(homeStatus))
+  elif(response.status_code != 204):
+    print("[WARNING] Server rejected querySpeechServerLED request with status code " + str(response.status_code) + ".")
 
 # Given a queried command from the google text recognition
 # API, parse and execute accordingly.
