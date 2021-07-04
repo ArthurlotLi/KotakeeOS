@@ -42,6 +42,7 @@ from tensorflow.keras.models import Model, load_model, Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout, Input, Masking, TimeDistributed, LSTM, Conv1D
 from tensorflow.keras.layers import GRU, Bidirectional, BatchNormalization, Reshape
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import RMSprop
 
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
 
@@ -360,8 +361,8 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.001
   loss_function = 'binary_crossentropy'
-  epochs = 500
-  batch_size=250
+  epochs = 40
+  batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256.
   validation_split = 0.2
   rlr_patience = 7
   rlr_factor = 0.5
@@ -369,31 +370,28 @@ def train_model(X, Y):
   es_min_delta = 1e-10
   verbose = True
 
+  # Compiling the Neural Network with all of this, using RMSprop optimizer, with no callbacks. 
+  opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
+  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+  history = model.fit(X, Y, shuffle=True, epochs=epochs, validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+
   # A simplified version
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
   #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   #history = model.fit(X, Y, epochs=epochs, verbose=verbose, batch_size=batch_size)
 
+  # A more complicated version using Adam and various measures against overfitting.
+  # Since we're underfitting, let's not go through the trouble.  
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
   #opt = Adam(learning_rate=learning_rate)
-  opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
-
-  # Compiling the Neural Network with all of this, using adam optimizer. 
-  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-
-  # With the model created, it is time to begin training it. 
-  
+  #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
   # Define early stopping to save time (don't train if nothing's improving.)
-  es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
-
+  #es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
   # Similarily, start spinning down the learning rate when a plateau has been detected.
-  rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
-
+  #rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
   # Define checkpointing so that we can revert in time if we end up worse than we were before. 
-  mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
-
-  # Let's start training!! 
-  history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+  #mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
+  #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   best_accuracy = min(history.history['accuracy'])
 
@@ -423,18 +421,19 @@ def define_model(input_shape):
     X = Conv1D(196, kernel_size=15, strides=4)(X_input)                                 # CONV1D
     X = BatchNormalization()(X)                                 # Batch normalization
     X = Activation('relu')(X)                                 # ReLu activation
-    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.5)(X)                                 # dropout (use 0.8).
+    # TODO note: changed all dropouts from 0.8 to 0.5
 
     # Step 2: First GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
-    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                 # Batch normalization
     
     # Step 3: Second GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
-    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                  # Batch normalization
-    X = Dropout(0.8)(X)                                  # dropout (use 0.8)
+    X = Dropout(0.5)(X)                                  # dropout (use 0.8)
     
     # Step 4: Time-distributed dense layer (≈1 line)
     X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
