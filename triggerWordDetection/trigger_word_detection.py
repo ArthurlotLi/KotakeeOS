@@ -396,7 +396,7 @@ def train_model(X, Y):
   #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   # And a new training parameter set to address both underfitting and overfitting (I think)
-  # Resulted in ??? 
+  # Resulted in a model that had 86% accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
   opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   # Define early stopping to save time (don't train if nothing's improving.)
@@ -488,10 +488,16 @@ if __name__ == "__main__":
   parser.add_argument('datasetSize')
   parser.add_argument('iternum')
   parser.add_argument('-d', action='store_false', default=True)
+  parser.add_argument('-g', action='store_true', default=False)
   args = parser.parse_args()
 
   datasetSize = int(args.datasetSize)
   iternum = int(args.iternum)
   generateDataset = args.d
+  stopGpu = args.g
+
+  if(stopGpu is True or stopGpu is None):
+    # In case you have a CUDA enabled GPU and don't want to use it. 
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1' 
 
   main(generateDataset, datasetSize, iternum)
