@@ -359,7 +359,7 @@ def train_model(X, Y):
   model.summary()
 
   # Tuning parameters that can be tweaked. 
-  learning_rate = 0.001
+  learning_rate = 0.0001
   loss_function = 'binary_crossentropy'
   epochs = 400
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
@@ -411,17 +411,20 @@ def train_model(X, Y):
 
   print("\nModel training complete. Best accuracy: " + str(best_accuracy))
 
-  print("[INFO] Loading dev dataset file ./XY_dev/X_dev.npy...")
-  X_dev = np.load("./XY_dev/X_dev.npy")
-  print("[INFO] Loading existing dataset file ./XY_dev/Y_dev.npy...")
-  Y_dev = np.load("./XY_dev/Y_dev.npy")
-  print("[DEBUG] X_dev.shape is:", X_dev.shape)  
-  print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
+  try:
+    print("[INFO] Loading dev dataset file ./XY_dev/X_dev.npy...")
+    X_dev = np.load("./XY_dev/X_dev.npy")
+    print("[INFO] Loading existing dataset file ./XY_dev/Y_dev.npy...")
+    Y_dev = np.load("./XY_dev/Y_dev.npy")
+    print("[DEBUG] X_dev.shape is:", X_dev.shape)  
+    print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
 
-  loss, acc = model.evaluate(X_dev, Y_dev)
-  print("[INFO] Dev set accuracy is: ", acc) 
-  if(float(acc) <= 0.94):
-    print("[INFO] ...Unfortunately this one doesn't look too good. The model underfit and likely trained on 0s.")
+    loss, acc = model.evaluate(X_dev, Y_dev)
+    print("[INFO] Dev set accuracy is: ", acc) 
+    if(float(acc) <= 0.94):
+      print("[INFO] ...Unfortunately this one doesn't look too good. The model underfit and likely trained on 0s.")
+  except:
+    print("[WARN] Error loading X_dev and/or Y/dev.")
 
   return model
 
