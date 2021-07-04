@@ -197,69 +197,21 @@ class CommandParser:
         queries.append(self.webServerIpAddress + "/moduleToggle/2/350/22")
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        if("off" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/1/50/0") # query off first, because on is in one. 
-        elif("on" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/1/50/1")
-        else:
-          #No on or off specified. Check queried information. 
-          if(self.actionStates is not None):
-            if(self.actionStates["1"]["50"] == 1):
-              queries.append(self.webServerIpAddress + "/moduleToggle/1/50/0")
-            else:
-              queries.append(self.webServerIpAddress + "/moduleToggle/1/50/1")
-
+        queries.append(self.generateQuery(command, 1, 50, 1, 0))
       if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        if("off" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/50/0")
-        elif("on" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/50/1")
-        else:
-          #No on or off specified. Check queried information. 
-          if(self.actionStates is not None):
-            if(self.actionStates["2"]["50"] == 1):
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/50/0")
-            else:
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/50/1")
-      
+        queries.append(self.generateQuery(command, 2, 50, 1, 0))
       if("speaker" in command or "soundbar" in command or ("sound" in command and "bar" in command)):
-        if("off" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/250/10")
-        elif("on" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/250/12")
-        else:
-          #No on or off specified. Check queried information. 
-          if(self.actionStates is not None):
-            if(self.actionStates["2"]["250"] == 12):
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/250/10")
-            else:
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/250/12")
-      
+        queries.append(self.generateQuery(command, 2, 250, 12, 10))
       if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        if("off" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/251/10")
-        elif("on" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/251/12")
-        else:
-          #No on or off specified. Check queried information. 
-          if(self.actionStates is not None):
-            if(self.actionStates["2"]["251"] == 12):
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/251/10")
-            else:
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/251/12")
-
+        queries.append(self.generateQuery(command, 2, 251, 12, 10))
       if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        if("off" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/350/20")
-        elif("on" in command):
-          queries.append(self.webServerIpAddress + "/moduleToggle/2/350/22")
-        else:
-          #No on or off specified. Check queried information. 
-          if(self.actionStates is not None):
-            if(self.actionStates["2"]["350"] == 22):
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/350/20")
-            else:
-              queries.append(self.webServerIpAddress + "/moduleToggle/2/350/22")
+        queries.append(self.generateQuery(command, 2, 350, 22, 20))
+      if("bathroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
+        queries.append(self.generateQuery(command, 3, 350, 22, 20))
+      if("bathroom" in command and ("fan" in command or "vent")):
+        queries.append(self.generateQuery(command, 3, 351, 22, 20))
+      if("printer" in command):
+        queries.append(self.generateQuery(command, 2, 252, 12, 10))
 
     if len(queries) > 0:
       # We have received a valid command. Query the server. 
@@ -275,3 +227,19 @@ class CommandParser:
     else:
       print("[DEBUG] No valid command was received.")
       return False
+
+  # Given the possible command string, roomId, actionId, and 
+  # a binary set of states, return a query. 
+  def generateQuery(self, command, roomId, actionId, onState, offState):
+    if("off" in command):
+      return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
+    elif("on" in command):
+      return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+    else:
+      #No on or off specified. Check queried information. 
+      if(self.actionStates is not None):
+        if(self.actionStates[str(roomId)][str(actionId)] == int(onState)):
+          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
+        else:
+          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+    
