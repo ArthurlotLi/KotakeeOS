@@ -62,47 +62,48 @@ class CommandParser:
     # states. This should be fast enough so that it's always
     # done by the time the user says the command. 
     self.executeQueryServerThread()
-    # Wait a moment to allow the recognizer to adjust
-    # the energy threshold based on surrounding noise
-    # level...
-    self.r2.adjust_for_ambient_noise(source2)
+    
+    with sr.Microphone() as source2:
+      # Wait a moment to allow the recognizer to adjust
+      # the energy threshold based on surrounding noise
+      # level...
+      self.r2.adjust_for_ambient_noise(source2)
 
-    # Try three times, or until user cancels, or command was
-    # executed.
-    for i in range(self.maxCommandAttempts): 
-      try:
-        # Specify the microphone as the input source.
-        with sr.Microphone() as source2:
-          self.executeTextThread(self.hotWordReceiptPrompt)
-          time.sleep(0.7) # Try not to detet the prompt. 
-          print("[DEBUG] Now Listening for Command...")
-          start = time.time()
+      # Try three times, or until user cancels, or command was
+      # executed.
+      for i in range(self.maxCommandAttempts): 
+        try:
+          # Specify the microphone as the input source.
+            self.executeTextThread(self.hotWordReceiptPrompt)
+            time.sleep(0.7) # Try not to detet the prompt. 
+            print("[DEBUG] Now Listening for Command...")
+            start = time.time()
 
-          # Listen for input
-          audio2 = self.r2.listen(source2)
+            # Listen for input
+            audio2 = self.r2.listen(source2)
 
-          # Use Google's API to recognize the audio.
-          recognizedText = self.r2.recognize_google(audio2)
+            # Use Google's API to recognize the audio.
+            recognizedText = self.r2.recognize_google(audio2)
 
-          # String cleanup
-          recognizedText = recognizedText.lower()
-          end = time.time()
+            # String cleanup
+            recognizedText = recognizedText.lower()
+            end = time.time()
 
-          print("[DEBUG] Recognized command audio: '" + recognizedText + "' in " + str(end-start) + " ")
+            print("[DEBUG] Recognized command audio: '" + recognizedText + "' in " + str(end-start) + " ")
 
-          # Parse recognized text
-          if any(x in recognizedText for x in self.cancelWords):
-            print("[DEBUG] User requested cancellation. Stopping command parsing...")
-            break
-          else:
-            if self.parseAndExecuteCommand(recognizedText):
-              successfulCommand = True
+            # Parse recognized text
+            if any(x in recognizedText for x in self.cancelWords):
+              print("[DEBUG] User requested cancellation. Stopping command parsing...")
               break
+            else:
+              if self.parseAndExecuteCommand(recognizedText):
+                successfulCommand = True
+                break
 
-      except sr.RequestError as e:
-        print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
-      except sr.UnknownValueError:
-        print("[Warning] Last sentence was not understood.")
+        except sr.RequestError as e:
+          print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
+        except sr.UnknownValueError:
+          print("[Warning] Last sentence was not understood.")
     
     # Stopping. Let user know big brother google is no longer
     # listening. 
