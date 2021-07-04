@@ -359,9 +359,9 @@ def train_model(X, Y):
   model.summary()
 
   # Tuning parameters that can be tweaked. 
-  learning_rate = 0.0001
+  learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 400
+  epochs = 500 # Early stopping should mean it halts earlier than this. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 15
@@ -371,19 +371,19 @@ def train_model(X, Y):
   verbose = True
 
   # Compiling the Neural Network with all of this, using RMSprop optimizer, with no callbacks. 
-  # This resulted in a model that was overfit at around 98% accuracy. 
+  # This resulted in a model that was overfit at around 98% train accuracy. 
   #opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
   #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   #history = model.fit(X, Y, shuffle=True, epochs=epochs, validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   # A simplified version.
-  # Resulted in a model that was apparently underfit at 93-95 accuracy trained on 0s. 
+  # Resulted in a model that was apparently underfit at 93-95 train accuracy trained on 0s. 
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
   #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   #history = model.fit(X, Y, epochs=epochs, verbose=verbose, batch_size=batch_size)
 
   # A more complicated version using Adam and various measures against overfitting.
-  # Resulted in a model that was apparently underfit at 93-95 accuracy trained on 0s. 
+  # Resulted in a model that was apparently underfit at 93-95 train accuracy trained on 0s. 
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
   #opt = Adam(learning_rate=learning_rate)
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
@@ -396,7 +396,7 @@ def train_model(X, Y):
   #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   # And a new training parameter set to address both underfitting and overfitting (I think)
-  # Resulted in a model that had 86% accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
+  # Resulted in a model that had 86% DEV set accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
   opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   # Define early stopping to save time (don't train if nothing's improving.)
