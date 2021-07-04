@@ -361,27 +361,29 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.001
   loss_function = 'binary_crossentropy'
-  epochs = 40
-  batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256.
+  epochs = 400
+  batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
-  rlr_patience = 7
+  rlr_patience = 15
   rlr_factor = 0.5
-  es_patience = 6
+  es_patience = 20
   es_min_delta = 1e-10
   verbose = True
 
   # Compiling the Neural Network with all of this, using RMSprop optimizer, with no callbacks. 
-  opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
-  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-  history = model.fit(X, Y, shuffle=True, epochs=epochs, validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+  # This resulted in a model that was overfit at around 98% accuracy. 
+  #opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
+  #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+  #history = model.fit(X, Y, shuffle=True, epochs=epochs, validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
-  # A simplified version
+  # A simplified version.
+  # Resulted in a model that was apparently underfit at 93-95 accuracy trained on 0s. 
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
   #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   #history = model.fit(X, Y, epochs=epochs, verbose=verbose, batch_size=batch_size)
 
   # A more complicated version using Adam and various measures against overfitting.
-  # Since we're underfitting, let's not go through the trouble.  
+  # Resulted in a model that was apparently underfit at 93-95 accuracy trained on 0s. 
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
   #opt = Adam(learning_rate=learning_rate)
   #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
@@ -393,12 +395,33 @@ def train_model(X, Y):
   #mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
   #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
+  # And a new training parameter set to address both underfitting and overfitting (I think)
+  # Resulted in ??? 
+  opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
+  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+  # Define early stopping to save time (don't train if nothing's improving.)
+  es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
+  # Similarily, start spinning down the learning rate when a plateau has been detected.
+  rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
+  # Define checkpointing so that we can revert in time if we end up worse than we were before. 
+  mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
+  history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+
   best_accuracy = min(history.history['accuracy'])
 
   print("\nModel training complete. Best accuracy: " + str(best_accuracy))
 
-  #loss, acc = model.evaluate(X_dev, Y_dev)
-  #print("[INFO] Dev set accuracy = ", acc) 
+  print("[INFO] Loading dev dataset file ./XY_dev/X_dev.npy...")
+  X_dev = np.load("./XY_dev/X_dev.npy")
+  print("[INFO] Loading existing dataset file ./XY_dev/Y_dev.npy...")
+  Y_dev = np.load("./XY_dev/Y_dev.npy")
+  print("[DEBUG] X_dev.shape is:", X_dev.shape)  
+  print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
+
+  loss, acc = model.evaluate(X_dev, Y_dev)
+  print("[INFO] Dev set accuracy is: ", acc) 
+  if(float(acc) <= 0.94):
+    print("[INFO] ...Unfortunately this one doesn't look too good. The model underfit and likely trained on 0s.")
 
   return model
 
