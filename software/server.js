@@ -5,7 +5,6 @@
 
 const express = require("express");
 const path = require("path");
-const redis = require('redis');
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -88,10 +87,6 @@ const rooms = {
   BATHROOM: 3,
 }
 
-// pubsub topic names
-const HOME_STATUS = 'homeStatus';
-const ACTION_STATES = 'actionStates';
-
 // End enums
 
 /*
@@ -104,7 +99,6 @@ const listeningPort = 8080;
 // if you're just testing stuff. (If you're restarting the app
 // over and over again, you'll want this boolean set to true.)
 var doNotQueryOpenWeatherMap = false;
-const useRedis = false;
 
 // Get arguments (currently only for query map.)
 const args = process.argv.slice(2);
@@ -115,17 +109,6 @@ if(args.length > 0){
 
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
-
-// For pubsub architecture
-var publisher;
-if(useRedis){
-  console.log("[DEBUG] redis has been enabled. Ensure redis-server has been run otherwise an exception is imminent.");
-  publisher = redis.createClient();
-}
-else{
-  console.log("[DEBUG] redis is NOT enabled.");
-  publisher = null;
-}
 
 // Create the app
 const app = express();
@@ -219,7 +202,7 @@ const livingRoomInputActions = {
   5350:{
     "function":"command",
     1: { // Admin command of 1 from clients. 
-      "command" : "python3 ../speechServer/pocketsphinx/server_pocketsphinx.py",
+      "command" : "python3 ../speechServer/hotwordPocketSphinx.py",
       // Don't start the server if the light is on, signaling that the server is already on.
       // Not the greatest solution (leaves gaps and isn't explicit) but it works for now.
       // Note this is all experimental. 
@@ -329,7 +312,7 @@ const bathroom = new Room(rooms.BATHROOM,bathroomModules, bathroomInputActions);
 // Home
 const homeRooms = [bedroom, livingRoom, bathroom];
 const homeZipCode = "95051"
-const home = new Home(homeRooms, homeZipCode, {}, HOME_STATUS, ACTION_STATES, publisher); // Start with no weather data. 
+const home = new Home(homeRooms, homeZipCode, {}); // Start with no weather data. 
 
 /*
   Initial Application Logic (executed once)
