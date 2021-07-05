@@ -366,7 +366,7 @@ def train_model(X, Y):
   validation_split = 0.2
   rlr_patience = 5
   rlr_factor = 0.5
-  es_patience = 7
+  es_patience = 6 # Don't want overfitting!!
   es_min_delta = 1e-10
   verbose = True
 
@@ -396,7 +396,10 @@ def train_model(X, Y):
   #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   # And a new training parameter set to address both underfitting and overfitting (I think)
-  # Resulted in a model that had 86% DEV set accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
+  # 
+  # Observations:
+  # - Resulted in a model that had 86% DEV set accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
+  # - Resulted in a homegrown trigger wrod model that had overfit on 1500 samples at exactly 500 epochs out of 500. 
   opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   # Define early stopping to save time (don't train if nothing's improving.)
