@@ -361,12 +361,12 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 500 # Early stopping should mean it halts earlier than this. 
+  epochs = 350 # Early stopping should mean it halts earlier than this. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
-  rlr_patience = 15
+  rlr_patience = 5
   rlr_factor = 0.5
-  es_patience = 20
+  es_patience = 7
   es_min_delta = 1e-10
   verbose = True
 
@@ -421,8 +421,9 @@ def train_model(X, Y):
 
     loss, acc = model.evaluate(X_dev, Y_dev)
     print("[INFO] Dev set accuracy is: ", acc) 
-    if(float(acc) <= 0.94):
-      print("[INFO] ...Unfortunately this one doesn't look too good. The model underfit and likely trained on 0s.")
+    if(float(acc) <= 0.94 and float(acc) >= 0.90):
+      #print("[INFO] ...Unfortunately this one doesn't look too good. The model underfit and likely trained on 0s.")
+      print("[INFO] When checked against clips of absolutely no positives, looks okay (should've given us all 0s.)")
   except:
     print("[WARN] Error loading X_dev and/or Y/dev.")
 
