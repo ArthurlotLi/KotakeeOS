@@ -4,7 +4,9 @@
 */
 
 const fetch = require("node-fetch");
-// OSX only (might break elsewhere). Only used for moduleInputSound. 
+
+// OSX only (might break elsewhere). Used for shell commands via 
+// moduleInput handling. 
 const { exec } = require('child_process');
 
 // So we don't spam the server. Used only when the argument has been
@@ -56,7 +58,7 @@ const cannedWeatherData = {
 // Encompassing class for all rooms. Contains various attributes
 // regarding the home at large. 
 class Home {
-  constructor(rooms, zipCode, weatherData, homeStatusTopic, actionStatesTopic, publisher){
+  constructor(rooms, zipCode, weatherData){
     this.zipCode = zipCode;
     this.weatherData = weatherData;
     // Given array of rooms, create dictionary indexed by roomId. 
@@ -66,9 +68,6 @@ class Home {
       roomsDict[room.roomId] = room;
     }
     this.roomsDict = roomsDict
-    this.homeStatusTopic = homeStatusTopic;
-    this.actionStatesTopic = actionStatesTopic;
-    this.publisher = publisher
     this.lastUpdateHomeStatus = null;
     this.lastUpdateActionStates = null;
 
@@ -335,7 +334,7 @@ class Home {
   }
 
   // Given roomId, actionId, and toState, update the state of 
-  // a module. This will initiate a topic update for ACTION_STATES.
+  // a module. 
   async moduleStateUpdate(roomId, actionId, toState){
     if(this.getRoom(roomId) != null){
       var room = this.getRoom(roomId);
@@ -349,15 +348,6 @@ class Home {
       console.log("[ERROR] moduleStateUpdate failed! roomId " + roomId + " does not exist.");
     return false;
   }
-
-  topicPublishActionStates() {
-    this.publisher.publish(this.actionStatesTopic, JSON.stringify(this.actionStates()))
-  }
-
-  topicPublishHomeStatus() {
-    this.publisher.publish(this.homeStatusTopic, JSON.stringify(this.homeStatus()))
-  }
-
   // Return states of all modules in system, identifying each
   // action by actionId, seperated by roomId. This is expected
   // to be a frequently called function on timers by all clients.
@@ -440,10 +430,6 @@ class Home {
         // it forward). 
         var receivedData = await apiResponse.json();
         this.weatherData = receivedData;
-        // Update clients. 
-        if(this.publisher != null){
-          this.topicPublishHomeStatus();
-        }
         this.lastUpdateHomeStatus = new Date().getTime();
         console.log("[DEBUG] updateWeather succeeded. New lastUpdateHomeStatus is: " + this.lastUpdateHomeStatus + ".");
       }

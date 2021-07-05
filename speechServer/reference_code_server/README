@@ -1,0 +1,8 @@
+Note!
+
+This directory contains a standalone server with
+the base Trigger Word model thrown willy nilly
+into the at-the-time speechServer implementation.
+
+The files in this folder are now obsolete and kept
+just in case. 

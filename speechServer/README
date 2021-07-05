@@ -7,11 +7,17 @@ Speech Recognition Application Server
 
 Description:
 
-Root program for speech recognition application server designed to interface 
+Root programs for speech recognition application server designed to interface 
 with the kotakeeOS Web Server. This sends requests to activate-deactivate 
 modules just like any other regular web application. 
 
-Currently utilizes python speechrecognition library.
+Currently utilizes python speechrecognition library for command parsing, with
+the following options for passive hotword detection:
+
+- PocketSphinx (brute force, essentially)
+- Trigger Word Models
+  - Iteration 0, the pretrained model on "activate"
+  - Iterations > 0, models trained experimentally on the same/other hotwords. 
 
 ------------------------------------------------------------------------------
 Prerequisites
@@ -30,3 +36,12 @@ If using PocketSphinx:
 8. Note the stuff you may need to do to install pockeshpinx manually.
 
 https://github.com/bambocher/pocketsphinx-python/issues/28
+
+If using homebrewed Trigger Word models:
+
+6. cd ../triggerWordDetection
+7. pip3 install -r requirements.txt
+8. You may need to install more requirements beyond these. 
+
+Once you've installed those, the TriggerWord speech server should work
+just fine. 
