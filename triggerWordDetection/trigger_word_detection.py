@@ -361,12 +361,12 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 350 # Early stopping should mean it halts earlier than this. 
+  epochs = 200 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
   rlr_factor = 0.5
-  es_patience = 6 # Don't want overfitting!!
+  es_patience = 8 # Don't want overfitting!!
   es_min_delta = 1e-10
   verbose = True
 
@@ -403,12 +403,12 @@ def train_model(X, Y):
   opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   # Define early stopping to save time (don't train if nothing's improving.)
-  es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
+  #es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
   # Similarily, start spinning down the learning rate when a plateau has been detected.
-  rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
+  #rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
   # Define checkpointing so that we can revert in time if we end up worse than we were before. 
   mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
-  history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+  history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
   best_accuracy = min(history.history['accuracy'])
 
