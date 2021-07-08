@@ -361,7 +361,7 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 200 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
+  epochs = 500 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
@@ -400,13 +400,20 @@ def train_model(X, Y):
   # Observations:
   # - Resulted in a model that had 86% DEV set accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
   # - Resulted in a homegrown trigger wrod model that had overfit on 1500 samples at exactly 500 epochs out of 500. 
-  opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
-  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
+  #opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
+  #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   # Define early stopping to save time (don't train if nothing's improving.)
   #es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
   # Similarily, start spinning down the learning rate when a plateau has been detected.
   #rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
   # Define checkpointing so that we can revert in time if we end up worse than we were before. 
+  #mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
+  #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+
+  # And yet another one, this one trying to mimic the original model as much as possible.
+  #opt = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Results in a model that hangs on 87%.
+  opt = Adam(learning_rate=learning_rate)
+  model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
   history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
@@ -451,19 +458,19 @@ def define_model(input_shape):
     X = Conv1D(196, kernel_size=15, strides=4)(X_input)                                 # CONV1D
     X = BatchNormalization()(X)                                 # Batch normalization
     X = Activation('relu')(X)                                 # ReLu activation
-    X = Dropout(0.5)(X)                                 # dropout (use 0.8).
+    X = Dropout(0.8)(X)                                 # dropout (use 0.8).
     # TODO note: changed all dropouts from 0.8 to 0.5
 
     # Step 2: First GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
-    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                 # Batch normalization
     
     # Step 3: Second GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
-    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                  # Batch normalization
-    X = Dropout(0.5)(X)                                  # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                  # dropout (use 0.8)
     
     # Step 4: Time-distributed dense layer (≈1 line)
     X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
