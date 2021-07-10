@@ -327,9 +327,9 @@ export class App extends React.Component {
                     if(tempDiv != null && humDiv != null){
                       var actionStateString = String(room[actionId]);
                       var tempInfo = actionStateString.split("_");
-                      if(tempInfo.length >= 3){
-                        tempDiv.innerHTML = tempInfo[1] + " C";
-                        humDiv.innerHTML = tempInfo[2] + " %";
+                      if(tempInfo.length >= 2){
+                        tempDiv.innerHTML = tempInfo[0] + " C";
+                        humDiv.innerHTML = tempInfo[1] + " %";
                       }
                     }
                     else{
