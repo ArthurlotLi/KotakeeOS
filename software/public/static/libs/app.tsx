@@ -325,10 +325,12 @@ export class App extends React.Component {
                     var humDivId = 'app-hum-' + roomId + '-' + actionId;
                     var humDiv = document.getElementById(humDivId);
                     if(tempDiv != null && humDiv != null){
-                      var actionState = room[actionId];
+                      var actionState = String(room[actionId]);
                       var tempInfo = actionState.split("_");
-                      tempDiv.innerHTML = tempInfo[1] + " C";
-                      humDiv.innerHTML = tempInfo[2] + " %";
+                      if(tempInfo.length >= 3){
+                        tempDiv.innerHTML = tempInfo[1] + " C";
+                        humDiv.innerHTML = tempInfo[2] + " %";
+                      }
                     }
                     else{
                       console.log("WARNING: handleActionStates attempted to find a temp div with id " + tempDivId + " and hum div with id "+humDivId+ " that did not exist!");
