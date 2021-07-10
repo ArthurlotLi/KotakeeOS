@@ -218,7 +218,7 @@ const bathroomModules = [module5BA];
 const bathroomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
-  50: [21, 01, 23, 59, 5, 59, 0, 0],
+  50: [21, 01, 23, 59, 0, 0, 5, 59],
 }
 const bathroomInputActions = {
   // Motion sensor (Turn on bathroom light)
@@ -286,6 +286,9 @@ const bathroomInputActions = {
       "block": {
         350: {
           5050: 1,
+        },
+        351: { // Block if you yourself have been turned back on (door closed again)
+          5150: 1,
         },
       },
     },
