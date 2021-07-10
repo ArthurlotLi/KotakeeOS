@@ -169,7 +169,7 @@ const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR];
+const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
