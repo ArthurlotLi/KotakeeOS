@@ -606,8 +606,8 @@ export class App extends React.Component {
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
           <br></br>
           <div id="app-temps">
-            <div class="app-temps-line">Living Room - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 C</span> | <span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 %</span></div>
-            <div class="app-temps-line">Bedroom - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 C</span> | <span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 %</span></div>
+            <div class="app-temps-line">Living Room: <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 F</span> <span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 %</span></div>
+            <div class="app-temps-line">Bedroom: <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 F</span> <span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 %</span></div>
           </div>
         </div>
 
