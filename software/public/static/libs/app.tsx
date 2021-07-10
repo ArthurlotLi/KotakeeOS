@@ -328,8 +328,10 @@ export class App extends React.Component {
                       var actionStateString = String(room[actionId]);
                       var tempInfo = actionStateString.split("_");
                       if(tempInfo.length >= 2){
-                        tempDiv.innerHTML = tempInfo[0] + " C";
-                        humDiv.innerHTML = tempInfo[1] + " %";
+                        var temp = parseFloat(tempInfo[0]).toFixed(0);
+                        var hum = parseFloat(tempInfo[1]).toFixed(0);
+                        tempDiv.innerHTML = temp + " C";
+                        humDiv.innerHTML = hum + " %";
                       }
                     }
                     else{
