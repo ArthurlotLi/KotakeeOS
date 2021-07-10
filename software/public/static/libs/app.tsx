@@ -245,7 +245,7 @@ export class App extends React.Component {
 
       var currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
       var currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
-      var currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
+      var currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F" + " (" + parseInt(mainHumidity).toFixed(0) + " %)";
       await this.setState({
         currentWeatherMain: currentWeatherMain,
         currentWeatherMinMax: currentWeatherMinMax,
@@ -604,10 +604,10 @@ export class App extends React.Component {
           <div id="app-weather-main">{this.state.currentWeatherMain}</div>
           <div id="app-weather-minMax">{this.state.currentWeatherMinMax}</div>
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
-          <br></br>
+          <hr></hr>
           <div id="app-temps">
-            <div class="app-temps-line">Living Room: <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 F</span> <span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 %</span></div>
-            <div class="app-temps-line">Bedroom: <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 F</span> <span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 %</span></div>
+            <div class="app-temps-line">Living Room - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">Bedroom - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 %</span>)</div>
           </div>
         </div>
 
