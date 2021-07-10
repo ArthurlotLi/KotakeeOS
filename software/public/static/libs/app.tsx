@@ -328,9 +328,11 @@ export class App extends React.Component {
                       var actionStateString = String(room[actionId]);
                       var tempInfo = actionStateString.split("_");
                       if(tempInfo.length >= 2){
-                        var temp = parseFloat(tempInfo[0]).toFixed(0);
+                        var temp = parseFloat(tempInfo[0]);
                         var hum = parseFloat(tempInfo[1]).toFixed(0);
-                        tempDiv.innerHTML = temp + " C";
+                        // Convert temp to F from C
+                        var tempStr =  ((temp - 32) * .5556).toFixed(0);
+                        tempDiv.innerHTML = tempStr + " f";
                         humDiv.innerHTML = hum + " %";
                       }
                     }
