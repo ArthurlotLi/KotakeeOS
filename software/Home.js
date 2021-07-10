@@ -161,7 +161,7 @@ class Home {
 
     // Handle the case that we were given a string toState.
     // Otherwise, continue. 
-    if(toState.includes("str_")){
+    /*if(toState.includes("str_")){
       // If we have an action that expects strings, it will
       // not specify the state. We'll handle this accordingly.
       switch(inputFunction){
@@ -171,7 +171,7 @@ class Home {
           console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
           return false;
       }
-    }
+    }*/
 
     var stateInputActions = actionInputActions[toState]
     if(stateInputActions == null){
