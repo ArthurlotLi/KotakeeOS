@@ -165,12 +165,19 @@ const module6LRPins = [16];
 const module6LRIpAddress = "192.168.0.186";
 const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);*/
 
+const module7LRId = 7; // Internal server use only. 
+const module7LRRoomId = rooms.LIVINGROOM; 
+const module7LRActions = [];
+const module7LRPins = [];
+const module7LRIpAddress = "192.168.0.146";
+const module7LR = new Module(module7LRId, module7LRRoomId, module7LRActions, module7LRPins, module7LRIpAddress);
+
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR/*, module6LR*/];
+const livingRoomModules = [module2LR, module3LR, module4LR/*, module6LR*/, module7LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
