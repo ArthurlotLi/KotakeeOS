@@ -178,6 +178,8 @@ const livingRoomInputActions = {
   5250: { // Temperature input
     "function":"temperature",
     // TODO, add air conditioner with threshold.
+    // TOOD, also handle the fact that every single state update is
+    // blasting through to every client.
   },
   5050: {
     "function" : "timeout",
@@ -409,15 +411,15 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
     var roomId = parseInt(req.params.roomId);
     var actionId = parseInt(req.params.actionId);
     var toState;
-    if(req.params.toState.includes("str_")){
+    /*if(req.params.toState.includes("str_")){
       // We weren't given an int state, but an explicit string message
       // to be handled on a action-dependent basis. Don't parse int.
       // Ex) 5250 temp readout "str_27.50_41.10"
       toState = req.params.toState;
     }
-    else{
+    else{*/
       toState = parseInt(req.params.toState);
-    }
+    //}
     if(roomId != null && actionId != null && toState != null){
       // We always update the state in memory regardless of what additional
       // things we do with the input. Note strings are also valid here. 

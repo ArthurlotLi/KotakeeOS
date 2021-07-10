@@ -67,6 +67,11 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  TEMP1: 5250,
+  TEMP2: 5251,
+  TEMP3: 5252,
+  TEMP4: 5253,
+  TEMP5: 5254,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -81,112 +86,22 @@ const rooms = {
 
 // Frontend enum only (for display purposes to translate roomIds 
 // and actionIDs onto buttons.)
-const actionsAsStrings = {
+const implementedButtons = {
   "1.50": "Bedroom Floor Lamp",
-  "1.51": "",
-  "1.52": "",
-  "1.53": "",
-  "1.54": "",
-  "1.150": "Bedroom Curtains",
-  "1.151": "",
-  "1.152": "",
-  "1.153": "",
-  "1.154": "",
-  "1.250": "",
-  "1.251": "",
-  "1.252": "",
-  "1.253": "",
-  "1.254": "",
-  "1.255": "",
-  "1.256": "",
-  "1.257": "",
-  "1.258": "",
-  "1.259": "",
-  "1.260": "",
-  "1.261": "",
-  "1.262": "",
-  "1.263": "",
-  "1.264": "",
-  "1.265": "",
-  "1.266": "",
-  "1.267": "",
-  "1.268": "",
-  "1.269": "",
-  "1.350": "",
-  "1.351": "",
-  "1.352": "",
-  "1.353": "",
-  "1.354": "",
   "2.50": "Living Room Lamp",
-  "2.51": "",
-  "2.52": "",
-  "2.53": "",
-  "2.54": "",
-  "2.150": "",
-  "2.151": "",
-  "2.152": "",
-  "2.153": "",
-  "2.154": "",
   "2.250": "Soundbar Power",
   "2.251": "Ceiling Fan Lamp",
   "2.252": "Printer Power",
-  "2.253": "",
-  "2.254": "",
-  "2.255": "",
-  "2.256": "",
-  "2.257": "",
-  "2.258": "",
-  "2.259": "",
-  "2.260": "",
-  "2.261": "",
-  "2.262": "",
-  "2.263": "",
-  "2.264": "",
-  "2.265": "",
-  "2.266": "",
-  "2.267": "",
-  "2.268": "",
-  "2.269": "",
   "2.350": "Kitchen Light",
-  "2.351": "",
-  "2.352": "",
-  "2.353": "",
-  "2.354": "",
   "3.50": "Bathroom LED",
-  "3.51": "",
-  "3.52": "",
-  "3.53": "",
-  "3.54": "",
-  "3.150": "",
-  "3.151": "",
-  "3.152": "",
-  "3.153": "",
-  "3.154": "",
-  "3.250": "",
-  "3.251": "",
-  "3.252": "",
-  "3.253": "",
-  "3.254": "",
-  "3.255": "",
-  "3.256": "",
-  "3.257": "",
-  "3.258": "",
-  "3.259": "",
-  "3.260": "",
-  "3.261": "",
-  "3.262": "",
-  "3.263": "",
-  "3.264": "",
-  "3.265": "",
-  "3.266": "",
-  "3.267": "",
-  "3.268": "",
-  "3.269": "",
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
-  "3.352": "",
-  "3.353": "",
-  "3.354": "",
+}
+
+// When we need to use state data in other ways, enumerated
+// by specific strings to tell the app what to do. 
+const implementedFeatures ={
+  "2.5250": "temperature"
 }
 
 const dayOfWeek = [
@@ -374,53 +289,93 @@ export class App extends React.Component {
       this.updateActionStatesWorking = false;
     }
     if (data != null){
-      console.log("DEBUG: Parsing updateActionStates data:");
+      this.handleActionStates(data);
+    }
+  }
+
+  // Abstraction because spaghetti is bad. 
+  handleActionStates(data){
+    if (data != null){
+      console.log("DEBUG: Parsing handleActionStates data:");
       console.log(data);
       var currentLastUpdate = data.lastUpdate.toString();
       // We only get data if it's been updated thanks to the timestamp
       // processing, so now we need to update our information. 
-
       for(var key in data){
         // Ignore the lastUpdate variable. 
         if(key != "lastUpdate"){
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            var buttonId = 'app-modules-' + roomId + '-' + actionId;
-            var button = document.getElementById(buttonId);
-            if(button != null){
-              button.innerHTML = actionsAsStrings[roomId + "." + actionId];
-              var actionState = room[actionId];
-              if(actionState == "1"){
-                button.style.backgroundColor = '#03a100'; // Green
-              }
-              else if(actionState == "0"){
-                button.style.backgroundColor = '#a60000';  // Red
-              }
-              else if(actionState == "10"){
-                button.style.backgroundColor = '#a60000'; // Red
-              }
-              else if(actionState == "11"){
-                button.style.backgroundColor = '#d9a30f';  // Orange
-              }
-              else if(actionState == "12"){
-                button.style.backgroundColor = '#03a100';  // Green
-              }
-              else if(actionState == "20"){
-                button.style.backgroundColor = '#a60000'; // Red
-              }
-              else if(actionState == "21"){
-                button.style.backgroundColor = '#d9a30f';  // Orange
-              }
-              else if(actionState == "22"){
-                button.style.backgroundColor = '#03a100';  // Green
-              }
-              else {
-                button.style.backgroundColor = '#222222';  // Default null color.
+            // Check if we've implemented this action in the list of interface
+            // actions. 
+            var buttonText = implementedButtons[roomId + "." + actionId];
+            if(buttonText == null || buttonText == ""){
+              // This action is not applicable to buttons. Check to see
+              // if we applied it to other elements. 
+              var featureName = implementedFeatures[roomId + "." + actionId];
+              if(featureName != null && featureName != ""){
+                // We have a feature.
+                switch(featureName){
+                  case "temperature":
+                    // Handle temperatures. Expects a state like "str_27.70_42.20".
+                    var tempDivId = 'app-temps-' + roomId + '-' + actionId;
+                    var tempDiv = document.getElementById(tempDivId);
+                    var humDivId = 'app-hum-' + roomId + '-' + actionId;
+                    var humDiv = document.getElementById(humDivId);
+                    if(tempDiv != null && humDiv != null){
+                      var actionState = room[actionId];
+                      var tempInfo = actionState.split("_");
+                      tempDiv.innerHTML = tempInfo[1] + " C";
+                      humDiv.innerHTML = tempInfo[2] + " %";
+                    }
+                    else{
+                      console.log("WARNING: handleActionStates attempted to find a temp div with id " + tempDivId + " and hum div with id "+humDivId+ " that did not exist!");
+                    }
+                    break;
+                  default:
+                    console.log("WARNING: handleActionStates attempted to handle a feature that did not exist!");
+                }
               }
             }
             else{
-              console.log("WARNING: updateActionStates attempted to find a button with id " + buttonId + " that did not exist!");
+              // Handle buttons. 
+              var buttonId = 'app-modules-' + roomId + '-' + actionId;
+              var button = document.getElementById(buttonId);
+              if(button != null){
+                button.innerHTML = buttonText;
+                var actionState = room[actionId];
+                if(actionState == "1"){
+                  button.style.backgroundColor = '#03a100'; // Green
+                }
+                else if(actionState == "0"){
+                  button.style.backgroundColor = '#a60000';  // Red
+                }
+                else if(actionState == "10"){
+                  button.style.backgroundColor = '#a60000'; // Red
+                }
+                else if(actionState == "11"){
+                  button.style.backgroundColor = '#d9a30f';  // Orange
+                }
+                else if(actionState == "12"){
+                  button.style.backgroundColor = '#03a100';  // Green
+                }
+                else if(actionState == "20"){
+                  button.style.backgroundColor = '#a60000'; // Red
+                }
+                else if(actionState == "21"){
+                  button.style.backgroundColor = '#d9a30f';  // Orange
+                }
+                else if(actionState == "22"){
+                  button.style.backgroundColor = '#03a100';  // Green
+                }
+                else {
+                  button.style.backgroundColor = '#222222';  // Default null color.
+                }
+              }
+              else{
+                console.log("WARNING: handleActionStates attempted to find a button with id " + buttonId + " that did not exist!");
+              }
             }
           }
         }
