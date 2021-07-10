@@ -38,7 +38,7 @@ const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
 const int servoActionWait = 600; // time to move arm between neutral and active.
 
-const int temperatureReadingInterval = 2000; // Minimum amount of time between temp reads. 
+const int temperatureReadingInterval = 10000; // Minimum amount of time between temp reads. 
 
 // Sanity mechanism. if we request to send an input status to the server 
 // within this elapsed time frame, we will declare that specific pin
@@ -68,9 +68,10 @@ Servo servo;
 Servo servo1;
 Servo servo2;
 // We only support a certain number of total temp sensors. 
+// Just put garbage for the initialization. We'll assign it
+// properly if we actually do implement one according to the 
+// server. 
 DHT dht(-1, DHTTYPE);
-//DHT dht1;
-//DHT dht2;
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -249,7 +250,7 @@ void readInputs(){
         }
         // Otherwise, no change, do nothing. 
       }
-      else if(actions[i] <= temp1 && actions[i] >= temp5){
+      else if(actions[i] <= temp5 && actions[i] >= temp1){
         // Do not read temp data unless we've waited the appropriate
         // amount of time since the last temp transmission.
         if((millis() - millisInput[i]) >= temperatureReadingInterval){
@@ -263,7 +264,7 @@ void readInputs(){
           Serial.println(" Celsius");
           // We don't use states for these, instead we just
           // directly plug a string to the server. 
-          String tempReport = String(temp) + "." + String(hum);
+          String tempReport = "str_" + String(temp) + "_" + String(hum);
           moduleInput(actions[i], tempReport);
         }
       }

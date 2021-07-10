@@ -175,6 +175,10 @@ const livingRoomInputActionsTimeBounds = {
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
 }
 const livingRoomInputActions = {
+  5250: { // Temperature input
+    "function":"temperature",
+    // TODO, add air conditioner with threshold.
+  },
   5050: {
     "function" : "timeout",
     1: {
@@ -404,10 +408,19 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
   if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
     var roomId = parseInt(req.params.roomId);
     var actionId = parseInt(req.params.actionId);
-    var toState = parseInt(req.params.toState);
+    var toState;
+    if(req.params.toState.includes("str_")){
+      // We weren't given an int state, but an explicit string message
+      // to be handled on a action-dependent basis. Don't parse int.
+      // Ex) 5250 temp readout "str_27.50_41.10"
+      toState = req.params.toState;
+    }
+    else{
+      toState = parseInt(req.params.toState);
+    }
     if(roomId != null && actionId != null && toState != null){
       // We always update the state in memory regardless of what additional
-      // things we do with the input. 
+      // things we do with the input. Note strings are also valid here. 
       home.moduleStateUpdate(roomId, actionId, toState);
       home.moduleInput(roomId, actionId, toState)
       // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 

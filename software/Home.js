@@ -158,6 +158,21 @@ class Home {
       console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
       return false;
     }
+
+    // Handle the case that we were given a string toState.
+    // Otherwise, continue. 
+    if(toState.includes("str_")){
+      // If we have an action that expects strings, it will
+      // not specify the state. We'll handle this accordingly.
+      switch(inputFunction){
+        case "temperature":
+          return this.moduleInputTemperature(roomId, actionId, toState, actionInputActions, room);
+        default:
+          console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+          return false;
+      }
+    }
+
     var stateInputActions = actionInputActions[toState]
     if(stateInputActions == null){
       console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
@@ -171,7 +186,6 @@ class Home {
         return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
       case "command":
         return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
-        break;
       default:
         console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
         return false;
@@ -196,6 +210,12 @@ class Home {
     }
     console.log("[DEBUG] Executing command: " + command);
     exec(command, null)
+  }
+
+  // Given a toState string that presents temp and humidity
+  // (Ex) str_27.70_42.00), do something. TODO.
+  moduleInputTemperature(roomId, actionId, toState, actionInputActions, room){
+    // TODO. (Activate air conditioning or something. )
   }
 
   // Handle timeout input request. We expect to be completely
