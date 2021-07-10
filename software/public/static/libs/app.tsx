@@ -332,7 +332,7 @@ export class App extends React.Component {
                         var hum = parseFloat(tempInfo[1]).toFixed(0);
                         // Convert temp to F from C
                         var tempStr =  ((temp * 1.8) +32).toFixed(0);
-                        tempDiv.innerHTML = tempStr + " f";
+                        tempDiv.innerHTML = tempStr + " F";
                         humDiv.innerHTML = hum + " %";
                       }
                     }
