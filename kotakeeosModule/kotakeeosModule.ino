@@ -9,8 +9,11 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include <Servo.h>
+#include <DHT.h> // Thermometers
 
 #include "arduino_secrets.h" 
+
+#define DHTTYPE DHT22  // We're using a Chinese knock-off of a DHT22. 
 
 char ssid[] = SECRET_SSID;  
 char pass[] = SECRET_PASS;   
@@ -28,10 +31,14 @@ const int motion1 = 5050;
 const int motion5 = 5054;
 const int door1 = 5150;
 const int door5 = 5154;
+const int temp1 = 5250;
+const int temp5 = 5254;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
 const int servoActionWait = 600; // time to move arm between neutral and active.
+
+const int temperatureReadingInterval = 2000; // Minimum amount of time between temp reads. 
 
 // Sanity mechanism. if we request to send an input status to the server 
 // within this elapsed time frame, we will declare that specific pin
@@ -56,11 +63,14 @@ unsigned long millisInput[actionsAndPinsMax];
 
 int roomId = -1;
 
-// TODO: facilitate more than just one servo in use at any given point
-// in time. 
+// We only support a certain number of servos per action.
 Servo servo;
 Servo servo1;
 Servo servo2;
+// We only support a certain number of total temp sensors. 
+DHT dht(-1, DHTTYPE);
+//DHT dht1;
+//DHT dht2;
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -194,13 +204,13 @@ void readInputs(){
   for(int i = 0; i < actionsAndPinsMax; i++){
     if(actions[i] != -1 && actions[i] > inputActionThreshold){
       // We have an action that is an input!
-      int sensorValue = digitalRead(pins[i]);
 
       // TODO: With this sensor value, depending on the action
       // value, do something with it. 
 
       // Handle Motion data.
       if(actions[i] <= motion5 && actions[i] >= motion1){
+        int sensorValue = digitalRead(pins[i]);
         if(sensorValue == 1){
           // Indicate motion sensor information.
           inputDetected = true;
@@ -209,7 +219,7 @@ void readInputs(){
 
         if(states[i] == 1 && millis() - millisInput[i] >= inputMillisReport){
           // Time to send a report to the server. 
-          moduleInput(actions[i]);
+          moduleInput(actions[i], "");
           Serial.print("[DEBUG] For actionId ");
           Serial.print(actions[i]);
           Serial.print(" at pin ");
@@ -220,25 +230,44 @@ void readInputs(){
           states[i] = 0; // Reset the state back to zero between now and the next report. 
         }
       }
-
       // Handle Door data
       else if(actions[i] <= door5 && actions[i] >= door1){
+        int sensorValue = digitalRead(pins[i]);
         if(sensorValue == 1 && states[i] == 0){
           // Door was open and now it is closed!
           inputDetected = true;
           states[i] = 1;
           // Time to send a report to the server. 
-          moduleInput(actions[i]);
+          moduleInput(actions[i], "");
         }
         else if (sensorValue == 0 && states[i] == 1){
           // Door was closed and now it is open!
           inputDetected = true;
           states[i] = 0;
           // Time to send a report to the server. 
-          moduleInput(actions[i]);
+          moduleInput(actions[i], "");
         }
         // Otherwise, no change, do nothing. 
       }
+      else if(actions[i] <= temp1 && actions[i] >= temp5){
+        // Do not read temp data unless we've waited the appropriate
+        // amount of time since the last temp transmission.
+        if((millis() - millisInput[i]) >= temperatureReadingInterval){
+          float hum = dht.readHumidity();
+          float temp= dht.readTemperature();
+          //Print temp and humidity values to serial monitor
+          Serial.print("[INFO] Read DHT22 Sensor Info. Humidity: ");
+          Serial.print(hum);
+          Serial.print(" %, Temp: ");
+          Serial.print(temp);
+          Serial.println(" Celsius");
+          // We don't use states for these, instead we just
+          // directly plug a string to the server. 
+          String tempReport = String(temp) + "." + String(hum);
+          moduleInput(actions[i], tempReport);
+        }
+      }
+      // Else the action is not implemented. Don't do anything. 
     }
   }
 
@@ -402,9 +431,16 @@ void handleModuleUpdate(String currentLine){
           initializeServos((i-1)/2);
         }
         else if(actions[(i-1)/2] >= inputActionThreshold){
-          // Initialize the pin as input rather than output. 
-          pins[(i-1)/2] = atoi(str);
-          initializePinInput((i-1)/2);
+          // Special input case, need to initalize sensor object. 
+          if(actions[(i-1)/2] <= temp5 && actions[(i-1)/2] >= temp1){
+            pins[(i-1)/2] = atoi(str);
+            initializeDHT((i-1)/2);
+          }
+          else{
+            // Initialize the pin as input rather than output. 
+            pins[(i-1)/2] = atoi(str);
+            initializePinInput((i-1)/2);
+          }
         }
         else {
           pins[(i-1)/2] = atoi(str);
@@ -545,6 +581,18 @@ void initializeServos(int actionIndex){
   Serial.println(actions[actionIndex]);
 }
 
+// Upon startup, initialize the DHT sensor. TODO: currently only
+// supports a single senor per module. 
+void initializeDHT(int actionIndex){
+  dht = DHT(pins[actionIndex], DHTTYPE);
+  dht.begin(); // Start it up!
+
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pins[actionIndex]);
+  Serial.print(" with a DHT22 object for actionId ");
+  Serial.println(actions[actionIndex]);
+}
+
 // Call moduleStateUpdate for all implemented actions.
 void initialStateUpdate(){
   for(int i = 0; i < actionsAndPinsMax; i++){
@@ -652,7 +700,12 @@ void moduleStateUpdate(int actionId){
 // Takes in actionId (int) and sends the "state," aka the 
 // sensorValue. Is also in charge of shutting down a pin
 // that is spamming requests.  
-void moduleInput(int actionId) {
+//
+// If this function is provided a second argument, it will
+// ignore whatever state is present in the action and will
+// explicitly send the string provided. 
+// To not send explicit input, provide with an empty string.
+void moduleInput(int actionId, String explicitInput) {
   WiFiClient webServer;
 
   int i = findActionId(actionId);
@@ -661,11 +714,17 @@ void moduleInput(int actionId) {
     Serial.println(actionId);
   }
 
-  String toState = String(states[i]);
+  String toState;
+  if (explicitInput == ""){
+    toState = String(states[i]);
+  }
+  else{
+    toState = explicitInput;
+  }
   String actionIdStr = String(actionId);
   String roomIdStr = String(roomId);
 
-  /*if(millis() - millisInput[i] < fatalInputPinMillis){
+  if(millis() - millisInput[i] < fatalInputPinMillis){
     // Sanity check. If we're attempting to query the server for a second
     // time within the fatalInputPinMillis timespan for this particular
     // pin, shut the entire action down. 
@@ -676,7 +735,7 @@ void moduleInput(int actionId) {
     states[i] = -1;
     millisInput[i] = -1;
     return;
-  }*/
+  }
   // Otherwise we're good.
   millisInput[i] = millis();
 
