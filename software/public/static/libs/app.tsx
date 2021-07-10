@@ -101,7 +101,8 @@ const implementedButtons = {
 // When we need to use state data in other ways, enumerated
 // by specific strings to tell the app what to do. 
 const implementedFeatures ={
-  "2.5250": "temperature"
+  "2.5250": "temperature",
+  "1.5250": "temperature",
 }
 
 const dayOfWeek = [
@@ -579,7 +580,6 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          <div>Santa Clara, CA</div>
           <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
           <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
           <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
@@ -598,6 +598,11 @@ export class App extends React.Component {
           <div id="app-weather-main">{this.state.currentWeatherMain}</div>
           <div id="app-weather-minMax">{this.state.currentWeatherMinMax}</div>
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
+          <br></br>
+          <div id="app-temps">
+            <div class="app-temps-line">Living Room - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 C</span> | <span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>0 %</span></div>
+            <div class="app-temps-line">Bedroom - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 C</span> | <span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>0 %</span></div>
+          </div>
         </div>
 
         <div id="app-modules-row1">

@@ -410,21 +410,35 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
   if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
     var roomId = parseInt(req.params.roomId);
     var actionId = parseInt(req.params.actionId);
-    var toState;
-    /*if(req.params.toState.includes("str_")){
-      // We weren't given an int state, but an explicit string message
-      // to be handled on a action-dependent basis. Don't parse int.
-      // Ex) 5250 temp readout "str_27.50_41.10"
-      toState = req.params.toState;
-    }
-    else{*/
-      toState = parseInt(req.params.toState);
-    //}
+    var toState = parseInt(req.params.toState);
     if(roomId != null && actionId != null && toState != null){
       // We always update the state in memory regardless of what additional
       // things we do with the input. Note strings are also valid here. 
       home.moduleStateUpdate(roomId, actionId, toState);
       home.moduleInput(roomId, actionId, toState)
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
+});
+
+// Handle requests from modules to report input (actions > 5000)
+// that is not a state update. This is useful for stuff like
+// temp readouts (Ex) toState = "27.50_41.10")
+// Ex) http://192.168.0.197/moduleInputString/1/5250/27.50_41.10
+app.get('/moduleInputString/:roomId/:actionId/:toState', (req, res) => {
+  console.log("[DEBUG] /moduleInputString GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    var toState = req.params.toState; // We expect this to be a string.
+    if(roomId != null && actionId != null && toState != null){
+      // We always update the state in memory regardless of what additional
+      // things we do with the input. Note strings are also valid here. 
+      home.moduleStateUpdate(roomId, actionId, toState);
+      // Handle this input with explicit true flag for stringInput.
+      home.moduleInput(roomId, actionId, toState, true)
       // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
       return res.status(200).send();
     }

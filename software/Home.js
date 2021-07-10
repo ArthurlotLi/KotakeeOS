@@ -136,7 +136,9 @@ class Home {
 
   // Given roomId, actionId, and toState, use stored room 
   // variables to execute some sort of function upon input. 
-  moduleInput(roomId, actionId, toState){
+  // Allows for the specification of stringInput, in which
+  // case we'll use a different pool of functions. 
+  moduleInput(roomId, actionId, toState, stringInput = false){
     // SANITY CHECKS. SO MANY SANTIY CHECKS.  
     var room = this.getRoom(roomId);
     if(room == null){
@@ -159,11 +161,10 @@ class Home {
       return false;
     }
 
-    // Handle the case that we were given a string toState.
-    // Otherwise, continue. 
-    /*if(toState.includes("str_")){
-      // If we have an action that expects strings, it will
-      // not specify the state. We'll handle this accordingly.
+    // Now we handle things differently based on what state
+    // info type we got. 
+    if(stringInput){
+      // Handle string input. 
       switch(inputFunction){
         case "temperature":
           return this.moduleInputTemperature(roomId, actionId, toState, actionInputActions, room);
@@ -171,24 +172,25 @@ class Home {
           console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
           return false;
       }
-    }*/
-
-    var stateInputActions = actionInputActions[toState]
-    if(stateInputActions == null){
-      console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
-      return false;
     }
-
-    // If we survived the great filter, let's act depending 
-    // on the function given.
-    switch(inputFunction){
-      case "timeout":
-        return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
-      case "command":
-        return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
-      default:
-        console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+    else{
+      // Handle state input. 
+      var stateInputActions = actionInputActions[toState]
+      if(stateInputActions == null){
+        console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
         return false;
+      }
+      // If we survived the great filter, let's act depending 
+      // on the function given.
+      switch(inputFunction){
+        case "timeout":
+          return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
+        case "command":
+          return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
+        default:
+          console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+          return false;
+      }
     }
   }
 

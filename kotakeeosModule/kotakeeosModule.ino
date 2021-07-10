@@ -264,7 +264,7 @@ void readInputs(){
           Serial.println(" Celsius");
           // We don't use states for these, instead we just
           // directly plug a string to the server. 
-          String tempReport = "str_" + String(temp) + "_" + String(hum);
+          String tempReport = String(temp) + "_" + String(hum);
           moduleInput(actions[i], tempReport);
         }
       }
@@ -708,6 +708,8 @@ void moduleStateUpdate(int actionId){
 // To not send explicit input, provide with an empty string.
 void moduleInput(int actionId, String explicitInput) {
   WiFiClient webServer;
+  String endpoint = "moduleInput";
+  String explicitInputEndpoint = "moduleInputString";
 
   int i = findActionId(actionId);
   if(i < 0){
@@ -721,6 +723,7 @@ void moduleInput(int actionId, String explicitInput) {
   }
   else{
     toState = explicitInput;
+    endpoint = explicitInputEndpoint;
   }
   String actionIdStr = String(actionId);
   String roomIdStr = String(roomId);
@@ -742,7 +745,7 @@ void moduleInput(int actionId, String explicitInput) {
 
   // Make a basic HTTP request:
   if(webServer.connect(webServerIpAddress, webServerPort)){
-    webServer.println("GET /moduleInput/"+roomIdStr+"/"+actionIdStr+"/" + toState);
+    webServer.println("GET /"+endpoint+"/"+roomIdStr+"/"+actionIdStr+"/" + toState);
     webServer.println("Connection: close");
     webServer.println();
     Serial.println("[DEBUG] moduleInput Queried Web Server successfully with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + ".");

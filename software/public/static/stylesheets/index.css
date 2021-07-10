@@ -113,6 +113,16 @@ button:hover {
   font-size: 3vw;
 }
 
+#app-temps {
+  text-align: center;
+  font-size: 1.5vw;
+}
+
+.app-temps-line{
+  text-align: right;
+  margin-right: 1.5vw;
+}
+
 #app-modules-row1 {
   position: fixed;
   bottom: 29vh;
