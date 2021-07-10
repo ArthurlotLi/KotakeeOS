@@ -135,8 +135,8 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 // Arduino 3 Living Room
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
-const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.LIGHTING2]; // Admin action that is inert for this module. 
-const module3LRPins = [12, 0, 2];
+const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.LIGHTING2, actions.TEMP1]; // Admin action that is inert for this module. 
+const module3LRPins = [12, 0, 2, 16];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
@@ -157,19 +157,20 @@ const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Arduino 6 LR
+/*
 const module6LRId = 6; // Internal server use only. 
 const module6LRRoomId = rooms.LIVINGROOM; 
 const module6LRActions = [actions.TEMP1];
 const module6LRPins = [16];
 const module6LRIpAddress = "192.168.0.186";
-const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
+const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);*/
 
 // Rooms (add objects here)
 const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR, module6LR];
+const livingRoomModules = [module2LR, module3LR, module4LR/*, module6LR*/];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 

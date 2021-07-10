@@ -245,7 +245,7 @@ export class App extends React.Component {
 
       var currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
       var currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
-      var currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F" + " (" + parseInt(mainHumidity).toFixed(0) + " %)";
+      var currentWeatherFeelsLike = "Feels Like " + parseInt(mainFeels_like).toFixed(0) + " F" + " (" + parseInt(mainHumidity).toFixed(0) + " %)";
       await this.setState({
         currentWeatherMain: currentWeatherMain,
         currentWeatherMinMax: currentWeatherMinMax,
