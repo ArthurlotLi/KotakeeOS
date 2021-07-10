@@ -302,9 +302,6 @@ class Home {
     // Check if we've received no more inputs for this action since 
     // timeOfTimeoutMotion. 
     if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
-      // We'll reset the action state of the input state to 0 upon 
-      // successful timeout. 
-      this.moduleStateUpdate(roomId, actionId, 0);
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
@@ -330,6 +327,9 @@ class Home {
       // If we haven't seen any more movement between the time the timout
       // was started and now.
       this.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+      // We'll reset the action state of the input state to 0 upon 
+      // successful timeout. 
+      this.moduleStateUpdate(roomId, actionId, 0);
     }
   }
 
