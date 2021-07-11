@@ -404,6 +404,15 @@ export class App extends React.Component {
                 else if(actionState == "32"){
                   button.style.backgroundColor = '#03a100';  // Green
                 }
+                else if(actionState == "100"){
+                  button.style.backgroundColor = '#a60000'; // Red
+                }
+                else if(parseInt(actionState) > 100 && parseInt(actionState) < 130){
+                  button.style.backgroundColor = '#a60000'; // Green
+                }
+                else if(actionState == "32"){
+                  button.style.backgroundColor = '#03a100';  // Green
+                }
                 else {
                   button.style.backgroundColor = '#222222';  // Default null color.
                 }
