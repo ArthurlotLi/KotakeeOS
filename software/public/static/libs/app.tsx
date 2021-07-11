@@ -101,7 +101,7 @@ const implementedButtons = {
   "3.50": "Bathroom LED",
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
-  "2.450": "A/C Unit"
+  "2.450": "Air Conditioner"
 }
 
 // When we need to use state data in other ways, enumerated

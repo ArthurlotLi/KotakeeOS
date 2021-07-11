@@ -166,8 +166,8 @@ class Home {
     if(stringInput){
       // Handle string input. 
       switch(inputFunction){
-        case "temperature":
-          return this.moduleInputTemperature(roomId, actionId, toState, actionInputActions, room);
+        case "temperatureOnOff":
+          return this.moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room);
         default:
           console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
           return false;
@@ -215,9 +215,45 @@ class Home {
   }
 
   // Given a toState string that presents temp and humidity
-  // (Ex) str_27.70_42.00), do something. TODO.
-  moduleInputTemperature(roomId, actionId, toState, actionInputActions, room){
-    // TODO. (Activate air conditioning or something. )
+  // (Ex) 27.70_42.00), turn something on/off Note that we 
+  // convert from celsius here. 
+  moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room){
+    // Expect mandatory fields "onHeat", "offHeat", "onActions", "offActions".
+    // The latter two may be blank, but still must be here. 
+    var actionStateString = String(toState);
+    var tempInfo = actionStateString.split("_");
+    if(tempInfo.length < 2){
+      console.log("[ERROR] moduleInputTemperatureOnOff Received an invalid toState! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+    // Convert temp to F from C
+    var currentTemp = parseFloat(tempInfo[0]);
+    currentTemp =  ((currentTemp * 1.8) +32);
+
+    // Parse mandatory fields 
+    var onHeat = actionInputActions["onHeat"];
+    var offHeat = actionInputActions["offHeat"];
+    var onActions = actionInputActions["onActions"];
+    var offActions = actionInputActions["offActions"];
+    if(onHeat == null || offHeat == null || onActions == null || offActions == null){
+      console.log("[ERROR] moduleInputTemperatureOnOff parsed invalid instructions! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+
+    // Sanity checked. 
+    if(currentTemp >= onHeat){
+      // Execute onActions. 
+      for (var actionId in onActions){
+        this.actionToggle(roomId, actionId, onActions[actionId]);
+      }
+    }
+    else if(currentTemp <= offHeat){
+      // Execute onActions. 
+      for (var actionId in offActions){
+        this.actionToggle(roomId, actionId, offActions[actionId]);
+      }
+    }
+    // Otherwise we're within the grey area (if it exists). Do nothing. 
   }
 
   // Handle timeout input request. We expect to be completely

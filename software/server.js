@@ -187,12 +187,19 @@ const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
 }
+const airConditioningOn = 80; // How hot it must be to turn on the air conditioner. 
+const airConditioningOff = 79; // How hot it must be to turn off the air conditioner. 
 const livingRoomInputActions = {
   5250: { // Temperature input
-    "function":"temperature",
-    // TODO, add air conditioner with threshold.
-    // TOOD, also handle the fact that every single state update is
-    // blasting through to every client.
+    "function":"temperatureOnOff",
+    "onHeat":airConditioningOn,
+    "offHeat": airConditioningOff,
+    "onActions": {
+      450: 32,
+    },
+    "offActions":{
+      450: 30,
+    }
   },
   5050: {
     "function" : "timeout",
