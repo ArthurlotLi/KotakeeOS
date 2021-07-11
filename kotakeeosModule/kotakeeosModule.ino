@@ -464,7 +464,7 @@ void juggle(CRGB* leds, int numLeds) {
 void nightMode(CRGB* leds, int numLeds){
   // Simple, just for sleeping. 
   for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
-    leds[whiteLed] = CRGB::DarkOrange;
+    leds[whiteLed] = CRGB::DarkRed;
   }
 }
 
