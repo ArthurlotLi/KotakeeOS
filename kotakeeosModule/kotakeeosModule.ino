@@ -17,7 +17,6 @@
 #define DHTTYPE DHT22  // We're using a Chinese knock-off of a DHT22. 
 #define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
-#define BRIGHTNESS          96
 #define FRAMES_PER_SECOND  120
 
 // From FastLED's default example. 
@@ -67,6 +66,9 @@ const int ledModeSinelon = 104;
 const int ledModeJuggle = 105;
 const int ledModeBpm = 106;
 const int ledModeCycle = 107;
+const int ledModeNight = 108;
+
+const int brightnessNormal = 96;
 
 // Sanity mechanism. if we request to send an input status to the server 
 // within this elapsed time frame, we will declare that specific pin
@@ -175,6 +177,9 @@ void setup() {
   }
   server.begin();
   printWifiStatus();
+
+  // Set master brightness control
+  FastLED.setBrightness(brightnessNormal);
 
   // Now that we're online, let's ask the server what
   // actions/pins we should have. 
@@ -377,6 +382,9 @@ void updateLEDs(){
               gPatterns[gCurrentPatternNumber](leds, numLeds);
               EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns periodically
               break;
+            case ledModeNight:
+              nightMode(leds, numLeds);
+              break;
           }
           // Update all LED strips attached to this module. 
           FastLED.show();  
@@ -450,6 +458,13 @@ void juggle(CRGB* leds, int numLeds) {
   for( int i = 0; i < 8; i++) {
     leds[beatsin16( i+7, 0, numLeds-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
+  }
+}
+
+void nightMode(CRGB* leds, int numLeds){
+  // Simple, just for sleeping. 
+  for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
+    leds[whiteLed] = CRGB::DarkOrange;
   }
 }
 
@@ -1048,6 +1063,7 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
       case ledModeJuggle:
       case ledModeBpm:
       case ledModeCycle: 
+      case ledModeNight:
         // In the case that we got a mode we know, don't turn off. 
         // We'll handle the actual execution during the main loop. 
         states[actionIndex] = toStateInt; // 11 = active.

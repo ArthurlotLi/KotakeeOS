@@ -128,6 +128,16 @@ const dayOfWeek = [
   'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 ];
 
+// LED modes ported from the module code. 
+const ledModeRainbow = 101;
+const ledModeRainbowWithGlitter = 102;
+const ledModeConfetti = 103;
+const ledModeSinelon = 104;
+const ledModeJuggle = 105;
+const ledModeBpm = 106;
+const ledModeCycle = 107;
+const ledModeNight = 108;
+
 export class App extends React.Component {
   constructor(){
     super();
@@ -434,8 +444,9 @@ export class App extends React.Component {
   }
 
   // Query the web server to update an action to a different state
-  // based on what we know.
-  async moduleToggle(roomId, actionId){
+  // based on what we know. Optionally takes in a ledMode that 
+  // only applies when the actionId matches LEDStrips. 
+  async moduleToggle(roomId, actionId, ledMode = null){
     console.log("DEBUG: moduleToggle called with roomId " + roomId + " and actionId " + actionId + ".");
     var toState = null;
     var currentState = this.state.actionStates[roomId][actionId];
@@ -484,10 +495,13 @@ export class App extends React.Component {
     else if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) >= actions.LEDSTRIP1){
       // TODO: Right now this is hard coded. We should be able to 
       // store state numbers per combination (i.e. "2.1000: 107")
-      if(currentState == 100) {
-        toState = 107;
+      if(ledMode == null){
+        ledMode = 107;
       }
-      else if (currentState == 107){
+      if(currentState == 100) {
+        toState = ledMode;
+      }
+      else if (currentState != 100){
         toState = 100;
       }
       else{
@@ -693,7 +707,7 @@ export class App extends React.Component {
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
         </div>
 
         <div id="app-home-status">
