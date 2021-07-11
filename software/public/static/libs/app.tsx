@@ -371,6 +371,7 @@ export class App extends React.Component {
               if(button != null){
                 button.innerHTML = buttonText;
                 var actionState = room[actionId];
+                var actionStateInt = parseInt(actionState);
                 if(actionState == "1"){
                   button.style.backgroundColor = '#03a100'; // Green
                 }
@@ -407,7 +408,7 @@ export class App extends React.Component {
                 else if(actionState == "100"){
                   button.style.backgroundColor = '#a60000'; // Red
                 }
-                else if(parseInt(actionState) > 100 && parseInt(actionState) < 130){
+                else if(actionStateInt > 100 && actionStateInt < 130){
                   button.style.backgroundColor = '#a60000'; // Green
                 }
                 else if(actionState == "32"){

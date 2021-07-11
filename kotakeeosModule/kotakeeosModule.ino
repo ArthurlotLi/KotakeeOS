@@ -691,9 +691,9 @@ void handleModuleUpdate(String currentLine){
   Serial.print("[DEBUG] Info: ");
   for(int i = 0; i < actionsAndPinsMax; i++)
   {
-    int info = info[i];
-    if(info != -1){
-      Serial.print(info);
+    int infoVal = info[i];
+    if(infoVal != -1){
+      Serial.print(infoVal);
       Serial.print(" ");
     }
   }
@@ -844,7 +844,7 @@ void initializeLEDStrip(int actionIndex){
   }
 
   // Clear the strip in case it had something on it. 
-  for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
+  for(int whiteLed = 0; whiteLed < numLEDs; whiteLed = whiteLed + 1) {
     leds[whiteLed] = CRGB::Black;
   }
   FastLED.show();
