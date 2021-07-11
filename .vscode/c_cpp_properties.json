@@ -28,6 +28,7 @@
                 "/Users/arthur/Documents/Arduino/libraries/WiFiNINA/src",
                 "/Users/arthur/Documents/Arduino/libraries/Servo/src",
                 "/Users/arthur/Documents/Arduino/libraries/DHT_sensor_library",
+                "/Users/arthur/Documents/Arduino/libraries/FastLED/src",
                 "/Users/arthur/Documents/Arduino/libraries/Adafruit_Unified_Sensor",
                 "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1",
                 "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/arm-none-eabi",

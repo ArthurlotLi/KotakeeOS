@@ -72,6 +72,18 @@ const actions = {
   KNOB3: 452,
   KNOB4: 453,
   KNOB5: 454,
+  // These get handled rather differently from other actions.
+  // (toState represents different pre-programmed modes.)
+  LEDSTRIP1: 1000,
+  LEDSTRIP2: 1001,
+  LEDSTRIP3: 1002,
+  LEDSTRIP4: 1003,
+  LEDSTRIP5: 1004,
+  LEDSTRIP6: 1005,
+  LEDSTRIP7: 1006,
+  LEDSTRIP8: 1007,
+  LEDSTRIP9: 1008,
+  LEDSTRIP10: 1009,
   TEMP1: 5250,
   TEMP2: 5251,
   TEMP3: 5252,
@@ -101,7 +113,8 @@ const implementedButtons = {
   "3.50": "Bathroom LED",
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
-  "2.450": "Air Conditioner"
+  "2.450": "Air Conditioner",
+  "2.1000": "TV LED Strip",
 }
 
 // When we need to use state data in other ways, enumerated
@@ -458,6 +471,18 @@ export class App extends React.Component {
         console.log("WARNING: moduleToggle attempted to toggle action with current state of 31. Ignored.");
       }
     }
+    else if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) >= actions.LEDSTRIP1){
+      if(currentState == 100) {
+        toState = 101;
+      }
+      else if (currentState == 101){
+        toState = 100;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 31. Ignored.");
+      }
+    }
     else{
       // We default to a binary paradigm.
       if(currentState == 0){
@@ -656,7 +681,7 @@ export class App extends React.Component {
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE10} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE10) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1) }}></button>
         </div>
 
         <div id="app-home-status">

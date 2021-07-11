@@ -10,10 +10,15 @@
 #include <WiFiNINA.h>
 #include <Servo.h>
 #include <DHT.h> // Thermometers
+#include <FastLED.h> // LEDStrips
 
 #include "arduino_secrets.h" 
 
 #define DHTTYPE DHT22  // We're using a Chinese knock-off of a DHT22. 
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+#define BRIGHTNESS          96
+#define FRAMES_PER_SECOND  120
 
 char ssid[] = SECRET_SSID;  
 char pass[] = SECRET_PASS;   
@@ -35,6 +40,8 @@ const int temp1 = 5250;
 const int temp5 = 5254;
 const int knob1 = 450;
 const int knob5 = 454;
+const int ledStrip1 = 1000;
+const int ledStrip10 = 1009;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
@@ -47,6 +54,15 @@ const int servoAltActive = 170; // Item on
 const int servoAltActionWait = 700;
 
 const int temperatureReadingInterval = 10000; // Minimum amount of time between temp reads. 
+
+const int maxLEDs = 100; // What to initialize our arrays of CRGBs to at the start. 
+// These are all the LED modes that we've implemented. 
+const int ledModeRainbow = 101;
+const int ledModeRainbowWithGlitter = 102;
+const int ledModeConfetti = 103;
+const int ledModeSinelon = 104;
+const int ledModeJuggle = 105;
+const int ledModeBpm = 106;
 
 // Sanity mechanism. if we request to send an input status to the server 
 // within this elapsed time frame, we will declare that specific pin
@@ -64,6 +80,7 @@ const int actionsAndPinsMax = 25;
 int actions[actionsAndPinsMax];
 int pins[actionsAndPinsMax];
 int pins2[actionsAndPinsMax]; // Subsequent pin arrays for actions that use more than one. 
+int info[actionsAndPinsMax]; // Area for misc information depending on the action. (Ex) LEDS need to know size of LED strip.)
 int states[actionsAndPinsMax];
 // Used to detect and shut down a pin that isn't connected so we don't
 // unintentinally DDOS our own web server. 
@@ -81,6 +98,19 @@ Servo servo2;
 // server. 
 DHT dht(-1, DHTTYPE);
 
+// We support up to 10 LED light strips. 
+CRGB leds1[maxLEDs];
+CRGB leds2[maxLEDs];
+CRGB leds3[maxLEDs];
+CRGB leds4[maxLEDs];
+CRGB leds5[maxLEDs];
+CRGB leds6[maxLEDs];
+CRGB leds7[maxLEDs];
+CRGB leds8[maxLEDs];
+CRGB leds9[maxLEDs];
+CRGB leds10[maxLEDs];
+uint8_t gHue = 0; // rotating "base color" used by many LED patterns.
+
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
 const int webServerPort = 8080;
@@ -95,6 +125,7 @@ void setup() {
     actions[i] = -1;
     pins[i] = -1;
     pins2[i] = -1;
+    info[i] = -1;
     states[i] = -1;
     millisInput[i] = 0;
   }
@@ -137,6 +168,7 @@ void setup() {
 
 void loop() {
   readInputs(); // Read inputs if we need to. 
+  updateLEDs();
   WiFiClient client = server.available();   // listen for incoming clients
 
   if (client) {                             // if you get a client,
@@ -145,6 +177,7 @@ void loop() {
       // Read inputs if we need to for each client connected loop as well,
       // just in case so as to not block or lose any input. 
       readInputs(); 
+      updateLEDs();
 
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
@@ -288,6 +321,110 @@ void readInputs(){
   }
 }
 
+// Called regularily with each loop. Implements all of the 
+// LEDstrip functions that we support. 
+void updateLEDs(){
+  // Don't update every time. 
+  EVERY_N_MILLISECONDS( 20 ) { gHue++; }
+  EVERY_N_MILLISECONDS( 1000/FRAMES_PER_SECOND ) {  
+    for(int i = 0; i < actionsAndPinsMax; i++){
+      if(actions[i] != -1 && actions[i] <= ledStrip10 && actions[i] >= ledStrip1){
+        // We have an action that is an LED strip!
+
+        if(states[i] > 100){
+          // Don't do anything if the state is shut down. 
+          // Get the correct array to use.
+          CRGB* leds = obtainCRGBArray(actions[i]);
+          int numLeds = info[i];
+
+          switch(states[i]){
+            case ledModeRainbow: 
+              rainbow(leds,numLeds);
+              break;
+            case ledModeRainbowWithGlitter:
+              rainbowWithGlitter(leds, numLeds);
+              break;
+            case ledModeConfetti:
+              confetti(leds, numLeds);
+              break;
+            case ledModeSinelon:
+              sinelon(leds, numLeds);
+              break;
+            case ledModeJuggle:
+              juggle(leds, numLeds);
+              break;
+            case ledModeBpm:
+              bpm(leds, numLeds);
+              break;
+          }
+          // Update all LED strips attached to this module. 
+          FastLED.show();  
+        }
+      }
+    }
+  }
+}
+
+/*
+  LED modes from FastLED's examples.
+*/
+void rainbow(CRGB* leds, int numLeds) 
+{
+  // FastLED's built-in rainbow generator
+  fill_rainbow( leds, numLeds, gHue, 7);
+}
+
+void rainbowWithGlitter(CRGB* leds, int numLeds) 
+{
+  // built-in FastLED rainbow, plus some random sparkly glitter
+  rainbow(leds, numLeds);
+  addGlitter(leds, numLeds, 80);
+}
+
+void addGlitter( CRGB* leds, int numLeds, fract8 chanceOfGlitter) 
+{
+  if( random8() < chanceOfGlitter) {
+    leds[ random16(numLeds) ] += CRGB::White;
+  }
+}
+
+void confetti(CRGB* leds, int numLeds) 
+{
+  // random colored speckles that blink in and fade smoothlyled
+  fadeToBlackBy( leds, numLeds, 10);
+  int pos = random16(numLeds);
+  leds[pos] += CHSV( gHue + random8(64), 200, 255);
+}
+
+void sinelon(CRGB* leds, int numLeds)
+{
+  // a colored dot sweeping back and forth, with fading trails
+  fadeToBlackBy( leds, numLeds, 20);
+  int pos = beatsin16( 13, 0, numLeds-1 );
+  leds[pos] += CHSV( gHue, 255, 192);
+}
+
+void bpm(CRGB* leds, int numLeds)
+{
+  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+  uint8_t BeatsPerMinute = 62;
+  CRGBPalette16 palette = PartyColors_p;
+  uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+  for( int i = 0; i < numLeds; i++) { //9948
+    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+  }
+}
+
+void juggle(CRGB* leds, int numLeds) {
+  // eight colored dots, weaving in and out of sync with each other
+  fadeToBlackBy( leds, numLeds, 20);
+  byte dothue = 0;
+  for( int i = 0; i < 8; i++) {
+    leds[beatsin16( i+7, 0, numLeds-1 )] |= CHSV(dothue, 200, 255);
+    dothue += 32;
+  }
+}
+
 void handleStateToggle(String currentLine, bool virtualCommand){
   String actionId;
   int actionIdInt;
@@ -361,6 +498,15 @@ void handleStateToggle(String currentLine, bool virtualCommand){
         Serial.println("[DEBUG] Activating Servo Knob...");
         if(toStateInt == 32 || toStateInt == 30){
           servoTurnKnob(actionIndex, toStateInt, virtualCommand);
+        }
+        else{
+          Serial.println("[WARNING] Illegal action was requested! Ignoring...");
+        }
+      }
+      else if(actions[actionIndex] <= ledStrip10 && actions[actionIndex] >= ledStrip1){
+        Serial.println("[DEBUG] Activating LED Strip...");
+        if(toStateInt >= 100){
+          activateLEDStripMode(actionIndex, toStateInt, virtualCommand);
         }
         else{
           Serial.println("[WARNING] Illegal action was requested! Ignoring...");
@@ -453,6 +599,20 @@ void handleModuleUpdate(String currentLine){
           pins[(i-1)/2] = atoi(str);
           initializeKnobServo((i-1)/2);
         }
+        else if(actions[(i-1)/2] <= ledStrip10 && actions[(i-1)/2] >= ledStrip1){
+          // Initialize for LED strip usage. 
+          // We expect a 5 digit string, with the latter number being
+          // the info field i.e. NUM_LEDs. Ex) "01.060"
+          char pin1Str[3];
+          memcpy( pin1Str, &str[0], 2 );
+          pin1Str[2] = '\0'; // Null terminate the substring. Yay C++...
+          char infoStr[3];
+          memcpy( infoStr, &str[2], 3 );
+          infoStr[2] = '\0'; // Null terminate the substring. Yay C++...
+          pins[(i-1)/2] = atoi(pin1Str);
+          info[(i-1)/2] = atoi(infoStr);
+          initializeLEDStrip((i-1)/2);
+        }
         else if(actions[(i-1)/2] >= inputActionThreshold){
           // Special input case, need to initalize sensor object. 
           if(actions[(i-1)/2] <= temp5 && actions[(i-1)/2] >= temp1){
@@ -483,6 +643,11 @@ void handleModuleUpdate(String currentLine){
         }
         else if(actions[i/2] <= knob5 && actions[i/2] >= knob1){
           states[i/2] = 30; // 30 is off, 31 is active, 32 is on. 
+        }
+        else if(actions[i/2] <= ledStrip10 && actions[i/2] >= ledStrip1){
+          // Our state represents the types of LED modes we've implemented. 
+          // 100 is off. 
+          states[i/2] = 100;
         }
         else if(actions[i/2] >= inputActionThreshold){
           // For input actions, we're still using 0 as our default state.
@@ -621,6 +786,58 @@ void initializeKnobServo(int actionIndex){
   Serial.println(actions[actionIndex]);
 }
 
+// Upon startup, initialize the FastLED object. Note that we
+// expect the pin and the info array to be filled out here,
+// the latter being the number of LEDs in the strip. 
+void initializeLEDStrip(int actionIndex){
+  int pin = pins[actionIndex];
+  int numLEDs = info[actionIndex];
+  // Get the correct array to use.
+  CRGB* leds = obtainCRGBArray(actions[actionIndex]);
+
+  // Well, FastLED works on the assembly level and generates
+  // code for each pin that we use. this means that I HAVE
+  // to specify a constant for compilation. Given my system's
+  // run-time defined pin, we can use a workaround. This WILL 
+  // take up excessive memory (More than a thousand bytes per
+  // pin), but I think that's okay. That's how the cookie
+  // crumbles when you try to do more specific things with 
+  // a general light hobbyist microcontroller library. 
+  switch (pin) {
+    case 1:FastLED.addLeds<LED_TYPE,1,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 2:FastLED.addLeds<LED_TYPE,2,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 3:FastLED.addLeds<LED_TYPE,3,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 4:FastLED.addLeds<LED_TYPE,4,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 5:FastLED.addLeds<LED_TYPE,5,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 6:FastLED.addLeds<LED_TYPE,6,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 7:FastLED.addLeds<LED_TYPE,7,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 8:FastLED.addLeds<LED_TYPE,8,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 9:FastLED.addLeds<LED_TYPE,9,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 10:FastLED.addLeds<LED_TYPE,10,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 11:FastLED.addLeds<LED_TYPE,11,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 12:FastLED.addLeds<LED_TYPE,12,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 13:FastLED.addLeds<LED_TYPE,13,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 14:FastLED.addLeds<LED_TYPE,14,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 15:FastLED.addLeds<LED_TYPE,15,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 16:FastLED.addLeds<LED_TYPE,16,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 17:FastLED.addLeds<LED_TYPE,17,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 18:FastLED.addLeds<LED_TYPE,18,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 19:FastLED.addLeds<LED_TYPE,19,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 20:FastLED.addLeds<LED_TYPE,20,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;
+    case 21:FastLED.addLeds<LED_TYPE,21,COLOR_ORDER>(leds, numLEDs).setCorrection(TypicalLEDStrip); break;   
+    default:
+      Serial.print("[ERROR] Failed to initalize pin ");
+      Serial.print(pin);
+      Serial.print(" with FastLED for actionId ");
+      Serial.println(actions[actionIndex]);
+      return;
+  }
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pin);
+  Serial.print(" with a knob Servo object for actionId ");
+  Serial.println(actions[actionIndex]);
+}
+
 // Upon startup, initialize the DHT sensor. TODO: currently only
 // supports a single senor per module. 
 void initializeDHT(int actionIndex){
@@ -631,6 +848,35 @@ void initializeDHT(int actionIndex){
   Serial.print(pins[actionIndex]);
   Serial.print(" with a DHT22 object for actionId ");
   Serial.println(actions[actionIndex]);
+}
+
+// Helper function - given the actionId for LEDStrips,
+// return the CRGB array that matches that actionId. 
+// I know, not the greatest but I think it's the best
+// I can do for now. 
+CRGB * obtainCRGBArray(int actionId){
+  switch(actionId){
+    case(ledStrip1):
+      return leds1;
+    case(ledStrip1+1):
+      return leds2;
+    case(ledStrip1+2):
+      return leds3;
+    case(ledStrip1+3):
+      return leds4;
+    case(ledStrip1+4):
+      return leds5;
+    case(ledStrip1+5):
+      return leds6;
+    case(ledStrip1+6):
+      return leds7;
+    case(ledStrip1+7):
+      return leds8;
+    case(ledStrip1+8):
+      return leds9;
+    default:
+      return leds10;
+  }
 }
 
 // Call moduleStateUpdate for all implemented actions.
@@ -739,6 +985,35 @@ void servoTurnKnob(int actionIndex, int toStateInt, bool virtualCommand){
     // Notify the server of our new state. 
     states[actionIndex] = toStateInt;
     moduleStateUpdate(actions[actionIndex]);
+  }
+}
+
+// Depending on the given state, do something with our LED.
+// state 100 representes off.  
+void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
+  // Sanity Check:
+  if(toStateInt >= 100){
+    switch(toStateInt){
+      case ledModeRainbow: 
+      case ledModeRainbowWithGlitter:
+      case ledModeConfetti:
+      case ledModeSinelon:
+      case ledModeJuggle:
+      case ledModeBpm:
+        // In the case that we got a mode we know, don't turn off. 
+        // We'll handle the actual execution during the main loop. 
+        break;
+      default:
+        // Get the correct array to use.
+        CRGB* leds = obtainCRGBArray(actions[actionIndex]);
+        int numLeds = info[actionIndex];
+        // Turn the LED off. 
+        for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
+          leds[whiteLed] = CRGB::Black;
+        }
+        FastLED.show();
+        break;
+    }
   }
 }
 

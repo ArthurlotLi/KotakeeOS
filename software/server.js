@@ -60,6 +60,18 @@ const actions = {
   KNOB3: 452,
   KNOB4: 453,
   KNOB5: 454,
+  // These get handled rather differently from other actions.
+  // (toState represents different pre-programmed modes.)
+  LEDSTRIP1: 1000,
+  LEDSTRIP2: 1001,
+  LEDSTRIP3: 1002,
+  LEDSTRIP4: 1003,
+  LEDSTRIP5: 1004,
+  LEDSTRIP6: 1005,
+  LEDSTRIP7: 1006,
+  LEDSTRIP8: 1007,
+  LEDSTRIP9: 1008,
+  LEDSTRIP10: 1009,
   // Input enums. Are considered "actions" but are treated entirely differently. 
   // Seperated from actions by 5000. Do not need to be known by client.
   MOTION1: 5050,
@@ -162,13 +174,12 @@ const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Arduino 6 LR
-/*
 const module6LRId = 6; // Internal server use only. 
 const module6LRRoomId = rooms.LIVINGROOM; 
-const module6LRActions = [actions.TEMP1];
-const module6LRPins = [16];
+const module6LRActions = [actions.LEDSTRIP1];
+const module6LRPins = [12.060];
 const module6LRIpAddress = "192.168.0.186";
-const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);*/
+const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
 
 const module7LRId = 7; // Internal server use only. 
 const module7LRRoomId = rooms.LIVINGROOM; 
@@ -182,7 +193,7 @@ const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR/*, module6LR*/, module7LR];
+const livingRoomModules = [module2LR, module3LR, module4LR, module6LR, module7LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
