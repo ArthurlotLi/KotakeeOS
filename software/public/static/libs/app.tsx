@@ -67,6 +67,11 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  KNOB1: 450,
+  KNOB2: 451,
+  KNOB3: 452,
+  KNOB4: 453,
+  KNOB5: 454,
   TEMP1: 5250,
   TEMP2: 5251,
   TEMP3: 5252,
@@ -87,7 +92,7 @@ const rooms = {
 // Frontend enum only (for display purposes to translate roomIds 
 // and actionIDs onto buttons.)
 const implementedButtons = {
-  "1.50": "Bedroom Floor Lamp",
+  "1.50": "Bedroom Lamp",
   "2.50": "Living Room Lamp",
   "2.250": "Soundbar Power",
   "2.251": "Ceiling Fan Lamp",
@@ -96,6 +101,7 @@ const implementedButtons = {
   "3.50": "Bathroom LED",
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
+  "2.450": "A/C Unit"
 }
 
 // When we need to use state data in other ways, enumerated
@@ -431,6 +437,18 @@ export class App extends React.Component {
         console.log("WARNING: moduleToggle attempted to toggle action with current state of 21. Ignored.");
       }
     }
+    else if(parseInt(actionId) <= actions.KNOB5 && parseInt(actionId) >= actions.KNOB1){
+      if(currentState == 30) {
+        toState = 32;
+      }
+      else if (currentState == 32){
+        toState = 30;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 31. Ignored.");
+      }
+    }
     else{
       // We default to a binary paradigm.
       if(currentState == 0){
@@ -500,7 +518,7 @@ export class App extends React.Component {
           for(var actionId in room){
             // For every single room and action, check the state. 
             var actionState = parseInt(room[actionId]);
-            if(actionState == 1 || actionState == 12 || actionState == 22){
+            if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32){
               onCount++;
             }
             else{
@@ -523,12 +541,12 @@ export class App extends React.Component {
           for(var actionId in room){
             var actionState = parseInt(room[actionId]);
             if(turnAllOn){
-              if(actionState != 1 && actionState != 12 && actionState != 22){
+              if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32){
                 this.moduleToggle(roomId, actionId);
               }
             }
             else{
-              if(actionState != 0 && actionState != 10 && actionState != 20){
+              if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30){
                 this.moduleToggle(roomId, actionId);
               }
             }
@@ -614,19 +632,22 @@ export class App extends React.Component {
         <div id="app-modules-row1">
           <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE10} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE10) }}></button>
         </div>
 
         <div id="app-modules-row2">
           <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
           <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
           <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
         </div>
 
         <div id="app-modules-row3">
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
+          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE10} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE10) }}></button>
         </div>
 
         <div id="app-home-status">

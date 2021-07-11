@@ -33,10 +33,18 @@ const int door1 = 5150;
 const int door5 = 5154;
 const int temp1 = 5250;
 const int temp5 = 5254;
+const int knob1 = 450;
+const int knob5 = 454;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
 const int servoActionWait = 600; // time to move arm between neutral and active.
+
+// Declare an alternate set of servo variables to use when 
+// controlling stuff like the AC knob. 
+const int servoAltNeutral = 8; // Item off
+const int servoAltActive = 170; // Item on
+const int servoAltActionWait = 700;
 
 const int temperatureReadingInterval = 10000; // Minimum amount of time between temp reads. 
 
@@ -349,6 +357,15 @@ void handleStateToggle(String currentLine, bool virtualCommand){
           Serial.println("[WARNING] Illegal action was requested! Ignoring...");
         }
       }
+      else if(actions[actionIndex] <= knob5 && actions[actionIndex] >= knob1){
+        Serial.println("[DEBUG] Activating Servo Knob...");
+        if(toStateInt == 32 || toStateInt == 30){
+          servoTurnKnob(actionIndex, toStateInt, virtualCommand);
+        }
+        else{
+          Serial.println("[WARNING] Illegal action was requested! Ignoring...");
+        }
+      }
       else{
         // Default binary 0, 1. 
         if(toStateInt == 1){
@@ -431,6 +448,11 @@ void handleModuleUpdate(String currentLine){
           pins2[(i-1)/2] = atoi(pin2Str);
           initializeServos((i-1)/2);
         }
+        else if(actions[(i-1)/2] <= knob5 && actions[(i-1)/2] >= knob1){
+          // Servo usage.
+          pins[(i-1)/2] = atoi(str);
+          initializeKnobServo((i-1)/2);
+        }
         else if(actions[(i-1)/2] >= inputActionThreshold){
           // Special input case, need to initalize sensor object. 
           if(actions[(i-1)/2] <= temp5 && actions[(i-1)/2] >= temp1){
@@ -458,6 +480,9 @@ void handleModuleUpdate(String currentLine){
         }
         else if(actions[i/2] <= switch5 && actions[i/2] >= switch1){
           states[i/2] = 20; // 20 is off, 21 is active, 22 is on. 
+        }
+        else if(actions[i/2] <= knob5 && actions[i/2] >= knob1){
+          states[i/2] = 30; // 30 is off, 31 is active, 32 is on. 
         }
         else if(actions[i/2] >= inputActionThreshold){
           // For input actions, we're still using 0 as our default state.
@@ -582,6 +607,20 @@ void initializeServos(int actionIndex){
   Serial.println(actions[actionIndex]);
 }
 
+// Upon startup, make sure all servos are at the neutral position.
+void initializeKnobServo(int actionIndex){
+  // Activate the servo. We expect to be in neutral.
+  servo.attach(pins[actionIndex]);
+  servo.write(servoAltNeutral);
+  delay(servoActionWait);
+  servo.detach();
+
+  Serial.print("[DEBUG] Initialized pin ");
+  Serial.print(pins[actionIndex]);
+  Serial.print(" with a knob Servo object for actionId ");
+  Serial.println(actions[actionIndex]);
+}
+
 // Upon startup, initialize the DHT sensor. TODO: currently only
 // supports a single senor per module. 
 void initializeDHT(int actionIndex){
@@ -661,6 +700,39 @@ void servoPressSwitch(int actionIndex, int toStateInt, bool virtualCommand){
       delay(servoActionWait);
       servo.write(servoNeutral);
       delay(servoActionWait);
+      servo.detach();
+    }
+
+    // Notify the server of our new state. 
+    states[actionIndex] = toStateInt;
+    moduleStateUpdate(actions[actionIndex]);
+  }
+}
+
+// Unlike servoPressButton, we do not return to the
+// neutral state after activating one state or another. 
+// uses ALT constant variables for servos.
+void servoTurnKnob(int actionIndex, int toStateInt, bool virtualCommand){
+  // Sanity Check:
+  if(toStateInt == 32 || toStateInt == 30){
+    if(!virtualCommand){
+      int pin = pins[actionIndex];
+      // Notify the server of our new state. 
+      states[actionIndex] = 31; // 31 = active.
+      moduleStateUpdate(actions[actionIndex]);
+
+      int servoToWrite;
+      if(toStateInt == 32){
+        // Turn on
+        servoToWrite = servoAltActive;
+      }
+      else{
+        // Turn off
+        servoToWrite = servoAltNeutral;
+      }
+      servo.attach(pin);
+      servo.write(servoToWrite);
+      delay(servoAltActionWait);
       servo.detach();
     }
 

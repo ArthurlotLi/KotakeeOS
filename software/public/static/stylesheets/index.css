@@ -23,11 +23,11 @@ body{
 }
 
 button{
-  font-size: 2.6vw;
+  font-size: 2.1vw;
   background-color: #222222;
   color: var(--text-color);
-  width: 30vw;
-  height: 13vh;
+  width: 23.5vw;
+  height: 13.5vh;
   padding: 0.5vw;
   margin: 0.3vw;
 }

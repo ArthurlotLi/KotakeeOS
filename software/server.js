@@ -55,6 +55,11 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  KNOB1: 450,
+  KNOB2: 451,
+  KNOB3: 452,
+  KNOB4: 453,
+  KNOB5: 454,
   // Input enums. Are considered "actions" but are treated entirely differently. 
   // Seperated from actions by 5000. Do not need to be known by client.
   MOTION1: 5050,
@@ -167,8 +172,8 @@ const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, mod
 
 const module7LRId = 7; // Internal server use only. 
 const module7LRRoomId = rooms.LIVINGROOM; 
-const module7LRActions = [];
-const module7LRPins = [];
+const module7LRActions = [actions.KNOB1];
+const module7LRPins = [12];
 const module7LRIpAddress = "192.168.0.146";
 const module7LR = new Module(module7LRId, module7LRRoomId, module7LRActions, module7LRPins, module7LRIpAddress);
 
