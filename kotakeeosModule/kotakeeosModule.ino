@@ -113,8 +113,17 @@ CRGB leds7[maxLEDs];
 CRGB leds8[maxLEDs];
 CRGB leds9[maxLEDs];
 CRGB leds10[maxLEDs];
+
+// The following are meant to implement base FastLED funcitonality. 
 uint8_t gHue = 0; // rotating "base color" used by many LED patterns.
-typedef void (*SimplePatternList[])();
+typedef void (*SimplePatternList[])(CRGB* leds, int numLeds);
+// Forward declaration! 
+void rainbow(CRGB* leds, int numLeds);
+void rainbowWithGlitter(CRGB* leds, int numLeds);
+void confetti(CRGB* leds, int numLeds);
+void sinelon(CRGB* leds, int numLeds);
+void juggle(CRGB* leds, int numLeds);
+void bpm(CRGB* leds, int numLeds);
 SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
@@ -366,7 +375,7 @@ void updateLEDs(){
             case ledModeCycle:
               // Call the current pattern function once, updating the 'leds' array
               gPatterns[gCurrentPatternNumber](leds, numLeds);
-              EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+              EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns periodically
               break;
           }
           // Update all LED strips attached to this module. 
@@ -1038,6 +1047,7 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
       case ledModeSinelon:
       case ledModeJuggle:
       case ledModeBpm:
+      case ledModeCycle: 
         // In the case that we got a mode we know, don't turn off. 
         // We'll handle the actual execution during the main loop. 
         states[actionIndex] = toStateInt; // 11 = active.
