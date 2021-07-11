@@ -228,7 +228,7 @@ class Home {
     }
     // Convert temp to F from C
     var currentTemp = parseFloat(tempInfo[0]);
-    currentTemp =  ((currentTemp * 1.8) +32);
+    currentTemp = parseInt(((currentTemp * 1.8) +32).toFixed(0));
 
     // Parse mandatory fields 
     var onHeat = actionInputActions["onHeat"];
