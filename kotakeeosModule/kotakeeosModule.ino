@@ -1032,6 +1032,8 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
           leds[whiteLed] = CRGB::Black;
         }
         FastLED.show();
+        states[actionIndex] = 100; // We default to 100. 
+        moduleStateUpdate(actions[actionIndex]);
         break;
     }
   }
