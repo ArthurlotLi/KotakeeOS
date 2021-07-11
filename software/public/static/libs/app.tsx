@@ -377,55 +377,58 @@ export class App extends React.Component {
             else{
               // Handle buttons. 
               var buttonId = 'app-modules-' + roomId + '-' + actionId;
-              var button = document.getElementById(buttonId);
-              if(button != null){
-                button.innerHTML = buttonText;
-                var actionState = room[actionId];
-                var actionStateInt = parseInt(actionState);
-                if(actionState == "1"){
-                  button.style.backgroundColor = '#03a100'; // Green
-                }
-                else if(actionState == "0"){
-                  button.style.backgroundColor = '#a60000';  // Red
-                }
-                else if(actionState == "10"){
-                  button.style.backgroundColor = '#a60000'; // Red
-                }
-                else if(actionState == "11"){
-                  button.style.backgroundColor = '#d9a30f';  // Orange
-                }
-                else if(actionState == "12"){
-                  button.style.backgroundColor = '#03a100';  // Green
-                }
-                else if(actionState == "20"){
-                  button.style.backgroundColor = '#a60000'; // Red
-                }
-                else if(actionState == "21"){
-                  button.style.backgroundColor = '#d9a30f';  // Orange
-                }
-                else if(actionState == "22"){
-                  button.style.backgroundColor = '#03a100';  // Green
-                }
-                else if(actionState == "30"){
-                  button.style.backgroundColor = '#a60000'; // Red
-                }
-                else if(actionState == "31"){
-                  button.style.backgroundColor = '#d9a30f';  // Orange
-                }
-                else if(actionState == "32"){
-                  button.style.backgroundColor = '#03a100';  // Green
-                }
-                else if(actionState == "100"){
-                  button.style.backgroundColor = '#a60000'; // Red
-                }
-                else if(actionStateInt > 100 && actionStateInt < 130){
-                  button.style.backgroundColor = '#03a100';  // Green
-                }
-                else if(actionState == "32"){
-                  button.style.backgroundColor = '#03a100';  // Green
-                }
-                else {
-                  button.style.backgroundColor = '#222222';  // Default null color.
+              var buttons = document.getElementsByClassName(buttonId) as HTMLCollectionOf<HTMLElement>; // Cuz this is necessary i guess. 
+              if(buttons != null && buttons.length > 0){
+                for (var j = 0; j < buttons.length; j++){
+                  var button = buttons[j];
+                  button.innerHTML = buttonText;
+                  var actionState = room[actionId];
+                  var actionStateInt = parseInt(actionState);
+                  if(actionState == "1"){
+                    button.style.backgroundColor = '#03a100'; // Green
+                  }
+                  else if(actionState == "0"){
+                    button.style.backgroundColor = '#a60000';  // Red
+                  }
+                  else if(actionState == "10"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "11"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "12"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "20"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "21"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "22"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "30"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "31"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "32"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "100"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionStateInt > 100 && actionStateInt < 130){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "32"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else {
+                    button.style.backgroundColor = '#222222';  // Default null color.
+                  }
                 }
               }
               else{
@@ -498,7 +501,7 @@ export class App extends React.Component {
       if(ledMode == null){
         ledMode = 107;
       }
-      if(currentState == 100) {
+      if(currentState == 100 || currentState != ledMode) {
         toState = ledMode;
       }
       else if (currentState != 100){
@@ -690,24 +693,24 @@ export class App extends React.Component {
         </div>
 
         <div id="app-modules-row1">
-          <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE10} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE10) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
         </div>
 
         <div id="app-modules-row2">
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-modules-row3">
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
         </div>
 
         <div id="app-home-status">
