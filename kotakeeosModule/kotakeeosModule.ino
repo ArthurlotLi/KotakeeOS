@@ -20,6 +20,9 @@
 #define BRIGHTNESS          96
 #define FRAMES_PER_SECOND  120
 
+// From FastLED's default example. 
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
 char ssid[] = SECRET_SSID;  
 char pass[] = SECRET_PASS;   
 int keyIndex = 0;     
@@ -63,6 +66,7 @@ const int ledModeConfetti = 103;
 const int ledModeSinelon = 104;
 const int ledModeJuggle = 105;
 const int ledModeBpm = 106;
+const int ledModeCycle = 107;
 
 // Sanity mechanism. if we request to send an input status to the server 
 // within this elapsed time frame, we will declare that specific pin
@@ -110,6 +114,9 @@ CRGB leds8[maxLEDs];
 CRGB leds9[maxLEDs];
 CRGB leds10[maxLEDs];
 uint8_t gHue = 0; // rotating "base color" used by many LED patterns.
+typedef void (*SimplePatternList[])();
+SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm };
+uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
 // IP of the web server.
 IPAddress webServerIpAddress(192,168,0,197);
@@ -356,6 +363,11 @@ void updateLEDs(){
             case ledModeBpm:
               bpm(leds, numLeds);
               break;
+            case ledModeCycle:
+              // Call the current pattern function once, updating the 'leds' array
+              gPatterns[gCurrentPatternNumber](leds, numLeds);
+              EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+              break;
           }
           // Update all LED strips attached to this module. 
           FastLED.show();  
@@ -368,6 +380,13 @@ void updateLEDs(){
 /*
   LED modes from FastLED's examples.
 */
+void nextPattern()
+{
+  // add one to the current pattern number, and wrap around at the end
+  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+}
+
+
 void rainbow(CRGB* leds, int numLeds) 
 {
   // FastLED's built-in rainbow generator
@@ -843,12 +862,13 @@ void initializeLEDStrip(int actionIndex){
       return;
   }
 
-  // Clear the strip in case it had something on it. 
+  // Wait for a hot second for the code to initialize. If this isn't
+  // here a lone LED will have a green light. 
+  delay(100);
   for(int whiteLed = 0; whiteLed < numLEDs; whiteLed = whiteLed + 1) {
     leds[whiteLed] = CRGB::Black;
   }
   FastLED.show();
-  delay(100);
 
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pin);

@@ -482,10 +482,12 @@ export class App extends React.Component {
       }
     }
     else if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) >= actions.LEDSTRIP1){
+      // TODO: Right now this is hard coded. We should be able to 
+      // store state numbers per combination (i.e. "2.1000: 107")
       if(currentState == 100) {
-        toState = 101;
+        toState = 107;
       }
-      else if (currentState == 101){
+      else if (currentState == 107){
         toState = 100;
       }
       else{
