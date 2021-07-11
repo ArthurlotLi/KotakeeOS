@@ -688,6 +688,16 @@ void handleModuleUpdate(String currentLine){
     }
   }
   Serial.println("");
+  Serial.print("[DEBUG] Info: ");
+  for(int i = 0; i < actionsAndPinsMax; i++)
+  {
+    int info = info[i];
+    if(info != -1){
+      Serial.print(info);
+      Serial.print(" ");
+    }
+  }
+  Serial.println("");
   Serial.print("[DEBUG] States: ");
   for(int i = 0; i < actionsAndPinsMax; i++)
   {
@@ -832,9 +842,17 @@ void initializeLEDStrip(int actionIndex){
       Serial.println(actions[actionIndex]);
       return;
   }
+
+  // Clear the strip in case it had something on it. 
+  for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
+    leds[whiteLed] = CRGB::Black;
+  }
+  FastLED.show();
+  delay(100);
+
   Serial.print("[DEBUG] Initialized pin ");
   Serial.print(pin);
-  Serial.print(" with a knob Servo object for actionId ");
+  Serial.print(" with a FastLED object for actionId ");
   Serial.println(actions[actionIndex]);
 }
 
@@ -1002,6 +1020,8 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
       case ledModeBpm:
         // In the case that we got a mode we know, don't turn off. 
         // We'll handle the actual execution during the main loop. 
+        states[actionIndex] = toStateInt; // 11 = active.
+        moduleStateUpdate(actions[actionIndex]);
         break;
       default:
         // Get the correct array to use.

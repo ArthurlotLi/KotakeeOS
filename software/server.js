@@ -177,7 +177,7 @@ const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, mod
 const module6LRId = 6; // Internal server use only. 
 const module6LRRoomId = rooms.LIVINGROOM; 
 const module6LRActions = [actions.LEDSTRIP1];
-const module6LRPins = [12.060];
+const module6LRPins = ["12.060"];
 const module6LRIpAddress = "192.168.0.186";
 const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
 
