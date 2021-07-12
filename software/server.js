@@ -169,7 +169,7 @@ const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, mod
 const module5BAId = 5; // Internal server use only. 
 const module5BARoomId = rooms.BATHROOM; 
 const module5BAActions = [actions.SWITCH1, actions.SWITCH2, actions.MOTION1, actions.LIGHTING1, actions.DOOR1, actions.TEMP1];
-const module5BAPins = ["10.11", 6.9, 8, 14, 2, 15];
+const module5BAPins = ["10.11", 6.9, 8, 14, 2, 16];
 const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
