@@ -267,9 +267,8 @@ class Home {
       console.log("[ERROR] moduleInputHumidityOnOff Received an invalid toState! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
       return false;
     }
-    // Convert temp to F from C
-    var currentTemp = parseFloat(tempInfo[0]);
-    currentTemp = parseInt(((currentTemp * 1.8) +32).toFixed(0));
+    var currentHum = parseFloat(tempInfo[1]);
+    currentHum = parseInt(currentHum.toFixed(0));
 
     // Parse mandatory fields 
     var onHum = actionInputActions["onHum"];
@@ -282,13 +281,13 @@ class Home {
     }
 
     // Sanity checked. 
-    if(currentTemp >= onHum){
+    if(currentHum >= onHum){
       // Execute onActions. 
       for (var actionId in onActions){
         this.actionToggle(roomId, actionId, onActions[actionId]);
       }
     }
-    else if(currentTemp <= offHum){
+    else if(currentHum <= offHum){
       // Execute onActions. 
       for (var actionId in offActions){
         this.actionToggle(roomId, actionId, offActions[actionId]);
