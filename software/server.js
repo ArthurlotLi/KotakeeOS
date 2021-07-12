@@ -258,13 +258,13 @@ const bathroomInputActionsTimeBounds = {
   50: [21, 01, 23, 59, 0, 0, 5, 59],
 }
 const fanOnHumidity = 60;
-const fanOnHumidity = 59; // Not used. 
+const fanOffHumidity = 59; // Not used. 
 const bathroomInputActions = {
   // If the humidity is too high, turn on the fan automatically. 
   5250: { // Temperature input
     "function":"humidityOnOff",
     "onHum":fanOnHumidity,
-    "offHum": fanOnHumidity,
+    "offHum": fanOffHumidity,
     "onActions": {
       351: 22,
     },
