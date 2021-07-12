@@ -382,9 +382,6 @@ void updateLEDs(){
               gPatterns[gCurrentPatternNumber](leds, numLeds);
               EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns periodically
               break;
-            case ledModeNight:
-              nightMode(leds, numLeds);
-              break;
           }
           // Update all LED strips attached to this module. 
           FastLED.show();  
@@ -458,13 +455,6 @@ void juggle(CRGB* leds, int numLeds) {
   for( int i = 0; i < 8; i++) {
     leds[beatsin16( i+7, 0, numLeds-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
-  }
-}
-
-void nightMode(CRGB* leds, int numLeds){
-  // Simple, just for sleeping. 
-  for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
-    leds[whiteLed] = CRGB::DarkRed;
   }
 }
 
@@ -1051,10 +1041,13 @@ void servoTurnKnob(int actionIndex, int toStateInt, bool virtualCommand){
 }
 
 // Depending on the given state, do something with our LED.
-// state 100 representes off.  
+// state 100 representes off. 
 void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
   // Sanity Check:
   if(toStateInt >= 100){
+    // Get the correct array to use.
+    CRGB* leds = obtainCRGBArray(actions[actionIndex]);
+    int numLeds = info[actionIndex];
     switch(toStateInt){
       case ledModeRainbow: 
       case ledModeRainbowWithGlitter:
@@ -1063,16 +1056,20 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
       case ledModeJuggle:
       case ledModeBpm:
       case ledModeCycle: 
+        // These modes need to be called over and over again during 
+        // the main loop. Don't do anything right now. 
+        states[actionIndex] = toStateInt; // 11 = active.
+        moduleStateUpdate(actions[actionIndex]);
+        break;
       case ledModeNight:
-        // In the case that we got a mode we know, don't turn off. 
-        // We'll handle the actual execution during the main loop. 
+        // Simple, just for sleeping. 
+        for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
+          leds[whiteLed] = CRGB::DarkRed;
+        }
         states[actionIndex] = toStateInt; // 11 = active.
         moduleStateUpdate(actions[actionIndex]);
         break;
       default:
-        // Get the correct array to use.
-        CRGB* leds = obtainCRGBArray(actions[actionIndex]);
-        int numLeds = info[actionIndex];
         // Turn the LED off. 
         for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
           leds[whiteLed] = CRGB::Black;
