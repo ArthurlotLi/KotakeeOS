@@ -121,6 +121,7 @@ const implementedButtons = {
 // by specific strings to tell the app what to do. 
 const implementedFeatures ={
   "2.5250": "temperature",
+  "2.5251": "temperature",
   "1.5250": "temperature",
 }
 
