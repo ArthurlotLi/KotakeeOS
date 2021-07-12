@@ -257,8 +257,8 @@ const bathroomInputActionsTimeBounds = {
   350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
   50: [21, 01, 23, 59, 0, 0, 5, 59],
 }
-const fanOnHumidity = 60;
-const fanOffHumidity = 59; // Not used. 
+const fanOnHumidity = 85;
+const fanOffHumidity = 84; // Not used. 
 const bathroomInputActions = {
   // If the humidity is too high, turn on the fan automatically. 
   5250: { // Temperature input
