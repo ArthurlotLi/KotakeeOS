@@ -168,6 +168,8 @@ class Home {
       switch(inputFunction){
         case "temperatureOnOff":
           return this.moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room);
+        case "humidityOnOff":
+          return this.moduleInputHumidityOnOff(roomId, actionId, toState, actionInputActions, room);
         default:
           console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
           return false;
@@ -248,6 +250,45 @@ class Home {
       }
     }
     else if(currentTemp <= offHeat){
+      // Execute onActions. 
+      for (var actionId in offActions){
+        this.actionToggle(roomId, actionId, offActions[actionId]);
+      }
+    }
+    // Otherwise we're within the grey area (if it exists). Do nothing. 
+  }
+
+  moduleInputHumidityOnOff(roomId, actionId, toState, actionInputActions, room){
+    // Expect mandatory fields "onHum", "offHum", "onActions", "offActions".
+    // The latter two may be blank, but still must be here. 
+    var actionStateString = String(toState);
+    var tempInfo = actionStateString.split("_");
+    if(tempInfo.length < 2){
+      console.log("[ERROR] moduleInputHumidityOnOff Received an invalid toState! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+    // Convert temp to F from C
+    var currentTemp = parseFloat(tempInfo[0]);
+    currentTemp = parseInt(((currentTemp * 1.8) +32).toFixed(0));
+
+    // Parse mandatory fields 
+    var onHum = actionInputActions["onHum"];
+    var offHum = actionInputActions["offHum"];
+    var onActions = actionInputActions["onActions"];
+    var offActions = actionInputActions["offActions"];
+    if(onHum == null || offHum == null || onActions == null || offActions == null){
+      console.log("[ERROR] moduleInputHumidityOnOff parsed invalid instructions! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+
+    // Sanity checked. 
+    if(currentTemp >= onHum){
+      // Execute onActions. 
+      for (var actionId in onActions){
+        this.actionToggle(roomId, actionId, onActions[actionId]);
+      }
+    }
+    else if(currentTemp <= offHum){
       // Execute onActions. 
       for (var actionId in offActions){
         this.actionToggle(roomId, actionId, offActions[actionId]);

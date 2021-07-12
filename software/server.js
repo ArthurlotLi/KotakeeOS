@@ -257,7 +257,19 @@ const bathroomInputActionsTimeBounds = {
   350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
   50: [21, 01, 23, 59, 0, 0, 5, 59],
 }
+const fanOnHumidity = 60;
+const fanOnHumidity = 59; // Not used. 
 const bathroomInputActions = {
+  // If the humidity is too high, turn on the fan automatically. 
+  5250: { // Temperature input
+    "function":"humidityOnOff",
+    "onHum":fanOnHumidity,
+    "offHum": fanOnHumidity,
+    "onActions": {
+      351: 22,
+    },
+    "offActions":{}
+  },
   // Motion sensor (Turn on bathroom light)
   // Turn lights on on motion. Turn off after timeout. Do not turn 
   // off lights if door is closed. 
