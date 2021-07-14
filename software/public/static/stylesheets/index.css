@@ -32,6 +32,10 @@ button{
   margin: 0.3vw;
 }
 
+.buttonHalfSize {
+  width: 11.5vw;
+}
+
 /* Button overrides for this unique button. */
 .app-location-debug{
   background-color: #222222;

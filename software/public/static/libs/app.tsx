@@ -117,7 +117,8 @@ const implementedButtons = {
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
   "2.450": "Air Conditioner",
-  "2.1000": "TV LED Strip",
+  "2.1000": "TV LED",
+  "1.1000": "Bed LED",
 }
 
 // When we need to use state data in other ways, enumerated
@@ -720,14 +721,16 @@ export class App extends React.Component {
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
-          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-modules-row3">
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
-          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-home-status">
