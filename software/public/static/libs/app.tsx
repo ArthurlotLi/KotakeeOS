@@ -412,12 +412,14 @@ export class App extends React.Component {
                   var individualButtonText = buttonText; // In case we modify it here. 
 
                   var buttonName = button.getAttribute("name"); // Only used for further button naming. 
+                  var buttonNameInt = null; // Only used for state info. 
                   if(buttonName != null && buttonName != ""){
                     var buttonTextAddendum = "";
                     if(!Number.isNaN(buttonName) && parseInt(buttonName) != 0){
                       var ledModeTextAddendum = ledModeText[parseInt(buttonName)];
                       if(ledModeTextAddendum != null){
                         buttonTextAddendum = ledModeTextAddendum;
+                        buttonNameInt = parseInt(buttonName);
                       }
                     }
                     individualButtonText = individualButtonText + " " + buttonTextAddendum;
@@ -462,7 +464,14 @@ export class App extends React.Component {
                     button.style.backgroundColor = '#a60000'; // Red
                   }
                   else if(actionStateInt > 100 && actionStateInt < 130){
-                    button.style.backgroundColor = '#03a100';  // Green
+                    // Handle LEDs modes.
+                    if(buttonNameInt == null || buttonNameInt == actionStateInt){
+                      button.style.backgroundColor = '#03a100';  // Green
+                    }
+                    else{
+                      // We specified a buttonName and this ain't it fam. 
+                      button.style.backgroundColor = '#a60000'; // Red
+                    }
                   }
                   else if(actionState == "32"){
                     button.style.backgroundColor = '#03a100';  // Green
