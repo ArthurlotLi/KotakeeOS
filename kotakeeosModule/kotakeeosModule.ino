@@ -380,10 +380,10 @@ void updateLEDs(){
             case ledModeCycle:
               // Call the current pattern function once, updating the 'leds' array
               gPatterns[gCurrentPatternNumber](leds, numLeds);
-              EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns periodically
+              EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns every 10 seconds. 
               break;
           }
-          // Update all LED strips attached to this module. 
+          // Update all LED strips attached to this module regardless. 
           FastLED.show();  
         }
       }

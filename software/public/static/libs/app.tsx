@@ -13,6 +13,9 @@ const updateTimeWait = 1000; // Every second
 const updateHomeStatusWait = 10000; // 10 seconds. 
 const updateActionStatesWait = 250; // 0.25 seconds. 
 
+const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop that request. 
+const actionStatesRequestTimeout = 10000; // If we've waited this long, just drop that request. 
+
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
 const currentURL = window.location.href;
@@ -151,7 +154,9 @@ export class App extends React.Component {
 
     // Various functions to ensure cleanliness.
     this.updateHomeStatusWorking = false;
+    this.updateHomeStatusCalledTime = 0;
     this.updateActionStatesWorking = false;
+    this.updateActionStatesCalledTime = 0;
     
     // State
     this.state = {
@@ -217,9 +222,13 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateHomeStatus(data = null){
-    if(data == null && !this.updateHomeStatusWorking) {
+    var currentTime;
+    currentTime = new Date();
+    var timeDiff = currentTime - this.updateHomeStatusCalledTime;
+    if(data == null && (!this.updateHomeStatusWorking || timeDiff > homeStatusRequestTimeout)) {
       // Stop browsers from bombarding web server if they hang on something.
       this.updateHomeStatusWorking = true;
+      this.updateHomeStatusCalledTime = new Date();
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
@@ -290,9 +299,13 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateActionStates(data = null){
-    if(data == null && !this.updateActionStatesWorking) {
+    var currentTime;
+    currentTime = new Date();
+    var timeDiff = currentTime - this.updateActionStatesCalledTime;
+    if(data == null && (!this.updateActionStatesWorking || timeDiff > actionStatesRequestTimeout)) {
       // Stop browsers from bombarding web server if they hang on something.
       this.updateActionStatesWorking = true;
+      this.updateActionStatesCalledTime = new Date();
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
