@@ -117,8 +117,8 @@ const implementedButtons = {
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
   "2.450": "Air Conditioner",
-  "2.1000": "TV LED",
-  "1.1000": "Bed LED",
+  "2.1000": "TV",
+  "1.1000": "Bed",
 }
 
 // When we need to use state data in other ways, enumerated
@@ -143,6 +143,18 @@ const ledModeJuggle = 105;
 const ledModeBpm = 106;
 const ledModeCycle = 107;
 const ledModeNight = 108;
+
+// Button Addendums per LED mode. 
+const ledModeText = {
+  101: "Rain",
+  102: "RainG",
+  103: "Conf",
+  104: "Sine",
+  105: "Jugg",
+  106: "Bpm",
+  107: "RGB",
+  108: "Night",
+}
 
 export class App extends React.Component {
   constructor(){
@@ -397,7 +409,20 @@ export class App extends React.Component {
               if(buttons != null && buttons.length > 0){
                 for (var j = 0; j < buttons.length; j++){
                   var button = buttons[j];
-                  button.innerHTML = buttonText;
+                  var individualButtonText = buttonText; // In case we modify it here. 
+
+                  var buttonName = button.getAttribute("name"); // Only used for further button naming. 
+                  if(buttonName != null && buttonName != ""){
+                    var buttonTextAddendum = "";
+                    if(!Number.isNaN(buttonName) && parseInt(buttonName) != 0){
+                      var ledModeTextAddendum = ledModeText[parseInt(buttonName)];
+                      if(ledModeTextAddendum != null){
+                        buttonTextAddendum = ledModeTextAddendum;
+                      }
+                    }
+                    individualButtonText = individualButtonText + " " + buttonTextAddendum;
+                  }
+                  button.innerHTML = individualButtonText;
                   var actionState = room[actionId];
                   var actionStateInt = parseInt(actionState);
                   if(actionState == "1"){
@@ -721,16 +746,16 @@ export class App extends React.Component {
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
-          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
-          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
+          <button name={ledModeCycle} class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button name={ledModeNight} class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-modules-row3">
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
           <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
-          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
-          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
+          <button name={ledModeCycle} class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button name={ledModeNight} class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-home-status">
