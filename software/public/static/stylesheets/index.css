@@ -36,6 +36,36 @@ button{
   width: 11.5vw;
 }
 
+.app-thermostat-buttons-button{
+  width: 3vw;
+  margin-top: 0.1vw;
+  margin-bottom: 0.1vw;
+  padding: 0;
+  height: 3vw;
+}
+
+#app-thermostat-main{
+  flex-direction: column;
+  font-size: 3vw;
+  margin-right: 1.0vw;
+  margin-left: 1.0vw;
+}
+
+#app-thermostat-buttons{
+  flex-direction: column;
+  display: flex;
+}
+
+#app-thermostat{
+  margin-top: 1.5vw;
+  margin-bottom: 1.5vw;
+  flex-direction: row;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
 /* Button overrides for this unique button. */
 .app-location-debug{
   background-color: #222222;

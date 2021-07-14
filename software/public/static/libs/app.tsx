@@ -194,6 +194,7 @@ export class App extends React.Component {
     this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
     this.featureAllLights = this.featureAllLights.bind(this);
     this.featureSpeechServer = this.featureSpeechServer.bind(this);
+    this.modifyThermostat = this.modifyThermostat.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
@@ -596,6 +597,11 @@ export class App extends React.Component {
       console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
     }
   }
+    
+  // Query the web server to update the thermostat (home status.)
+  async modifyThermostat(){
+    // TODO. 
+  }
 
   // Enter and exit the debug mode, which allows users to manually
   // specify current states for 10 11 12 actions. 
@@ -720,6 +726,13 @@ export class App extends React.Component {
           <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
           <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
           <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
+          <div id="app-thermostat">
+            <div id="app-thermostat-main">00 F</div>
+            <div id="app-thermostat-buttons">
+              <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>+</button>
+              <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>-</button>
+            </div>
+          </div>
         </div>
 
         <div id="app-clock">
@@ -737,10 +750,10 @@ export class App extends React.Component {
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
           <hr></hr>
           <div id="app-temps">
-            <div class="app-temps-line">Living Room A - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 %</span>)</div>
-            <div class="app-temps-line">Living Room B - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 %</span>)</div>
-            <div class="app-temps-line">Bedroom - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 %</span>)</div>
-            <div class="app-temps-line">Bathroom - <span id={"app-temps-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">LR 1 - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">LR 2 - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 %</span>)</div>
+            <div class="app-temps-line">BR - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">BA - <span id={"app-temps-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 %</span>)</div>
           </div>
         </div>
 
