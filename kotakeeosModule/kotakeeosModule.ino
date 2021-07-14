@@ -347,7 +347,8 @@ void readInputs(){
 void updateLEDs(){
   // Don't update every time. 
   EVERY_N_MILLISECONDS( 20 ) { gHue++; }
-  EVERY_N_MILLISECONDS( 1000/FRAMES_PER_SECOND ) {  
+  EVERY_N_MILLISECONDS( 1000/FRAMES_PER_SECOND ) { 
+    bool updateMade = false; 
     for(int i = 0; i < actionsAndPinsMax; i++){
       if(actions[i] != -1 && actions[i] <= ledStrip10 && actions[i] >= ledStrip1){
         // We have an action that is an LED strip!
@@ -361,32 +362,43 @@ void updateLEDs(){
           switch(states[i]){
             case ledModeRainbow: 
               rainbow(leds,numLeds);
+              updateMade = true;
               break;
             case ledModeRainbowWithGlitter:
               rainbowWithGlitter(leds, numLeds);
+              updateMade = true;
               break;
             case ledModeConfetti:
               confetti(leds, numLeds);
+              updateMade = true;
               break;
             case ledModeSinelon:
               sinelon(leds, numLeds);
+              updateMade = true;
               break;
             case ledModeJuggle:
               juggle(leds, numLeds);
+              updateMade = true;
               break;
             case ledModeBpm:
               bpm(leds, numLeds);
+              updateMade = true;
               break;
             case ledModeCycle:
               // Call the current pattern function once, updating the 'leds' array
               gPatterns[gCurrentPatternNumber](leds, numLeds);
-              EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns every 10 seconds. 
+              EVERY_N_MILLISECONDS( 10000/(1000/FRAMES_PER_SECOND) ) { nextPattern(); } // change patterns every 10 seconds.
+              updateMade = true; 
               break;
           }
-          // Update all LED strips attached to this module regardless. 
-          FastLED.show();  
         }
       }
+    }
+    if(updateMade){
+        // Update all LED strips attached to this module regardless.
+        // TODO: this is a bit of a hack to stop flashing for 
+        // non-changing modes.  
+        FastLED.show();  
     }
   }
 }
@@ -1066,6 +1078,7 @@ void activateLEDStripMode(int actionIndex, int toStateInt, bool virtualCommand){
         for(int whiteLed = 0; whiteLed < numLeds; whiteLed = whiteLed + 1) {
           leds[whiteLed] = CRGB::DarkRed;
         }
+        FastLED.show();
         states[actionIndex] = toStateInt; // 11 = active.
         moduleStateUpdate(actions[actionIndex]);
         break;
