@@ -721,8 +721,8 @@ export class App extends React.Component {
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
           <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
-          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
-          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-modules-row3">
