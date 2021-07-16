@@ -679,6 +679,9 @@ export class App extends React.Component {
       startTime = new Date();
       apiResponse = await fetch(apiURL + "/moduleInputModify", {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(bodyToSend),
       });
       endTime = new Date();
