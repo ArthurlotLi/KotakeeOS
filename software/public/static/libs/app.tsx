@@ -668,12 +668,12 @@ export class App extends React.Component {
   async moduleInputModify(roomId, newModuleInput){
     console.log("INFO: Submitting newModuleInput object for roomId " + roomId + ":");
     console.log(newModuleInput);
-    
+
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
     try{
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/moduleInputModify/"+ roomId+ "/" + newModuleInput);
+      apiResponse = await fetch(apiURL + "/moduleInputModify/"+ roomId+ "/" + JSON.stringify(newModuleInput));
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: moduleInputModify call returned in " + timeDiff/1000 + " seconds.");
