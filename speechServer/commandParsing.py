@@ -50,6 +50,11 @@ class CommandParser:
     if(self.homeStatus is not None):
       weatherString = " It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
       self.executeTextThread(self.startupPrompt + weatherString)
+    
+  # Only executes a lone text thread in case the user doesn't
+  # want the whole spiel.
+  def startupProcedureFast(self):
+    self.executeTextThread(self.startupPrompt)
 
   # Uses far more intelligent google API to parse a command. 
   # The main function that will be kicked off by the hotword
