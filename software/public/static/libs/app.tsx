@@ -728,7 +728,7 @@ export class App extends React.Component {
       var currentServerDisabled = homeStatus.serverDisabled;
       if(currentServerDisabled != null){
         var toState = "true";
-        if(currentServerDisabled == "true"){
+        if(currentServerDisabled == "true" || currentServerDisabled == true){
           toState = "false";
         } 
         // We're good, send the request. 
