@@ -16,6 +16,8 @@ const updateActionStatesWait = 250; // 0.25 seconds.
 const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop that request. 
 const actionStatesRequestTimeout = 10000; // If we've waited this long, just drop that request. 
 
+const offHeatOffset = 2; // Number of degrees (F) difference between onHeat and offHeat for thermometer parsing. 
+
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
 const currentURL = window.location.href;
@@ -713,6 +715,7 @@ export class App extends React.Component {
       && currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
         var newModuleInput = currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)];
         newModuleInput[String(actions.TEMP1)].onHeat = newHeat;
+        newModuleInput[String(actions.TEMP1)].offHeat = newHeat-offHeatOffset;
         // We have our product. Let's submit this to the server. 
         this.moduleInputModify(rooms.LIVINGROOM, newModuleInput);
       }
