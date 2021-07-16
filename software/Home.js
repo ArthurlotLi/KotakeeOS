@@ -94,13 +94,18 @@ class Home {
         lastUpdate: this.lastUpdateHomeStatus,
         serverDisabled: this.serverDisabled, 
         moduleInputDisabled: this.moduleInputDisabled,
+        moduleInput: {},
       }
 
       // Get total modules. 
       var modulesCount = 0;
-      for(var room in this.roomsDict){
-        if(this.roomsDict.hasOwnProperty(room)){
-          modulesCount = modulesCount + this.roomsDict[room].modulesCount;
+      for(var roomId in this.roomsDict){
+        if(this.roomsDict.hasOwnProperty(roomId)){
+          var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
+          modulesCount = modulesCount + roomItem.modulesCount;
+          // Append the inputActions dict to the homeStatus,
+          // indexed by roomId.
+          status.moduleInput[roomId] = roomItem.inputActions;
         }
       }
 
