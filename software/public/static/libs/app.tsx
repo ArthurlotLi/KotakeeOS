@@ -182,9 +182,11 @@ export class App extends React.Component {
       currentWeatherFeelsLike: null,
       currentModulesCount: null,
       actionStates: null,
+      homeStatus: null,
       lastUpdateActionStates: null,
       lastUpdateHomeStatus: null,
       virtualMode: false,
+      serverStatus: "Enabled",
     };
 
     // Binding functions to "this"
@@ -274,6 +276,18 @@ export class App extends React.Component {
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
+      if(data.serverStatus != null){
+        var newStatus = "Enabled";
+        if(data.serverStatus == "1"){
+          newStatus = "Disabled";
+        } 
+        if(newStatus != this.state.serverStatus){
+          await this.setState({
+            serverStatus: newStatus
+          });
+        }
+      }
+
       var currentLastUpdate = data.lastUpdate.toString();
 
       var currentModulesCount = data.modulesCount;
@@ -306,6 +320,7 @@ export class App extends React.Component {
         currentWeatherFeelsLike: currentWeatherFeelsLike,
         currentModulesCount: currentModulesCount,
         lastUpdateHomeStatus: currentLastUpdate,
+        homeStatus: data,
       });
     }
   }
@@ -697,6 +712,41 @@ export class App extends React.Component {
     }
   }
 
+  // Disables the server's moduleInput and moduleToggle
+  // functionaity. Reverses what boolean we know right
+  // now based on current home status. 
+  async setServerDisabled(){
+    var homeStatus = this.state.homeStatus;
+    if(homeStatus != null){
+      var currentServerDisabled = homeStatus.serverDisabled;
+      if(currentServerDisabled != null){
+        var toState = "1";
+        if(currentServerDisabled == "1"){
+          toState = "0";
+        } 
+        // We're good, send the request. 
+        var apiResponse = null;
+        var startTime, endTime; // We report in debug the api time.
+        try{
+          startTime = new Date();
+          apiResponse = await fetch(apiURL + "/serverDisabled/" + toState);
+          endTime = new Date();
+          var timeDiff = endTime - startTime;
+          console.log("DEBUG: setServerDisabled call returned in " + timeDiff/1000 + " seconds.");
+        }
+        catch(error){
+          console.log("ERROR: setServerDisabled call failed!");
+        }
+        if(apiResponse.status == 200){
+          // TODO - do something to save the state in the web server...? 
+        }
+        else{
+          console.log("WARNING: setServerDisabled call returned with status " + apiResponse.status + ".");
+        }
+      }
+    }
+  }
+
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it every second.
@@ -726,6 +776,7 @@ export class App extends React.Component {
           <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
           <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
           <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
+          <div><button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button></div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
             <div id="app-thermostat-buttons">
@@ -781,7 +832,7 @@ export class App extends React.Component {
         </div>
 
         <div id="app-home-status">
-          <div id="app-home-status-modules">Modules: {this.state.currentModulesCount}</div>
+        <span id="app-home-status-serverDisabled">Server: {this.state.serverStatus}</span>  <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span>
         </div>
       </div>
     );

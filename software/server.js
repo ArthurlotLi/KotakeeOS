@@ -546,6 +546,14 @@ app.get('/moduleStartup/:ipAddress', (req, res) => {
   }
 });
 
+app.get('/serverDisabled/:bool', (req, res) => {
+  console.log("[DEBUG] /serverDisabled GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.bool != null && req.params.bool != "null"){
+    home.setServerDisabled(req.params.bool);
+    return res.status(200).send();
+  }
+});
+
 // Start the server to listen on this port.
 app.listen(listeningPort, () => {
   console.log("Project KotakeeOS is online at port: " +listeningPort);

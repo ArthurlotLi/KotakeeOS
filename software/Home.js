@@ -73,6 +73,11 @@ class Home {
 
     // Because it's a callback! 
     this.inputTimeoutCallback = this.inputTimeoutCallback.bind(this);
+
+    // Kill switch, essentially. So my AC doesn't run for 3 hours
+    // when I don't want it to. All this does is prevent 
+    // moduleToggle and moduleInput handling. 
+    this.serverDisabled = false; 
   }
 
   // Returns various general data.
@@ -82,6 +87,7 @@ class Home {
         modulesCount: null,
         weatherData: null,
         lastUpdate: this.lastUpdateHomeStatus,
+        serverDisabled: this.serverDisabled, 
       }
 
       // Get total modules. 
@@ -121,12 +127,27 @@ class Home {
     return null;
   }
 
+  // Disables actionToggle and moduleInput.
+  setServerDisabled(bool){
+    // Sanity check
+    if(bool == "1" || bool == true || bool == "true"){
+      this.serverDisabled = true;
+    }
+    else{
+      this.serverDisabled = false;
+    }
+  }
+
   // Given roomId, actionId, and toState, kick off the process. 
   // Accepts virtual boolean to specify not to execute physical
   // action to resolve desynchronization issues. 
   actionToggle(roomId, actionId, toState, virtual = false){
     var room = this.getRoom(roomId);
     if(room != null){
+      if(this.serverDisabled){
+        console.log("[WARN] actionToggle rejected because the server has been disabled.");
+        return false;
+      }
       return room.actionToggle(actionId, toState, virtual);
     }
     else
@@ -139,6 +160,11 @@ class Home {
   // Allows for the specification of stringInput, in which
   // case we'll use a different pool of functions. 
   moduleInput(roomId, actionId, toState, stringInput = false){
+    if(this.serverDisabled){
+      console.log("[WARN] moduleInput rejected because the server has been disabled.");
+      return false;
+    }
+
     // SANITY CHECKS. SO MANY SANTIY CHECKS.  
     var room = this.getRoom(roomId);
     if(room == null){
