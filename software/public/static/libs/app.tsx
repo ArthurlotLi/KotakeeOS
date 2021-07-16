@@ -277,12 +277,12 @@ export class App extends React.Component {
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
-      if(data.serverStatus != null){
+      if(data.serverDisabled != null){
         var newStatus = "Enabled";
-        if(data.serverStatus == "true"){
+        if(data.serverDisabled == "true"){
           newStatus = "Disabled";
         } 
-        if(newStatus != this.state.serverStatus){
+        if(newStatus != this.state.serverDisabled){
           await this.setState({
             serverStatus: newStatus
           });
