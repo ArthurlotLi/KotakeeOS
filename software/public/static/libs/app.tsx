@@ -199,7 +199,7 @@ export class App extends React.Component {
     this.updateHomeStatus = this.updateHomeStatus.bind(this);
     this.updateActionStates = this.updateActionStates.bind(this);
     this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
-    this.featureAllLights = this.featureAllLights.bind(this);
+    this.featureAllModules = this.featureAllModules.bind(this);
     this.featureSpeechServer = this.featureSpeechServer.bind(this);
     this.modifyThermostat = this.modifyThermostat.bind(this);
     this.setServerDisabled = this.setServerDisabled.bind(this);
@@ -747,7 +747,7 @@ export class App extends React.Component {
   // this essentially harmonizes all light states. Converts 
   // the majority to the minority. If they are equal, always
   // turns everything on. 
-  featureAllLights(){
+  featureAllModules(){
     var data = this.state.actionStates;
     if (data != null){
       var onCount = 0;
@@ -758,15 +758,20 @@ export class App extends React.Component {
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            // For every single room and action, check the state. 
-            var actionState = parseInt(room[actionId]);
-            if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32){
-              onCount++;
-            }
-            else{
-              // We'll just count everything else as on (even if we're in 11 to go
-              // to 10, for example.)
-              offCount++;
+            // Do not trigger actionIds that we don't implement on the client app. 
+            // That means no spamming the server with motion detection reports
+            // and no triggering actions that shouldn't be client app modifiable. 
+            if(implementedButtons[roomId + "." + actionId]!= null){
+              // For every single room and action, check the state. 
+              var actionState = parseInt(room[actionId]);
+              if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32){
+                onCount++;
+              }
+              else{
+                // We'll just count everything else as on (even if we're in 11 to go
+                // to 10, for example.)
+                offCount++;
+              }
             }
           }
         }
@@ -781,15 +786,24 @@ export class App extends React.Component {
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            var actionState = parseInt(room[actionId]);
-            if(turnAllOn){
-              if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32){
-                this.moduleToggle(roomId, actionId);
+            // Do not trigger actionIds that we don't implement on the client app. 
+            // That means no spamming the server with motion detection reports
+            // and no triggering actions that shouldn't be client app modifiable. 
+            if(implementedButtons[roomId + "." + actionId]!= null){
+              var actionState = parseInt(room[actionId]);
+              if(turnAllOn){
+                // Special LED handling.
+                if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) <= actions.LEDSTRIP1){
+                  this.moduleToggle(roomId, actionId, ledModeCycle); // We just use party LEDs. Why not. 
+                }
+                else if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32){
+                  this.moduleToggle(roomId, actionId);
+                }
               }
-            }
-            else{
-              if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30){
-                this.moduleToggle(roomId, actionId);
+              else{
+                if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
+                  this.moduleToggle(roomId, actionId);
+                }
               }
             }
           }
@@ -940,7 +954,7 @@ export class App extends React.Component {
         <div id="app-location">
           <div>
             <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
-            <button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button>
+            <button class="app-location-debug" onClick={this.featureAllModules}>All Modules</button>
           </div>
           <div>
             <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
