@@ -279,7 +279,7 @@ export class App extends React.Component {
 
       if(data.serverDisabled != null){
         var newStatus = "Enabled";
-        if(data.serverDisabled == "true"){
+        if(data.serverDisabled == "true" || data.serverDisabled == true ){
           newStatus = "Disabled";
         } 
         if(newStatus != this.state.serverDisabled){
