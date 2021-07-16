@@ -152,8 +152,8 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 // Arduino 3 Living Room
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
-const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.LIGHTING2, actions.TEMP1]; // Admin action that is inert for this module. 
-const module3LRPins = [12, 0, 2, 16];
+const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.ADMIN2, actions.LIGHTING2, actions.TEMP1]; // Admin action that is inert for this module. 
+const module3LRPins = [12, 0, 0, 2, 16];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
@@ -247,7 +247,19 @@ const livingRoomInputActions = {
         51: 1,
       }
     }
-  }
+  },
+  5351:{
+    "function":"command",
+    1: { // Admin command of 1 from clients. 
+      "command" : "python3 ../speechServer/hotwordNone.py",
+      // Don't start the server if the light is on, signaling that the server is already on.
+      // Not the greatest solution (leaves gaps and isn't explicit) but it works for now.
+      // Note this is all experimental. 
+      "block": {
+        51: 1,
+      }
+    }
+  },
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 

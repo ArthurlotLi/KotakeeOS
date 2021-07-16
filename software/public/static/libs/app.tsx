@@ -715,7 +715,29 @@ export class App extends React.Component {
       // TODO - do something to save the state in the web server...? 
     }
     else{
-      console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+      console.log("WARNING: featureSpeechServer returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Experimental - turn the server's speech server on. 
+  async featureSpeechServerSingle(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/moduleInput/2/5351/1");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: featureSpeechServerSingle call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: featureSpeechServerSingle call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: featureSpeechServerSingle returned with status " + apiResponse.status + ".");
     }
   }
 
@@ -781,12 +803,15 @@ export class App extends React.Component {
       <div>
         <div id="app-location">
           <div>
+            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+          </div>
+          <div>
             <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
             <button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button>
           </div>
           <div>
             <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
-            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+            <button class="app-location-debug" onClick={this.featureSpeechServerSingle}>Speech Single</button>
           </div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
