@@ -188,6 +188,7 @@ export class App extends React.Component {
       virtualMode: false,
       serverStatus: "Enabled",
       moduleInputDisabled: "Enabled",
+      thermostatMain: "00 F",
     };
 
     // Binding functions to "this"
@@ -286,6 +287,10 @@ export class App extends React.Component {
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
+      var currentLastUpdate = data.lastUpdate.toString();
+      var currentModulesCount = data.modulesCount;
+
+      // Server Disabled
       var serverStatusSpan = document.getElementById("app-home-status-serverDisabled");
       if(data.serverDisabled != null && serverStatusSpan != null){
         var newStatus = null;
@@ -304,6 +309,7 @@ export class App extends React.Component {
         }
       }
 
+      // Module Input Disabled
       var moduleInputDisabledSpan = document.getElementById("app-home-status-moduleInputDisabled");
       if(data.moduleInputDisabled != null && moduleInputDisabledSpan != null){
         var newStatus = null;
@@ -322,12 +328,23 @@ export class App extends React.Component {
         }
       }
 
-      var currentLastUpdate = data.lastUpdate.toString();
-
-      var currentModulesCount = data.modulesCount;
-
+      // Thermostat
+      // A loadda garbage for finding LIVINGROOM's KNOB1's onHeat.
+      if(data.moduleInput[String(rooms.LIVINGROOM)] != null 
+      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.KNOB1)] != null){
+        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.KNOB1)].onHeat;
+        if(onHeat != null){
+          var newThermostatMain = onHeat + " F";
+          if(newThermostatMain != this.state.thermostatMain){
+            await this.setState({
+              thermostatMain: newThermostatMain,
+            });
+          }
+        }
+      }
+     
+      // Weather data
       var weatherData = data.weatherData;
-
       // Given open weather map JSON data, parse it. See example: 
       // https://openweathermap.org/current#zip
       var weatherMain = weatherData.weather[0].main; // "Clear"
@@ -877,7 +894,7 @@ export class App extends React.Component {
             <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
           </div>
           <div id="app-thermostat">
-            <div id="app-thermostat-main">00 F</div>
+            <div id="app-thermostat-main">{this.state.thermostatMain}</div>
             <div id="app-thermostat-buttons">
               <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>+</button>
               <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>-</button>
