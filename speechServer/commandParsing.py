@@ -262,8 +262,9 @@ class CommandParser:
       if(self.homeStatus is not None):
         weatherString = "It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
         self.executeTextThread(weatherString)
+        time.sleep(7) # Enough time to allow the speech prompt to complete. 
         return True
-    elif("everything" in command):
+    elif("everything" in command or "all modules" in command):
       if(self.actionStates is not None):
         if("off" in command or "on" in command):
           # Go through each room in actionStates.
@@ -324,9 +325,9 @@ class CommandParser:
   # Given the possible command string, roomId, actionId, and 
   # a binary set of states, return a query. 
   def generateQuery(self, command, roomId, actionId, onState, offState):
-    if("off" in command):
+    if("off" in command or "deactivate" in command):
       return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
-    elif("on" in command):
+    elif("on" in command or "activate" in command or "initialize" in command):
       return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
     else:
       #No on or off specified. Check queried information. 
