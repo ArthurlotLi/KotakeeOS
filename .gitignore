@@ -4,3 +4,4 @@
 /triggerWordDetection/XY_train
 /triggerWordDetection/XY_dev
 /triggerWordDetection/train.wav
+/triggerWordDetection/__pycache__
