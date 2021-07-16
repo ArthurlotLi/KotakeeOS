@@ -27,6 +27,82 @@ class CommandParser:
   pauseThreshold = 1.0
   maxCommandAttempts = 2
 
+  # Ah, I'm so happy this matches perfectly with the client code. 
+  # Thanks, python. 
+  implementedButtons = {
+    "1.50": "Bedroom Lamp",
+    "2.50": "Living Room Lamp",
+    "2.250": "Soundbar Power",
+    "2.251": "Ceiling Fan Lamp",
+    "2.252": "Printer Power",
+    "2.350": "Kitchen Light",
+    "3.50": "Bathroom LED",
+    "3.350": "Bathroom Light",
+    "3.351": "Bathroom Fan",
+    "2.450": "Air Conditioner",
+    "2.1000": "TV",
+    "1.1000": "Bed",
+  }
+
+  # Also needs to be kept constant with clients. . 
+  actions = {
+    "LIGHTING1": 50,
+    "LIGHTING2": 51,
+    "LIGHTING3": 52,
+    "LIGHTING4": 53,
+    "LIGHTING5": 54,
+    "CURTAINS1": 150,
+    "CURTAINS2": 151,
+    "CURTAINS3": 152,
+    "CURTAINS4": 153,
+    "CURTAINS5": 154,
+    "REMOTE1": 250,
+    "REMOTE2": 251,
+    "REMOTE3": 252,
+    "REMOTE4": 253,
+    "REMOTE5": 254,
+    "REMOTE6": 255,
+    "REMOTE7": 256,
+    "REMOTE8": 257,
+    "REMOTE9": 258,
+    "REMOTE10": 259,
+    "REMOTE11": 260,
+    "REMOTE12": 261,
+    "REMOTE13": 262,
+    "REMOTE14": 263,
+    "REMOTE15": 264,
+    "REMOTE16": 265,
+    "REMOTE17": 266,
+    "REMOTE18": 267,
+    "REMOTE19": 268,
+    "REMOTE20": 269,
+    "SWITCH1": 350,
+    "SWITCH2": 351,
+    "SWITCH3": 352,
+    "SWITCH4": 353,
+    "SWITCH5": 354,
+    "KNOB1": 450,
+    "KNOB2": 451,
+    "KNOB3": 452,
+    "KNOB4": 453,
+    "KNOB5": 454,
+    "LEDSTRIP1": 1000,
+    "LEDSTRIP2": 1001,
+    "LEDSTRIP3": 1002,
+    "LEDSTRIP4": 1003,
+    "LEDSTRIP5": 1004,
+    "LEDSTRIP6": 1005,
+    "LEDSTRIP7": 1006,
+    "LEDSTRIP8": 1007,
+    "LEDSTRIP9": 1008,
+    "LEDSTRIP10": 1009,
+    "TEMP1": 5250,
+    "TEMP2": 5251,
+    "TEMP3": 5252,
+    "TEMP4": 5253,
+    "TEMP5": 5254,
+  }
+
   # Local variables.
   r2 = None
   engine = None
@@ -188,18 +264,28 @@ class CommandParser:
         self.executeTextThread(weatherString)
         return True
     elif("everything" in command):
-      if("off" in command):
-        queries.append(self.webServerIpAddress + "/moduleToggle/1/50/0")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/50/0")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/250/10")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/251/10")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/350/20")
-      elif("on" in command):
-        queries.append(self.webServerIpAddress + "/moduleToggle/1/50/1")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/50/1")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/250/12")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/251/12")
-        queries.append(self.webServerIpAddress + "/moduleToggle/2/350/22")
+      if(self.actionStates is not None):
+        if("off" in command or "on" in command):
+          # Go through each room in actionStates.
+          for roomId in self.actionStates:
+            for actionId in self.actionStates[roomId]:
+              if(self.implementedButtons[str(roomId) + "." + str(actionId)] is not None):
+                # We have a valid action that we've implemented. 
+                onState = 1
+                offState = 0
+                if(int(actionId) <= actions["REMOTE20"] and int(actionId) >= actions["REMOTE1"]):
+                  onState = 12
+                  offState = 10
+                elif(int(actionId) <= actions["SWITCH5"] and int(actionId) >= actions["SWITCH1"]):
+                  onState = 22
+                  offState = 20
+                elif(int(actionId) <= actions["KNOB5"] and int(actionId) >= actions["KNOB1"]):
+                  onState = 32
+                  offState = 30
+                elif(int(actionId) <= actions["LEDSTRIP10"] and int(actionId) >= actions["LEDSTRIP1"]):
+                  onState = 107 # PARTY MODE ONLY!
+                  offState = 100
+                queries.append(self.generateQuery(command, roomId, actionId, onState, offState))
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))

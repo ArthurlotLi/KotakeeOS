@@ -108,7 +108,8 @@ const rooms = {
 // End enums
 
 // Frontend enum only (for display purposes to translate roomIds 
-// and actionIDs onto buttons.)
+// and actionIDs onto buttons.) Keep this constant with the
+// speechServer commandParsing.py. 
 const implementedButtons = {
   "1.50": "Bedroom Lamp",
   "2.50": "Living Room Lamp",
