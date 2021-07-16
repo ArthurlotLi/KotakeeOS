@@ -764,7 +764,7 @@ export class App extends React.Component {
             if(implementedButtons[roomId + "." + actionId]!= null){
               // For every single room and action, check the state. 
               var actionState = parseInt(room[actionId]);
-              if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32){
+              if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32 || (actionState <= 130 && actionState > 100)){
                 onCount++;
               }
               else{
@@ -789,7 +789,7 @@ export class App extends React.Component {
             // Do not trigger actionIds that we don't implement on the client app. 
             // That means no spamming the server with motion detection reports
             // and no triggering actions that shouldn't be client app modifiable. 
-            if(implementedButtons[roomId + "." + actionId]!= null){
+            if(implementedButtons[roomId + "." + actionId] != null){
               var actionState = parseInt(room[actionId]);
               if(turnAllOn){
                 // Special LED handling.
