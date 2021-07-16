@@ -197,6 +197,7 @@ export class App extends React.Component {
     this.featureAllLights = this.featureAllLights.bind(this);
     this.featureSpeechServer = this.featureSpeechServer.bind(this);
     this.modifyThermostat = this.modifyThermostat.bind(this);
+    this.setServerDisabled = this.setServerDisabled.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
