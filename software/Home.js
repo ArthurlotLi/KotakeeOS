@@ -78,6 +78,11 @@ class Home {
     // when I don't want it to. All this does is prevent 
     // moduleToggle and moduleInput handling. 
     this.serverDisabled = false; 
+    // Stop all moduleInput functionality, including timeouts
+    // currently active and stuff like that. Can be enabled
+    // when serverDisabled is false, but will be reset if
+    // serverDisabled is set back to false. 
+    this.moduleInputDisabled = false; 
   }
 
   // Returns various general data.
@@ -88,6 +93,7 @@ class Home {
         weatherData: null,
         lastUpdate: this.lastUpdateHomeStatus,
         serverDisabled: this.serverDisabled, 
+        moduleInputDisabled: this.moduleInputDisabled,
       }
 
       // Get total modules. 
@@ -139,6 +145,25 @@ class Home {
     else{
       if(this.serverDisabled != false){
         this.serverDisabled = false;
+        this.moduleInputDisabled = false; // Reset this as well - enable the entire server. 
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+  }
+
+  // Disables moduleInput functionality, including active
+  // timeouts. 
+  setModuleInputDisabled(bool){
+    // Sanity check
+    if(bool == "1" || bool == true || bool == "true"){
+      if(this.moduleInputDisabled != true){
+        this.moduleInputDisabled = true;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+    else{
+      if(this.moduleInputDisabled != false){
+        this.moduleInputDisabled = false;
         this.lastUpdateHomeStatus = new Date().getTime();
       }
     }
@@ -168,6 +193,10 @@ class Home {
   moduleInput(roomId, actionId, toState, stringInput = false){
     if(this.serverDisabled){
       console.log("[WARN] moduleInput rejected because the server has been disabled.");
+      return false;
+    }
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInput rejected because module input has been disabled.");
       return false;
     }
 
@@ -230,6 +259,11 @@ class Home {
 
   // A fun thing. Plays a sound.
   moduleExecuteCommand(roomId, actionId, toState, stateInputActions){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleExecuteCommand rejected because module input has been disabled.");
+      return false;
+    }
+
     var block = stateInputActions["block"];
     var command = stateInputActions["command"];
     // Works only in OSX.
@@ -252,6 +286,11 @@ class Home {
   // (Ex) 27.70_42.00), turn something on/off Note that we 
   // convert from celsius here. 
   moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputTemperatureOnOff rejected because module input has been disabled.");
+      return false;
+    }
+
     // Expect mandatory fields "onHeat", "offHeat", "onActions", "offActions".
     // The latter two may be blank, but still must be here. 
     var actionStateString = String(toState);
@@ -291,6 +330,11 @@ class Home {
   }
 
   moduleInputHumidityOnOff(roomId, actionId, toState, actionInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputHumidityOnOff rejected because module input has been disabled.");
+      return false;
+    }
+
     // Expect mandatory fields "onHum", "offHum", "onActions", "offActions".
     // The latter two may be blank, but still must be here. 
     var actionStateString = String(toState);
@@ -347,6 +391,11 @@ class Home {
   // Expects usual trio from get request plus stateInputActions
   // from the room actionInput object. 
   moduleInputTimeout(roomId, actionId, toState, stateInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputTimeout rejected because module input has been disabled.");
+      return false;
+    }
+
     // Given the stateInputActions value, kick off the timeout
     // functionality depending on what attributes are present.
 
@@ -428,6 +477,11 @@ class Home {
   // Function called on at timeout. Expects the current time at time 
   // of timeout call, actionId and roomId, 
   inputTimeoutCallback(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState, room, blockDict){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] inputTimeoutCallback rejected because module input has been disabled.");
+      return false;
+    }
+
     var timeOfLastActionMotion = room.getInputActionsTimeoutTimes()[actionId];
     // Check if we've received no more inputs for this action since 
     // timeOfTimeoutMotion. 

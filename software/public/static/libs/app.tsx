@@ -187,6 +187,7 @@ export class App extends React.Component {
       lastUpdateHomeStatus: null,
       virtualMode: false,
       serverStatus: "Enabled",
+      moduleInputDisabled: "Enabled",
     };
 
     // Binding functions to "this"
@@ -198,6 +199,7 @@ export class App extends React.Component {
     this.featureSpeechServer = this.featureSpeechServer.bind(this);
     this.modifyThermostat = this.modifyThermostat.bind(this);
     this.setServerDisabled = this.setServerDisabled.bind(this);
+    this.setModuleInputDisabled = this.setModuleInputDisabled.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
@@ -291,6 +293,24 @@ export class App extends React.Component {
         if(newStatus != this.state.serverDisabled){
           await this.setState({
             serverStatus: newStatus
+          });
+        }
+      }
+
+      var moduleInputDisabledSpan = document.getElementById("app-home-status-moduleInputDisabled");
+      if(data.moduleInputDisabled != null && moduleInputDisabledSpan != null){
+        var newStatus = null;
+        if(data.moduleInputDisabled == "true" || data.moduleInputDisabled == true ){
+          newStatus = "Disabled";
+          moduleInputDisabledSpan.style.color = "red";
+        } 
+        else{
+          newStatus = "Enabled";
+          moduleInputDisabledSpan.style.color = "green";
+        }
+        if(newStatus != this.state.moduleInputDisabled){
+          await this.setState({
+            moduleInputDisabled: newStatus
           });
         }
       }
@@ -776,6 +796,41 @@ export class App extends React.Component {
     }
   }
 
+  // Disables the server's moduleInput functionaity. 
+  // only. Reverses what boolean we know right
+  // now based on current home status. 
+  async setModuleInputDisabled(){
+    var homeStatus = this.state.homeStatus;
+    if(homeStatus != null){
+      var currentModuleInputDisabled = homeStatus.moduleInputDisabled;
+      if(currentModuleInputDisabled != null){
+        var toState = "true";
+        if(currentModuleInputDisabled == "true" || currentModuleInputDisabled == true){
+          toState = "false";
+        } 
+        // We're good, send the request. 
+        var apiResponse = null;
+        var startTime, endTime; // We report in debug the api time.
+        try{
+          startTime = new Date();
+          apiResponse = await fetch(apiURL + "/moduleInputDisabled/" + toState);
+          endTime = new Date();
+          var timeDiff = endTime - startTime;
+          console.log("DEBUG: setModuleInputDisabled call returned in " + timeDiff/1000 + " seconds.");
+        }
+        catch(error){
+          console.log("ERROR: setModuleInputDisabled call failed!");
+        }
+        if(apiResponse.status == 200){
+          // TODO - do something to save the state in the web server...? 
+        }
+        else{
+          console.log("WARNING: setModuleInputDisabled call returned with status " + apiResponse.status + ".");
+        }
+      }
+    }
+  }
+
   // Executed only once upon startup.
   componentDidMount(){
     // Start the clock and the interval to update it every second.
@@ -812,6 +867,7 @@ export class App extends React.Component {
           </div>
           <div>
             <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+            <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
           </div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
@@ -868,7 +924,7 @@ export class App extends React.Component {
         </div>
 
         <div id="app-home-status">
-        | Server Status: <span id="app-home-status-serverDisabled" style={{color: "green"}}>{this.state.serverStatus}</span> | <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span> |
+        | Server Status: <span id="app-home-status-serverDisabled" style={{color: "green"}}>{this.state.serverStatus}</span> | Auto Mode: <span id="app-home-status-moduleInputDisabled" style={{color: "green"}}>{this.state.moduleInputDisabled}</span> | <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span> |
         </div>
       </div>
     );
