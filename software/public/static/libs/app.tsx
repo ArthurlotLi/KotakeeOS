@@ -329,10 +329,10 @@ export class App extends React.Component {
       }
 
       // Thermostat
-      // A loadda garbage for finding LIVINGROOM's KNOB1's onHeat.
+      // A loadda garbage for finding LIVINGROOM's TEMP1's onHeat.
       if(data.moduleInput[String(rooms.LIVINGROOM)] != null 
-      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.KNOB1)] != null){
-        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.KNOB1)].onHeat;
+      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
+        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)].onHeat;
         if(onHeat != null){
           var newThermostatMain = onHeat + " F";
           if(newThermostatMain != this.state.thermostatMain){
