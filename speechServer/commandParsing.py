@@ -268,24 +268,26 @@ class CommandParser:
         if("off" in command or "on" in command):
           # Go through each room in actionStates.
           for roomId in self.actionStates:
-            for actionId in self.actionStates[roomId]:
-              if(self.implementedButtons[str(roomId) + "." + str(actionId)] is not None):
-                # We have a valid action that we've implemented. 
-                onState = 1
-                offState = 0
-                if(int(actionId) <= actions["REMOTE20"] and int(actionId) >= actions["REMOTE1"]):
-                  onState = 12
-                  offState = 10
-                elif(int(actionId) <= actions["SWITCH5"] and int(actionId) >= actions["SWITCH1"]):
-                  onState = 22
-                  offState = 20
-                elif(int(actionId) <= actions["KNOB5"] and int(actionId) >= actions["KNOB1"]):
-                  onState = 32
-                  offState = 30
-                elif(int(actionId) <= actions["LEDSTRIP10"] and int(actionId) >= actions["LEDSTRIP1"]):
-                  onState = 107 # PARTY MODE ONLY!
-                  offState = 100
-                queries.append(self.generateQuery(command, roomId, actionId, onState, offState))
+            actionStatesDict = self.actionStates[roomId]
+            if isinstance(actionStatesDict, dict): # for actionStates elements that aren't dict, i.e. lastUpdate. 
+              for actionId in self.actionStates[roomId]:
+                if(str(roomId) + "." + str(actionId) in self.implementedButtons):
+                  # We have a valid action that we've implemented. 
+                  onState = 1
+                  offState = 0
+                  if(int(actionId) <= self.actions["REMOTE20"] and int(actionId) >= self.actions["REMOTE1"]):
+                    onState = 12
+                    offState = 10
+                  elif(int(actionId) <= self.actions["SWITCH5"] and int(actionId) >= self.actions["SWITCH1"]):
+                    onState = 22
+                    offState = 20
+                  elif(int(actionId) <= self.actions["KNOB5"] and int(actionId) >= self.actions["KNOB1"]):
+                    onState = 32
+                    offState = 30
+                  elif(int(actionId) <= self.actions["LEDSTRIP10"] and int(actionId) >= self.actions["LEDSTRIP1"]):
+                    onState = 107 # PARTY MODE ONLY!
+                    offState = 100
+                  queries.append(self.generateQuery(command, roomId, actionId, onState, offState))
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))
