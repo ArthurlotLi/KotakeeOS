@@ -774,14 +774,10 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          <div>
-            <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
-            <button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button>
-          </div>
-          <div>
-            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
-            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
-          </div>
+          <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
+          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
+          <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
+          <div><button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button></div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
             <div id="app-thermostat-buttons">
