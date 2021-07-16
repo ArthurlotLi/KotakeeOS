@@ -276,6 +276,13 @@ export class App extends React.Component {
       this.updateHomeStatusWorking = false;
     }
     if(data != null){
+      this.handleHomeStatus(data);
+    }
+  }
+
+  // Abstraction because spaghetti is bad. 
+  async handleHomeStatus(data){
+    if(data != null){
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
