@@ -262,7 +262,7 @@ class CommandParser:
       if(self.homeStatus is not None):
         weatherString = "It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
         self.executeTextThread(weatherString)
-        time.sleep(7) # Enough time to allow the speech prompt to complete. 
+        time.sleep(8) # Enough time to allow the speech prompt to complete. 
         return True
     elif("everything" in command or "all modules" in command):
       if(self.actionStates is not None):
