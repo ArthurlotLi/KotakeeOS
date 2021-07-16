@@ -188,7 +188,7 @@ export class App extends React.Component {
       virtualMode: false,
       serverStatus: "Enabled",
       moduleInputDisabled: "Enabled",
-      thermostatMain: "00 F",
+      thermostatOnHeat: 0,
     };
 
     // Binding functions to "this"
@@ -334,10 +334,9 @@ export class App extends React.Component {
       && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
         var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)].onHeat;
         if(onHeat != null){
-          var newThermostatMain = onHeat + " F";
-          if(newThermostatMain != this.state.thermostatMain){
+          if(onHeat != this.state.thermostatOnHeat){
             await this.setState({
-              thermostatMain: newThermostatMain,
+              thermostatOnHeat: onHeat,
             });
           }
         }
@@ -894,7 +893,7 @@ export class App extends React.Component {
             <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
           </div>
           <div id="app-thermostat">
-            <div id="app-thermostat-main">{this.state.thermostatMain}</div>
+            <div id="app-thermostat-main">{this.state.thermostatOnHeat} F</div>
             <div id="app-thermostat-buttons">
               <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>+</button>
               <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>-</button>
