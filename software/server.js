@@ -515,7 +515,7 @@ app.post('/moduleInputModify', (req, res) => {
   if(req.body.roomId != null && req.body.roomId != "null" 
   && req.body.newModuleInput != null && req.body.newModuleInput != "null"){
     var roomId = parseInt(req.body.roomId);
-    var newModuleInput = JSON.parse(req.body.newModuleInput);
+    var newModuleInput = req.body.newModuleInput;
     if(roomId != null && newModuleInput != null){
       home.moduleInputModify(roomId, newModuleInput);
       return res.status(200).send();
