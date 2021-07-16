@@ -522,6 +522,25 @@ class Home {
     }
   }
 
+  // Given a roomId and a new JSON object, replace the room's
+  // inputActions. 
+  async moduleInputModify(roomId, newModuleInput){
+    var room = this.getRoom(roomId);
+    if(room != null){
+      if(newModuleInput != null){
+        room.setInputActions(newModuleInput);
+        // This will change homeStatus, so let's update our clients. 
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+      else{
+        console.log("[ERROR] moduleInputModify failed! newModuleInput is null.");
+      }
+    }
+    else
+      console.log("[ERROR] moduleInputModify failed! roomId " + roomId + " does not exist.");
+    return null;
+  }
+
   // Given roomId, actionId, and toState, update the state of 
   // a module. 
   async moduleStateUpdate(roomId, actionId, toState){

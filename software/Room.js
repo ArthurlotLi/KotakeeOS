@@ -60,6 +60,10 @@ class Room {
     return null;
   }
 
+  setInputActions(newInputActions){
+    this.inputActions = newInputActions;
+  }
+
   // Given action Id and toState, execute Module code if found in dict
   // AND if the state is not what is currently stored. Otherwise ignore.
   // Returns true or false depending on execution status. 

@@ -501,6 +501,23 @@ app.get('/moduleInputString/:roomId/:actionId/:toState', (req, res) => {
   return res.status(400).send();
 });
 
+// Handle requests from clients to modify the moduleInput dicts of
+// specific rooms. For example, changing a "thermostat" by modifiying
+// the value of onHeat for a specific temp module. 
+app.get('/moduleInputModify/:roomId/:newModuleInput', (req, res) => {
+  console.log("[DEBUG] /moduleInputModify GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.roomId != null && req.params.roomId != "null" 
+  && req.params.newModuleInput != null && req.params.newModuleInput != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var newModuleInput = JSON.parse(req.params.newModuleInput);
+    if(roomId != null && newModuleInput != null){
+      home.moduleInputModify(roomId, newModuleInput);
+      return res.status(200).send();
+    }
+    return res.status(400).send();
+  }
+});
+
 // Handle requests from clients to fetch module States. This
 // should be called frequently (every few seconds).
 // Ex) http://192.168.0.197/actionStates

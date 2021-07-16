@@ -10,7 +10,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 3000; // 3 seconds. 
+const updateHomeStatusWait = 250; // 0.25 seconds (less important, but we still want it responsive.)
 const updateActionStatesWait = 250; // 0.25 seconds. 
 
 const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop that request. 
@@ -662,10 +662,54 @@ export class App extends React.Component {
       console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
     }
   }
+
+  // Tells the server to replace it's existing module input dict
+  // with one that we've modified here. 
+  async moduleInputModify(roomId, newModuleInput){
+    console.log("INFO: Submitting newModuleInput object for roomId " + roomId + ":");
+    console.log(newModuleInput);
     
-  // Query the web server to update the thermostat (home status.)
-  async modifyThermostat(){
-    // TODO. 
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/moduleInputModify/"+ roomId+ "/" + newModuleInput);
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: moduleInputModify call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: moduleInputModify call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: moduleInputModify returned with status " + apiResponse.status + ".");
+    }
+  }
+    
+  // Expects a positive/negative integer to modify the existing 
+  // thermostat with. Ultimately submits a modified moduleInput
+  // object to the server. 
+  async modifyThermostat(amount){
+    // We saved this value, so no rifling through homeStatus. 
+    var currentOnHeat = this.state.thermostatOnHeat;
+    var newHeat = currentOnHeat + amount; 
+    if(newHeat > 0 && newHeat < 100){
+      // Create the new moduleInput dict.  
+      var currentHomeStatus = this.state.homeStatus;
+      if(currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)] != null 
+      && currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
+        var newModuleInput = currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)];
+        newModuleInput[String(actions.TEMP1)].onHeat = newHeat;
+        // We have our product. Let's submit this to the server. 
+        this.moduleInputModify(rooms.LIVINGROOM, newModuleInput);
+      }
+    }
+    else{
+      console.log("WARNING: modifyThermostat rejected an action because new heat would be " + amount + "!");
+    }
   }
 
   // Enter and exit the debug mode, which allows users to manually
@@ -895,8 +939,8 @@ export class App extends React.Component {
           <div id="app-thermostat">
             <div id="app-thermostat-main">{this.state.thermostatOnHeat} F</div>
             <div id="app-thermostat-buttons">
-              <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>+</button>
-              <button class="app-thermostat-buttons-button" onClick={this.modifyThermostat}>-</button>
+              <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(1)}>+</button>
+              <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(-1)}>-</button>
             </div>
           </div>
         </div>
