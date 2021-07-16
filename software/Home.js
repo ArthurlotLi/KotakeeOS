@@ -131,10 +131,16 @@ class Home {
   setServerDisabled(bool){
     // Sanity check
     if(bool == "1" || bool == true || bool == "true"){
-      this.serverDisabled = true;
+      if(this.serverDisabled != true){
+        this.serverDisabled = true;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
     }
     else{
-      this.serverDisabled = false;
+      if(this.serverDisabled != false){
+        this.serverDisabled = false;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
     }
   }
 

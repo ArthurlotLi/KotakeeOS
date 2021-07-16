@@ -10,7 +10,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 10000; // 10 seconds. 
+const updateHomeStatusWait = 3000; // 3 seconds. 
 const updateActionStatesWait = 250; // 0.25 seconds. 
 
 const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop that request. 
@@ -279,7 +279,7 @@ export class App extends React.Component {
 
       if(data.serverStatus != null){
         var newStatus = "Enabled";
-        if(data.serverStatus == "1"){
+        if(data.serverStatus == "true"){
           newStatus = "Disabled";
         } 
         if(newStatus != this.state.serverStatus){
@@ -721,9 +721,9 @@ export class App extends React.Component {
     if(homeStatus != null){
       var currentServerDisabled = homeStatus.serverDisabled;
       if(currentServerDisabled != null){
-        var toState = "1";
-        if(currentServerDisabled == "1"){
-          toState = "0";
+        var toState = "true";
+        if(currentServerDisabled == "true"){
+          toState = "false";
         } 
         // We're good, send the request. 
         var apiResponse = null;
@@ -774,10 +774,14 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
-          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
-          <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
-          <div><button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button></div>
+          <div>
+            <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
+            <button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button>
+          </div>
+          <div>
+            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
+            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+          </div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
             <div id="app-thermostat-buttons">
