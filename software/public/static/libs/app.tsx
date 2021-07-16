@@ -17,6 +17,7 @@ const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop 
 const actionStatesRequestTimeout = 10000; // If we've waited this long, just drop that request. 
 
 const offHeatOffset = 2; // Number of degrees (F) difference between onHeat and offHeat for thermometer parsing. 
+const onHeatOffset = 1; // Number of degrees (F) difference between onHeat and what is displayed as the thermometer. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
@@ -950,7 +951,7 @@ export class App extends React.Component {
             <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
           </div>
           <div id="app-thermostat">
-            <div id="app-thermostat-main">{this.state.thermostatOnHeat} F</div>
+            <div id="app-thermostat-main">{this.state.thermostatOnHeat - onHeatOffset} F</div>
             <div id="app-thermostat-buttons">
               <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(1)}>+</button>
               <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(-1)}>-</button>
