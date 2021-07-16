@@ -399,6 +399,12 @@ home.requestAllActionStates();
 // the static directory as you'd expect. 
 app.use("/static", express.static(path.resolve(__dirname, "public", "static")));
 
+// To support parsing of JSON objects in both body and url. 
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+}));
+
 // For the main (and only) page, serve the web application to the client. 
 app.get('/',(req,res) => {
     res.sendFile(path.resolve(__dirname, "public", "index.html"));
@@ -504,12 +510,12 @@ app.get('/moduleInputString/:roomId/:actionId/:toState', (req, res) => {
 // Handle requests from clients to modify the moduleInput dicts of
 // specific rooms. For example, changing a "thermostat" by modifiying
 // the value of onHeat for a specific temp module. 
-app.get('/moduleInputModify/:roomId/:newModuleInput', (req, res) => {
-  console.log("[DEBUG] /moduleInputModify GET request received. Arguments: " + JSON.stringify(req.params));
-  if(req.params.roomId != null && req.params.roomId != "null" 
-  && req.params.newModuleInput != null && req.params.newModuleInput != "null"){
-    var roomId = parseInt(req.params.roomId);
-    var newModuleInput = JSON.parse(req.params.newModuleInput);
+app.post('/moduleInputModify', (req, res) => {
+  console.log("[DEBUG] /moduleInputModify POST request received. Body: " + JSON.stringify(req.body));
+  if(req.body.roomId != null && req.body.roomId != "null" 
+  && req.body.newModuleInput != null && req.body.newModuleInput != "null"){
+    var roomId = parseInt(req.body.roomId);
+    var newModuleInput = JSON.parse(req.body.newModuleInput);
     if(roomId != null && newModuleInput != null){
       home.moduleInputModify(roomId, newModuleInput);
       return res.status(200).send();

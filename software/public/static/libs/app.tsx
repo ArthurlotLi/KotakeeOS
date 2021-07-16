@@ -672,8 +672,15 @@ export class App extends React.Component {
     var apiResponse = null;
     var startTime, endTime; // We report in debug the api time.
     try{
+      var bodyToSend = {
+        "roomId": roomId,
+        "newModuleInput": newModuleInput,
+      };
       startTime = new Date();
-      apiResponse = await fetch(apiURL + "/moduleInputModify/"+ roomId+ "/" + JSON.stringify(newModuleInput));
+      apiResponse = await fetch(apiURL + "/moduleInputModify", {
+        method: 'POST',
+        body: JSON.stringify(bodyToSend),
+      });
       endTime = new Date();
       var timeDiff = endTime - startTime;
       console.log("DEBUG: moduleInputModify call returned in " + timeDiff/1000 + " seconds.");
