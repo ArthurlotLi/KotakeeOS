@@ -277,11 +277,17 @@ export class App extends React.Component {
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
-      if(data.serverDisabled != null){
-        var newStatus = "Enabled";
+      var serverStatusSpan = document.getElementById("app-home-status-serverDisabled");
+      if(data.serverDisabled != null && serverStatusSpan != null){
+        var newStatus = null;
         if(data.serverDisabled == "true" || data.serverDisabled == true ){
           newStatus = "Disabled";
+          serverStatusSpan.style.color = "red";
         } 
+        else{
+          newStatus = "Enabled";
+          serverStatusSpan.style.color = "green";
+        }
         if(newStatus != this.state.serverDisabled){
           await this.setState({
             serverStatus: newStatus
@@ -774,10 +780,14 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
-          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
-          <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
-          <div><button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button></div>
+          <div>
+            <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
+            <button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button>
+          </div>
+          <div>
+            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
+            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+          </div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">00 F</div>
             <div id="app-thermostat-buttons">
@@ -833,7 +843,7 @@ export class App extends React.Component {
         </div>
 
         <div id="app-home-status">
-        <span id="app-home-status-serverDisabled">Server: {this.state.serverStatus}</span>  <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span>
+        | Server Status: <span id="app-home-status-serverDisabled" style={{color: "green"}}>{this.state.serverStatus}</span> | <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span> |
         </div>
       </div>
     );
