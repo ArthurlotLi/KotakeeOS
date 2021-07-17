@@ -161,7 +161,7 @@ class CommandParser:
             start = time.time()
 
             # Listen for input
-            audio2 = self.r2.listen(source2)
+            audio2 = self.r2.listen(source2, timeout=5,phrase_time_limit=5)
 
             # Use Google's API to recognize the audio.
             recognizedText = self.r2.recognize_google(audio2)
