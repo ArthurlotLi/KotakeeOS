@@ -6,3 +6,4 @@
 /triggerWordDetection/train.wav
 /triggerWordDetection/__pycache__
 /speechServer/__pycache__
+/satelliteServer/node_modules

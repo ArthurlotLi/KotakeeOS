@@ -255,7 +255,7 @@ class CommandParser:
 
     if any(x in command for x in self.stopServerCommands):
       self.executeTextThread(self.stopServerPrompt)
-      time.sleep(5) # Enough time to allow the speech prompt to complete. 
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
       self.stopServer = True
       return True
     elif("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
