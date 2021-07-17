@@ -60,7 +60,7 @@ async function handleSpeechServerRequest(hotwordNone = false){
       if(currentState != null){
         if(currentState == block[actionId]){
           console.log("[WARN] Blocking toggleSpeechServer request due to blocking action state.")
-          return res.status(200).send();
+          return
         }
       }
     }
