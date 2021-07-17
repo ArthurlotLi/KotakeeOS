@@ -879,6 +879,27 @@ export class App extends React.Component {
     }
   }
 
+  async featureSatelliteSpeechServer(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/toggleSpeechServerSatellite");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: featureSatelliteSpeechServer call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: featureSatelliteSpeechServer call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: featureSatelliteSpeechServer returned with status " + apiResponse.status + ".");
+    }
+  }
+
   // Disables the server's moduleInput and moduleToggle
   // functionaity. Reverses what boolean we know right
   // now based on current home status. 
@@ -984,11 +1005,12 @@ export class App extends React.Component {
             <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
           </div>
           <div>
-            <button class="app-location-debug" onClick={this.featureSpeechServerSingle}>Speech Single</button>
-            <button class="app-location-debug" onClick={this.featureSatelliteServerSingle}>Satellite Single</button>
+            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
+            <button class="app-location-debug" onClick={this.featureSatelliteSpeechServer}>Satellite Server</button>
           </div>
           <div>
-            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
+            <button class="app-location-debug" onClick={this.featureSpeechServerSingle}>Speech Single</button>
+            <button class="app-location-debug" onClick={this.featureSatelliteServerSingle}>Satellite Single</button>
           </div>
           <div id="app-thermostat">
             <div id="app-thermostat-main">{this.state.thermostatOnHeat - onHeatOffset} F</div>

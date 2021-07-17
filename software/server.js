@@ -610,6 +610,11 @@ app.get('/toggleHotwordNoneSatellite', (req, res) => {
   fetch("http://" + satellite1 + "/toggleHotwordNone");
   return res.status(200).send();
 });
+app.get('/toggleSpeechServerSatellite', (req, res) => {
+  console.log("[DEBUG] /toggleSpeechServerSatellite GET request received.");
+  fetch("http://" + satellite1 + "/toggleSpeechServer");
+  return res.status(200).send();
+});
 
 // Start the server to listen on this port.
 app.listen(listeningPort, () => {
