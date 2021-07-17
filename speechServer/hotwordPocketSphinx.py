@@ -15,6 +15,8 @@
 # Usage: python3 hotwordPocketSphinx.py
 #
 
+import argparse
+
 import speech_recognition as sr
 import pyttsx3
 import requests
@@ -36,12 +38,16 @@ r = sr.Recognizer()
 r.pause_threshold = pause_threshold 
 commandParser = CommandParser()
 
-def runApplicationServer():
+def runApplicationServer(useAlt):
   print("Initializing kotakeeOS speech application server with PocketSphinx hotword detection.")
 
   # Experimental - query the server to turn on the LED to signal
   # Speech server is online. 
-  commandParser.querySpeechServerLED(1)
+  if useAlt:
+    commandParser.querySpeechServerLED(1, 2, 52)
+  else:
+    commandParser.querySpeechServerLED(1, 2, 51)
+
   commandParser.startupProcedure()
   
   while commandParser.stopServer is not True:
@@ -49,7 +55,10 @@ def runApplicationServer():
 
   # Experimental - query the server to turn on the LED to signal
   # Speech server is no longer online. 
-  commandParser.querySpeechServerLED(0)
+  if useAlt:
+    commandParser.querySpeechServerLED(0, 2, 52)
+  else:
+    commandParser.querySpeechServerLED(0, 2, 51)
   print("Shutting down. Goodnight.")
 
 # When run, listens for a single command and executes
@@ -92,4 +101,14 @@ def listenForHotWord():
     pass
 
 if __name__ == "__main__":
-  runApplicationServer()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-a', action='store_true', default=False) # TODO: maybe make this scalable to more than one server. 
+  args = parser.parse_args()
+  useAlt = args.a
+
+  if(useAlt is True or useAlt is None):
+    useAlt = True
+  else:
+    useAlt = False
+
+  runApplicationServer(useAlt)

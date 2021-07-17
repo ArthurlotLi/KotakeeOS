@@ -23,25 +23,74 @@ body{
 }
 
 button{
-  font-size: 2.6vw;
+  font-size: 2.1vw;
   background-color: #222222;
   color: var(--text-color);
-  width: 30vw;
-  height: 13vh;
+  width: 23.5vw;
+  height: 13.5vh;
   padding: 0.5vw;
   margin: 0.3vw;
+}
+
+.buttonHalfSize {
+  width: 11.5vw;
+}
+
+.app-thermostat-buttons-button{
+  width: 3vw;
+  margin-top: 0.1vw;
+  margin-bottom: 0.1vw;
+  padding: 0;
+  height: 3vw;
+}
+
+#app-thermostat-main{
+  flex-direction: column;
+  font-size: 3vw;
+  margin-right: 1.0vw;
+  margin-left: 1.0vw;
+}
+
+#app-thermostat-buttons{
+  flex-direction: column;
+  display: flex;
+}
+
+.app-thermostat-buttons-button{
+  font-size: 2vw;
+  width: auto;
+  margin-right: 0.2vw;
+  margin-left: 0.2vw;
+  margin-top: 0.2vw;
+  margin-bottom: 0.2vw;
+  padding-right: 0.5vw;
+  padding-left: 0.5vw;
+  height: auto;
+  text-align: center;
+}
+
+#app-thermostat{
+  margin-top: 0.5vw;
+  margin-bottom: 0.5vw;
+  flex-direction: row;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  text-align: center;
 }
 
 /* Button overrides for this unique button. */
 .app-location-debug{
   background-color: #222222;
   color: var(--text-color);
-  width: 12vw;
-  padding: 0;
-  margin: 0;
-  height: 3vw;
+  width: 11vw;
+  margin-right: 0.3vw;
+  margin-left: 0.3vw;
+  margin-top: 0.2vw;
+  margin-bottom: 0.2vw;
+  height: auto;
   text-align: center;
-  font-size: 1.5vw;
+  font-size: 1.3vw;
 }
 
 /*
@@ -71,7 +120,7 @@ button:hover {
   left: 0%; 
   margin-left: 1.5vw;
   margin-top: 1.5vw;
-  font-size: 3vw;
+  padding: 0;
 }
 
 #app-clock {
@@ -111,6 +160,15 @@ button:hover {
 
 #app-weather-main {
   font-size: 3vw;
+}
+
+#app-temps {
+  text-align: center;
+  font-size: 1.5vw;
+}
+
+.app-temps-line{
+  text-align: right;
 }
 
 #app-modules-row1 {
@@ -159,7 +217,7 @@ button:hover {
   position: fixed;
   bottom: 0;
   left: 0;
-  margin-left: 0.5vw;
+  margin-left: 1.5vw;
   margin-bottom: 0.5vw;
   font-size: 1vw;
 }

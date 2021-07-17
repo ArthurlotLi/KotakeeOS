@@ -5,6 +5,7 @@
 
 const express = require("express");
 const path = require("path");
+const fetch = require("node-fetch");
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -55,6 +56,23 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  KNOB1: 450,
+  KNOB2: 451,
+  KNOB3: 452,
+  KNOB4: 453,
+  KNOB5: 454,
+  // These get handled rather differently from other actions.
+  // (toState represents different pre-programmed modes.)
+  LEDSTRIP1: 1000,
+  LEDSTRIP2: 1001,
+  LEDSTRIP3: 1002,
+  LEDSTRIP4: 1003,
+  LEDSTRIP5: 1004,
+  LEDSTRIP6: 1005,
+  LEDSTRIP7: 1006,
+  LEDSTRIP8: 1007,
+  LEDSTRIP9: 1008,
+  LEDSTRIP10: 1009,
   // Input enums. Are considered "actions" but are treated entirely differently. 
   // Seperated from actions by 5000. Do not need to be known by client.
   MOTION1: 5050,
@@ -113,14 +131,19 @@ const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
 // Create the app
 const app = express();
 
+// Satellite Servers
+// TODO: we could really flush this out and add more than one server. These
+// could (should) be an abstracted class. 
+const satellite1 = "192.168.0.114:8080"
+
 // When adding modules, create module object and add to room's
 // array of Modules. 
 
 // Arduino 1 Bedroom 
 const module1BRId = 1; // Internal server use only. 
 const module1BRRoomId = rooms.BEDROOM; 
-const module1BRActions = [actions.LIGHTING1];
-const module1BRPins = [12];
+const module1BRActions = [actions.LIGHTING1, actions.TEMP1];
+const module1BRPins = [12, 16];
 const module1BRIpAddress = "192.168.0.198";
 const module1BR = new Module(module1BRId, module1BRRoomId, module1BRActions, module1BRPins, module1BRIpAddress);
 
@@ -135,46 +158,66 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 // Arduino 3 Living Room
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
-const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.LIGHTING2]; // Admin action that is inert for this module. 
-const module3LRPins = [12, 0, 2];
+const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.ADMIN2, actions.LIGHTING2, actions.TEMP1, actions.LIGHTING3]; // Admin action that is inert for this module. 
+const module3LRPins = [12, 0, 0, 2, 16, 3];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
 // Arduino 4 Living Room
 const module4LRId = 4; // Internal server use only. 
 const module4LRRoomId = rooms.LIVINGROOM; 
-const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3, actions.MOTION1];
-const module4LRPins = [12, 10.11, 9, 8];
+const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3, actions.MOTION1, actions.LEDSTRIP1, actions.TEMP2];
+const module4LRPins = [12, "10.11", 9, 8, "14.060", 15];
 const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
 // Arduino 5 Bathroom
 const module5BAId = 5; // Internal server use only. 
 const module5BARoomId = rooms.BATHROOM; 
-const module5BAActions = [actions.SWITCH1, actions.SWITCH2, actions.MOTION1, actions.LIGHTING1, actions.DOOR1];
-const module5BAPins = [10.11, 6.9, 8, 14, 2];
+const module5BAActions = [actions.SWITCH1, actions.SWITCH2, actions.MOTION1, actions.LIGHTING1, actions.DOOR1, actions.TEMP1];
+const module5BAPins = ["10.11", 6.9, 8, 14, 2, 16];
 const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Arduino 6 LR
-/*const module6LRId = 6; // Internal server use only. 
-const module6LRRoomId = rooms.LIVINGROOM; 
-const module6LRActions = [];
-const module6LRPins = [];
-const module6LRIpAddress = "192.168.0.186";
-const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);*/
+const module6BRId = 6; // Internal server use only. 
+const module6RRoomId = rooms.BEDROOM; 
+const module6BRActions = [actions.LEDSTRIP1];
+const module6BRPins = ["14.060"];
+const module6BRIpAddress = "192.168.0.186";
+const module6BR = new Module(module6BRId, module6RRoomId, module6BRActions, module6BRPins, module6BRIpAddress);
+
+const module7LRId = 7; // Internal server use only. 
+const module7LRRoomId = rooms.LIVINGROOM; 
+const module7LRActions = [actions.KNOB1];
+const module7LRPins = [12];
+const module7LRIpAddress = "192.168.0.146";
+const module7LR = new Module(module7LRId, module7LRRoomId, module7LRActions, module7LRPins, module7LRIpAddress);
 
 // Rooms (add objects here)
-const bedroomModules = [module1BR];
+const bedroomModules = [module1BR, module6BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR];
+const livingRoomModules = [module2LR, module3LR, module4LR, module7LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
 }
+const airConditioningOn = 81; // How hot it must be to turn on the air conditioner. 
+const airConditioningOff = 79; // How hot it must be to turn off the air conditioner. 
 const livingRoomInputActions = {
+  5250: { // Temperature input
+    "function":"temperatureOnOff",
+    "onHeat":airConditioningOn,
+    "offHeat": airConditioningOff,
+    "onActions": {
+      450: 32,
+    },
+    "offActions":{
+      450: 30,
+    }
+  },
   5050: {
     "function" : "timeout",
     1: {
@@ -210,7 +253,19 @@ const livingRoomInputActions = {
         51: 1,
       }
     }
-  }
+  },
+  5351:{
+    "function":"command",
+    1: { // Admin command of 1 from clients. 
+      "command" : "python3 ../speechServer/hotwordNone.py",
+      // Don't start the server if the light is on, signaling that the server is already on.
+      // Not the greatest solution (leaves gaps and isn't explicit) but it works for now.
+      // Note this is all experimental. 
+      "block": {
+        51: 1,
+      }
+    }
+  },
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
@@ -218,9 +273,21 @@ const bathroomModules = [module5BA];
 const bathroomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [6, 0, 21, 00], // These arrays must be multiples of 4. 
-  50: [21, 01, 23, 59, 5, 59, 0, 0],
+  50: [21, 01, 23, 59, 0, 0, 5, 59],
 }
+const fanOnHumidity = 85;
+const fanOffHumidity = 84; // Not used. 
 const bathroomInputActions = {
+  // If the humidity is too high, turn on the fan automatically. 
+  5250: { // Temperature input
+    "function":"humidityOnOff",
+    "onHum":fanOnHumidity,
+    "offHum": fanOffHumidity,
+    "onActions": {
+      351: 22,
+    },
+    "offActions":{}
+  },
   // Motion sensor (Turn on bathroom light)
   // Turn lights on on motion. Turn off after timeout. Do not turn 
   // off lights if door is closed. 
@@ -287,6 +354,9 @@ const bathroomInputActions = {
         350: {
           5050: 1,
         },
+        351: { // Block if you yourself have been turned back on (door closed again)
+          5150: 1,
+        },
       },
     },
     1:{
@@ -334,6 +404,12 @@ home.requestAllActionStates();
 // Whenever the request path has "static" inside of it, simply serve 
 // the static directory as you'd expect. 
 app.use("/static", express.static(path.resolve(__dirname, "public", "static")));
+
+// To support parsing of JSON objects in both body and url. 
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+}));
 
 // For the main (and only) page, serve the web application to the client. 
 app.get('/',(req,res) => {
@@ -404,7 +480,7 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
     var toState = parseInt(req.params.toState);
     if(roomId != null && actionId != null && toState != null){
       // We always update the state in memory regardless of what additional
-      // things we do with the input. 
+      // things we do with the input. Note strings are also valid here. 
       home.moduleStateUpdate(roomId, actionId, toState);
       home.moduleInput(roomId, actionId, toState)
       // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
@@ -412,6 +488,46 @@ app.get('/moduleInput/:roomId/:actionId/:toState', (req, res) => {
     }
   }
   return res.status(400).send();
+});
+
+// Handle requests from modules to report input (actions > 5000)
+// that is not a state update. This is useful for stuff like
+// temp readouts (Ex) toState = "27.50_41.10")
+// Ex) http://192.168.0.197/moduleInputString/1/5250/27.50_41.10
+app.get('/moduleInputString/:roomId/:actionId/:toState', (req, res) => {
+  console.log("[DEBUG] /moduleInputString GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null" && req.params.toState != null && req.params.toState != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    var toState = req.params.toState; // We expect this to be a string.
+    if(roomId != null && actionId != null && toState != null){
+      // We always update the state in memory regardless of what additional
+      // things we do with the input. Note strings are also valid here. 
+      home.moduleStateUpdate(roomId, actionId, toState);
+      // Handle this input with explicit true flag for stringInput.
+      home.moduleInput(roomId, actionId, toState, true)
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
+});
+
+// Handle requests from clients to modify the moduleInput dicts of
+// specific rooms. For example, changing a "thermostat" by modifiying
+// the value of onHeat for a specific temp module. 
+app.post('/moduleInputModify', (req, res) => {
+  console.log("[DEBUG] /moduleInputModify POST request received. Body: " + JSON.stringify(req.body));
+  if(req.body.roomId != null && req.body.roomId != "null" 
+  && req.body.newModuleInput != null && req.body.newModuleInput != "null"){
+    var roomId = parseInt(req.body.roomId);
+    var newModuleInput = req.body.newModuleInput;
+    if(roomId != null && newModuleInput != null){
+      home.moduleInputModify(roomId, newModuleInput);
+      return res.status(200).send();
+    }
+    return res.status(400).send();
+  }
 });
 
 // Handle requests from clients to fetch module States. This
@@ -469,6 +585,35 @@ app.get('/moduleStartup/:ipAddress', (req, res) => {
       return res.status(400).send();
     }
   }
+});
+
+app.get('/serverDisabled/:bool', (req, res) => {
+  console.log("[DEBUG] /serverDisabled GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.bool != null && req.params.bool != "null"){
+    home.setServerDisabled(req.params.bool);
+    return res.status(200).send();
+  }
+});
+
+app.get('/moduleInputDisabled/:bool', (req, res) => {
+  console.log("[DEBUG] /moduleInputDisabled GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.bool != null && req.params.bool != "null"){
+    home.setModuleInputDisabled(req.params.bool);
+    return res.status(200).send();
+  }
+});
+
+// TODO: Abstract this so that we could potentially have 
+// multiple satellites. 
+app.get('/toggleHotwordNoneSatellite', (req, res) => {
+  console.log("[DEBUG] /toggleHotwordNoneSatellite GET request received.");
+  fetch("http://" + satellite1 + "/toggleHotwordNone");
+  return res.status(200).send();
+});
+app.get('/toggleSpeechServerSatellite', (req, res) => {
+  console.log("[DEBUG] /toggleSpeechServerSatellite GET request received.");
+  fetch("http://" + satellite1 + "/toggleSpeechServer");
+  return res.status(200).send();
 });
 
 // Start the server to listen on this port.

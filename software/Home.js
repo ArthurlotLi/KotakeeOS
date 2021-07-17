@@ -73,6 +73,16 @@ class Home {
 
     // Because it's a callback! 
     this.inputTimeoutCallback = this.inputTimeoutCallback.bind(this);
+
+    // Kill switch, essentially. So my AC doesn't run for 3 hours
+    // when I don't want it to. All this does is prevent 
+    // moduleToggle and moduleInput handling. 
+    this.serverDisabled = false; 
+    // Stop all moduleInput functionality, including timeouts
+    // currently active and stuff like that. Can be enabled
+    // when serverDisabled is false, but will be reset if
+    // serverDisabled is set back to false. 
+    this.moduleInputDisabled = false; 
   }
 
   // Returns various general data.
@@ -82,13 +92,20 @@ class Home {
         modulesCount: null,
         weatherData: null,
         lastUpdate: this.lastUpdateHomeStatus,
+        serverDisabled: this.serverDisabled, 
+        moduleInputDisabled: this.moduleInputDisabled,
+        moduleInput: {},
       }
 
       // Get total modules. 
       var modulesCount = 0;
-      for(var room in this.roomsDict){
-        if(this.roomsDict.hasOwnProperty(room)){
-          modulesCount = modulesCount + this.roomsDict[room].modulesCount;
+      for(var roomId in this.roomsDict){
+        if(this.roomsDict.hasOwnProperty(roomId)){
+          var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
+          modulesCount = modulesCount + roomItem.modulesCount;
+          // Append the inputActions dict to the homeStatus,
+          // indexed by roomId.
+          status.moduleInput[roomId] = roomItem.inputActions;
         }
       }
 
@@ -121,12 +138,52 @@ class Home {
     return null;
   }
 
+  // Disables actionToggle and moduleInput.
+  setServerDisabled(bool){
+    // Sanity check
+    if(bool == "1" || bool == true || bool == "true"){
+      if(this.serverDisabled != true){
+        this.serverDisabled = true;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+    else{
+      if(this.serverDisabled != false){
+        this.serverDisabled = false;
+        this.moduleInputDisabled = false; // Reset this as well - enable the entire server. 
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+  }
+
+  // Disables moduleInput functionality, including active
+  // timeouts. 
+  setModuleInputDisabled(bool){
+    // Sanity check
+    if(bool == "1" || bool == true || bool == "true"){
+      if(this.moduleInputDisabled != true){
+        this.moduleInputDisabled = true;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+    else{
+      if(this.moduleInputDisabled != false){
+        this.moduleInputDisabled = false;
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+    }
+  }
+
   // Given roomId, actionId, and toState, kick off the process. 
   // Accepts virtual boolean to specify not to execute physical
   // action to resolve desynchronization issues. 
   actionToggle(roomId, actionId, toState, virtual = false){
     var room = this.getRoom(roomId);
     if(room != null){
+      if(this.serverDisabled){
+        console.log("[WARN] actionToggle rejected because the server has been disabled.");
+        return false;
+      }
       return room.actionToggle(actionId, toState, virtual);
     }
     else
@@ -136,7 +193,18 @@ class Home {
 
   // Given roomId, actionId, and toState, use stored room 
   // variables to execute some sort of function upon input. 
-  moduleInput(roomId, actionId, toState){
+  // Allows for the specification of stringInput, in which
+  // case we'll use a different pool of functions. 
+  moduleInput(roomId, actionId, toState, stringInput = false){
+    if(this.serverDisabled){
+      console.log("[WARN] moduleInput rejected because the server has been disabled.");
+      return false;
+    }
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInput rejected because module input has been disabled.");
+      return false;
+    }
+
     // SANITY CHECKS. SO MANY SANTIY CHECKS.  
     var room = this.getRoom(roomId);
     if(room == null){
@@ -158,28 +226,49 @@ class Home {
       console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
       return false;
     }
-    var stateInputActions = actionInputActions[toState]
-    if(stateInputActions == null){
-      console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
-      return false;
-    }
 
-    // If we survived the great filter, let's act depending 
-    // on the function given.
-    switch(inputFunction){
-      case "timeout":
-        return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
-      case "command":
-        return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
-        break;
-      default:
-        console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+    // Now we handle things differently based on what state
+    // info type we got. 
+    if(stringInput){
+      // Handle string input. 
+      switch(inputFunction){
+        case "temperatureOnOff":
+          return this.moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room);
+        case "humidityOnOff":
+          return this.moduleInputHumidityOnOff(roomId, actionId, toState, actionInputActions, room);
+        default:
+          console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+          return false;
+      }
+    }
+    else{
+      // Handle state input. 
+      var stateInputActions = actionInputActions[toState]
+      if(stateInputActions == null){
+        console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
         return false;
+      }
+      // If we survived the great filter, let's act depending 
+      // on the function given.
+      switch(inputFunction){
+        case "timeout":
+          return this.moduleInputTimeout(roomId, actionId, toState, stateInputActions, room);
+        case "command":
+          return this.moduleExecuteCommand(roomId, actionId, toState, stateInputActions);
+        default:
+          console.log("[ERROR] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" specifies a function that does not exist!");
+          return false;
+      }
     }
   }
 
   // A fun thing. Plays a sound.
   moduleExecuteCommand(roomId, actionId, toState, stateInputActions){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleExecuteCommand rejected because module input has been disabled.");
+      return false;
+    }
+
     var block = stateInputActions["block"];
     var command = stateInputActions["command"];
     // Works only in OSX.
@@ -196,6 +285,96 @@ class Home {
     }
     console.log("[DEBUG] Executing command: " + command);
     exec(command, null)
+  }
+
+  // Given a toState string that presents temp and humidity
+  // (Ex) 27.70_42.00), turn something on/off Note that we 
+  // convert from celsius here. 
+  moduleInputTemperatureOnOff(roomId, actionId, toState, actionInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputTemperatureOnOff rejected because module input has been disabled.");
+      return false;
+    }
+
+    // Expect mandatory fields "onHeat", "offHeat", "onActions", "offActions".
+    // The latter two may be blank, but still must be here. 
+    var actionStateString = String(toState);
+    var tempInfo = actionStateString.split("_");
+    if(tempInfo.length < 2){
+      console.log("[ERROR] moduleInputTemperatureOnOff Received an invalid toState! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+    // Convert temp to F from C
+    var currentTemp = parseFloat(tempInfo[0]);
+    currentTemp = parseInt(((currentTemp * 1.8) +32).toFixed(0));
+
+    // Parse mandatory fields 
+    var onHeat = actionInputActions["onHeat"];
+    var offHeat = actionInputActions["offHeat"];
+    var onActions = actionInputActions["onActions"];
+    var offActions = actionInputActions["offActions"];
+    if(onHeat == null || offHeat == null || onActions == null || offActions == null){
+      console.log("[ERROR] moduleInputTemperatureOnOff parsed invalid instructions! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+
+    // Sanity checked. 
+    if(currentTemp >= onHeat){
+      // Execute onActions. 
+      for (var actionId in onActions){
+        this.actionToggle(roomId, actionId, onActions[actionId]);
+      }
+    }
+    else if(currentTemp <= offHeat){
+      // Execute onActions. 
+      for (var actionId in offActions){
+        this.actionToggle(roomId, actionId, offActions[actionId]);
+      }
+    }
+    // Otherwise we're within the grey area (if it exists). Do nothing. 
+  }
+
+  moduleInputHumidityOnOff(roomId, actionId, toState, actionInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputHumidityOnOff rejected because module input has been disabled.");
+      return false;
+    }
+
+    // Expect mandatory fields "onHum", "offHum", "onActions", "offActions".
+    // The latter two may be blank, but still must be here. 
+    var actionStateString = String(toState);
+    var tempInfo = actionStateString.split("_");
+    if(tempInfo.length < 2){
+      console.log("[ERROR] moduleInputHumidityOnOff Received an invalid toState! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+    var currentHum = parseFloat(tempInfo[1]);
+    currentHum = parseInt(currentHum.toFixed(0));
+
+    // Parse mandatory fields 
+    var onHum = actionInputActions["onHum"];
+    var offHum = actionInputActions["offHum"];
+    var onActions = actionInputActions["onActions"];
+    var offActions = actionInputActions["offActions"];
+    if(onHum == null || offHum == null || onActions == null || offActions == null){
+      console.log("[ERROR] moduleInputHumidityOnOff parsed invalid instructions! roomId " + roomId + " inputActions entry for actionId " +actionId+".");
+      return false;
+    }
+
+    // Sanity checked. 
+    if(currentHum >= onHum){
+      // Execute onActions. 
+      for (var actionId in onActions){
+        this.actionToggle(roomId, actionId, onActions[actionId]);
+      }
+    }
+    else if(currentHum <= offHum){
+      // Execute onActions. 
+      for (var actionId in offActions){
+        this.actionToggle(roomId, actionId, offActions[actionId]);
+      }
+    }
+    // Otherwise we're within the grey area (if it exists). Do nothing. 
   }
 
   // Handle timeout input request. We expect to be completely
@@ -217,6 +396,11 @@ class Home {
   // Expects usual trio from get request plus stateInputActions
   // from the room actionInput object. 
   moduleInputTimeout(roomId, actionId, toState, stateInputActions, room){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] moduleInputTimeout rejected because module input has been disabled.");
+      return false;
+    }
+
     // Given the stateInputActions value, kick off the timeout
     // functionality depending on what attributes are present.
 
@@ -298,17 +482,19 @@ class Home {
   // Function called on at timeout. Expects the current time at time 
   // of timeout call, actionId and roomId, 
   inputTimeoutCallback(timeOfTimeoutMotion, actionId, roomId, actionIdToTrigger, actionToggleState, room, blockDict){
+    if(this.moduleInputDisabled){
+      console.log("[WARN] inputTimeoutCallback rejected because module input has been disabled.");
+      return false;
+    }
+
     var timeOfLastActionMotion = room.getInputActionsTimeoutTimes()[actionId];
     // Check if we've received no more inputs for this action since 
     // timeOfTimeoutMotion. 
     if(timeOfLastActionMotion == null || timeOfLastActionMotion == timeOfTimeoutMotion){
-      // We'll reset the action state of the input state to 0 upon 
-      // successful timeout. 
-      this.moduleStateUpdate(roomId, actionId, 0);
 
       // Check the blockDict before we execute the timeout action. 
       if(blockDict != null){
-        //console.log("[DEBUG] Parsing blockDict " + JSON.stringify(blockDict))
+        //console.log("[DEBUG] inputTimeoutCallback parsing blockDict " + JSON.stringify(blockDict))
         for(var subjectActionId in blockDict){
           var subjectDict = blockDict[subjectActionId];
           if(parseInt(subjectActionId) == parseInt(actionIdToTrigger))
@@ -317,7 +503,7 @@ class Home {
               var blockActionIdState = subjectDict[blockActionId];
               // Get the state of that particular module action. 
               var actionState = this.getActionState(roomId, blockActionId);
-              //console.log("actionState is " + actionState + ", blockActonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
+              //console.log("inputTimeoutCallback testing: actionState is " + actionState + ", blockActonIdState is " + blockActionIdState + ", subjectActionId is " + subjectActionId + ", and actionIdToTrigger is " + actionIdToTrigger);
               if(actionState != null && parseInt(actionState) == parseInt(blockActionIdState) ){
                 console.log("[DEBUG] inputTimeoutCallback actionState of blockActionId " + blockActionId + " is EQUAL to blockActionIdState " + blockActionIdState + ". Not executing valid timeout.");
                 return;
@@ -330,7 +516,29 @@ class Home {
       // If we haven't seen any more movement between the time the timout
       // was started and now.
       this.actionToggle(roomId, actionIdToTrigger, actionToggleState);
+      // We'll reset the action state of the input state to 0 upon 
+      // successful timeout. 
+      this.moduleStateUpdate(roomId, actionId, 0);
     }
+  }
+
+  // Given a roomId and a new JSON object, replace the room's
+  // inputActions. 
+  async moduleInputModify(roomId, newModuleInput){
+    var room = this.getRoom(roomId);
+    if(room != null){
+      if(newModuleInput != null){
+        room.setInputActions(newModuleInput);
+        // This will change homeStatus, so let's update our clients. 
+        this.lastUpdateHomeStatus = new Date().getTime();
+      }
+      else{
+        console.log("[ERROR] moduleInputModify failed! newModuleInput is null.");
+      }
+    }
+    else
+      console.log("[ERROR] moduleInputModify failed! roomId " + roomId + " does not exist.");
+    return null;
   }
 
   // Given roomId, actionId, and toState, update the state of 

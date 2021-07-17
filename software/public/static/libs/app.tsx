@@ -10,8 +10,14 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 const updateTimeWait = 1000; // Every second
-const updateHomeStatusWait = 10000; // 10 seconds. 
+const updateHomeStatusWait = 250; // 0.25 seconds (less important, but we still want it responsive.)
 const updateActionStatesWait = 250; // 0.25 seconds. 
+
+const homeStatusRequestTimeout = 10000; // If we've waited this long, just drop that request. 
+const actionStatesRequestTimeout = 10000; // If we've waited this long, just drop that request. 
+
+const offHeatOffset = 2; // Number of degrees (F) difference between onHeat and offHeat for thermometer parsing. 
+const onHeatOffset = 1; // Number of degrees (F) difference between onHeat and what is displayed as the thermometer. 
 
 // Get webserver address to make API requests to it. apiURL should
 // therefore contain http://192.168.0.197 (regardless of subpage).
@@ -67,6 +73,28 @@ const actions = {
   SWITCH3: 352,
   SWITCH4: 353,
   SWITCH5: 354,
+  KNOB1: 450,
+  KNOB2: 451,
+  KNOB3: 452,
+  KNOB4: 453,
+  KNOB5: 454,
+  // These get handled rather differently from other actions.
+  // (toState represents different pre-programmed modes.)
+  LEDSTRIP1: 1000,
+  LEDSTRIP2: 1001,
+  LEDSTRIP3: 1002,
+  LEDSTRIP4: 1003,
+  LEDSTRIP5: 1004,
+  LEDSTRIP6: 1005,
+  LEDSTRIP7: 1006,
+  LEDSTRIP8: 1007,
+  LEDSTRIP9: 1008,
+  LEDSTRIP10: 1009,
+  TEMP1: 5250,
+  TEMP2: 5251,
+  TEMP3: 5252,
+  TEMP4: 5253,
+  TEMP5: 5254,
 }
 
 // Bedroom IDs - Should be kept constant betweeen this and client
@@ -80,118 +108,57 @@ const rooms = {
 // End enums
 
 // Frontend enum only (for display purposes to translate roomIds 
-// and actionIDs onto buttons.)
-const actionsAsStrings = {
-  "1.50": "Bedroom Floor Lamp",
-  "1.51": "",
-  "1.52": "",
-  "1.53": "",
-  "1.54": "",
-  "1.150": "Bedroom Curtains",
-  "1.151": "",
-  "1.152": "",
-  "1.153": "",
-  "1.154": "",
-  "1.250": "",
-  "1.251": "",
-  "1.252": "",
-  "1.253": "",
-  "1.254": "",
-  "1.255": "",
-  "1.256": "",
-  "1.257": "",
-  "1.258": "",
-  "1.259": "",
-  "1.260": "",
-  "1.261": "",
-  "1.262": "",
-  "1.263": "",
-  "1.264": "",
-  "1.265": "",
-  "1.266": "",
-  "1.267": "",
-  "1.268": "",
-  "1.269": "",
-  "1.350": "",
-  "1.351": "",
-  "1.352": "",
-  "1.353": "",
-  "1.354": "",
+// and actionIDs onto buttons.) Keep this constant with the
+// speechServer commandParsing.py. 
+const implementedButtons = {
+  "1.50": "Bedroom Lamp",
   "2.50": "Living Room Lamp",
-  "2.51": "",
-  "2.52": "",
-  "2.53": "",
-  "2.54": "",
-  "2.150": "",
-  "2.151": "",
-  "2.152": "",
-  "2.153": "",
-  "2.154": "",
   "2.250": "Soundbar Power",
   "2.251": "Ceiling Fan Lamp",
   "2.252": "Printer Power",
-  "2.253": "",
-  "2.254": "",
-  "2.255": "",
-  "2.256": "",
-  "2.257": "",
-  "2.258": "",
-  "2.259": "",
-  "2.260": "",
-  "2.261": "",
-  "2.262": "",
-  "2.263": "",
-  "2.264": "",
-  "2.265": "",
-  "2.266": "",
-  "2.267": "",
-  "2.268": "",
-  "2.269": "",
   "2.350": "Kitchen Light",
-  "2.351": "",
-  "2.352": "",
-  "2.353": "",
-  "2.354": "",
   "3.50": "Bathroom LED",
-  "3.51": "",
-  "3.52": "",
-  "3.53": "",
-  "3.54": "",
-  "3.150": "",
-  "3.151": "",
-  "3.152": "",
-  "3.153": "",
-  "3.154": "",
-  "3.250": "",
-  "3.251": "",
-  "3.252": "",
-  "3.253": "",
-  "3.254": "",
-  "3.255": "",
-  "3.256": "",
-  "3.257": "",
-  "3.258": "",
-  "3.259": "",
-  "3.260": "",
-  "3.261": "",
-  "3.262": "",
-  "3.263": "",
-  "3.264": "",
-  "3.265": "",
-  "3.266": "",
-  "3.267": "",
-  "3.268": "",
-  "3.269": "",
   "3.350": "Bathroom Light",
   "3.351": "Bathroom Fan",
-  "3.352": "",
-  "3.353": "",
-  "3.354": "",
+  "2.450": "Air Conditioner",
+  "2.1000": "TV",
+  "1.1000": "Bed",
+}
+
+// When we need to use state data in other ways, enumerated
+// by specific strings to tell the app what to do. 
+const implementedFeatures ={
+  "2.5250": "temperature",
+  "2.5251": "temperature",
+  "1.5250": "temperature",
+  "3.5250": "temperature",
 }
 
 const dayOfWeek = [
   'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 ];
+
+// LED modes ported from the module code. 
+const ledModeRainbow = 101;
+const ledModeRainbowWithGlitter = 102;
+const ledModeConfetti = 103;
+const ledModeSinelon = 104;
+const ledModeJuggle = 105;
+const ledModeBpm = 106;
+const ledModeCycle = 107;
+const ledModeNight = 108;
+
+// Button Addendums per LED mode. 
+const ledModeText = {
+  101: "Rain",
+  102: "RainG",
+  103: "Conf",
+  104: "Sine",
+  105: "Jugg",
+  106: "Bpm",
+  107: "RGB",
+  108: "Night",
+}
 
 export class App extends React.Component {
   constructor(){
@@ -204,7 +171,9 @@ export class App extends React.Component {
 
     // Various functions to ensure cleanliness.
     this.updateHomeStatusWorking = false;
+    this.updateHomeStatusCalledTime = 0;
     this.updateActionStatesWorking = false;
+    this.updateActionStatesCalledTime = 0;
     
     // State
     this.state = {
@@ -217,9 +186,13 @@ export class App extends React.Component {
       currentWeatherFeelsLike: null,
       currentModulesCount: null,
       actionStates: null,
+      homeStatus: null,
       lastUpdateActionStates: null,
       lastUpdateHomeStatus: null,
       virtualMode: false,
+      serverStatus: "Enabled",
+      moduleInputDisabled: "Enabled",
+      thermostatOnHeat: 0,
     };
 
     // Binding functions to "this"
@@ -227,8 +200,11 @@ export class App extends React.Component {
     this.updateHomeStatus = this.updateHomeStatus.bind(this);
     this.updateActionStates = this.updateActionStates.bind(this);
     this.toggleVirtualMode = this.toggleVirtualMode.bind(this);
-    this.featureAllLights = this.featureAllLights.bind(this);
+    this.featureAllModules = this.featureAllModules.bind(this);
     this.featureSpeechServer = this.featureSpeechServer.bind(this);
+    this.modifyThermostat = this.modifyThermostat.bind(this);
+    this.setServerDisabled = this.setServerDisabled.bind(this);
+    this.setModuleInputDisabled = this.setModuleInputDisabled.bind(this);
   }
 
   // Modify date state variables whenever called (timer-linked.)
@@ -270,9 +246,13 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateHomeStatus(data = null){
-    if(data == null && !this.updateHomeStatusWorking) {
+    var currentTime;
+    currentTime = new Date();
+    var timeDiff = currentTime - this.updateHomeStatusCalledTime;
+    if(data == null && (!this.updateHomeStatusWorking || timeDiff > homeStatusRequestTimeout)) {
       // Stop browsers from bombarding web server if they hang on something.
       this.updateHomeStatusWorking = true;
+      this.updateHomeStatusCalledTime = new Date();
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
@@ -301,15 +281,73 @@ export class App extends React.Component {
       this.updateHomeStatusWorking = false;
     }
     if(data != null){
+      this.handleHomeStatus(data);
+    }
+  }
+
+  // Abstraction because spaghetti is bad. 
+  async handleHomeStatus(data){
+    if(data != null){
       console.log("DEBUG: Parsing homeStatus data:");
       console.log(data);
 
       var currentLastUpdate = data.lastUpdate.toString();
-
       var currentModulesCount = data.modulesCount;
 
-      var weatherData = data.weatherData;
+      // Server Disabled
+      var serverStatusSpan = document.getElementById("app-home-status-serverDisabled");
+      if(data.serverDisabled != null && serverStatusSpan != null){
+        var newStatus = null;
+        if(data.serverDisabled == "true" || data.serverDisabled == true ){
+          newStatus = "Disabled";
+          serverStatusSpan.style.color = "red";
+        } 
+        else{
+          newStatus = "Enabled";
+          serverStatusSpan.style.color = "green";
+        }
+        if(newStatus != this.state.serverDisabled){
+          await this.setState({
+            serverStatus: newStatus
+          });
+        }
+      }
 
+      // Module Input Disabled
+      var moduleInputDisabledSpan = document.getElementById("app-home-status-moduleInputDisabled");
+      if(data.moduleInputDisabled != null && moduleInputDisabledSpan != null){
+        var newStatus = null;
+        if(data.moduleInputDisabled == "true" || data.moduleInputDisabled == true ){
+          newStatus = "Disabled";
+          moduleInputDisabledSpan.style.color = "red";
+        } 
+        else{
+          newStatus = "Enabled";
+          moduleInputDisabledSpan.style.color = "green";
+        }
+        if(newStatus != this.state.moduleInputDisabled){
+          await this.setState({
+            moduleInputDisabled: newStatus
+          });
+        }
+      }
+
+      // Thermostat
+      // A loadda garbage for finding LIVINGROOM's TEMP1's onHeat.
+      if(data.moduleInput[String(rooms.LIVINGROOM)] != null 
+      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
+        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)].onHeat;
+        if(onHeat != null){
+          if(onHeat != this.state.thermostatOnHeat){
+            await this.setState({
+              thermostatOnHeat: onHeat,
+            });
+          }
+        }
+      }
+     
+      // Weather data
+      var weatherData = data.weatherData;
       // Given open weather map JSON data, parse it. See example: 
       // https://openweathermap.org/current#zip
       var weatherMain = weatherData.weather[0].main; // "Clear"
@@ -329,13 +367,14 @@ export class App extends React.Component {
 
       var currentWeatherMain = parseInt(mainTemp).toFixed(0) + " F - " + weatherMain;
       var currentWeatherMinMax = parseInt(mainTemp_min).toFixed(0) + " F | " + parseInt(mainTemp_max).toFixed(0) + " F";
-      var currentWeatherFeelsLike = "Feels Like: " + parseInt(mainFeels_like).toFixed(0) + " F";
+      var currentWeatherFeelsLike = "Feels Like " + parseInt(mainFeels_like).toFixed(0) + " F" + " (" + parseInt(mainHumidity).toFixed(0) + " %)";
       await this.setState({
         currentWeatherMain: currentWeatherMain,
         currentWeatherMinMax: currentWeatherMinMax,
         currentWeatherFeelsLike: currentWeatherFeelsLike,
         currentModulesCount: currentModulesCount,
         lastUpdateHomeStatus: currentLastUpdate,
+        homeStatus: data,
       });
     }
   }
@@ -343,9 +382,13 @@ export class App extends React.Component {
   // Query the web server if no data is provied. If data is provided,
   // we'll use that instead. 
   async updateActionStates(data = null){
-    if(data == null && !this.updateActionStatesWorking) {
+    var currentTime;
+    currentTime = new Date();
+    var timeDiff = currentTime - this.updateActionStatesCalledTime;
+    if(data == null && (!this.updateActionStatesWorking || timeDiff > actionStatesRequestTimeout)) {
       // Stop browsers from bombarding web server if they hang on something.
       this.updateActionStatesWorking = true;
+      this.updateActionStatesCalledTime = new Date();
       var apiResponse = null;
       var startTime, endTime; // We report in debug the api time.
       try{
@@ -374,53 +417,143 @@ export class App extends React.Component {
       this.updateActionStatesWorking = false;
     }
     if (data != null){
-      console.log("DEBUG: Parsing updateActionStates data:");
+      this.handleActionStates(data);
+    }
+  }
+
+  // Abstraction because spaghetti is bad. 
+  handleActionStates(data){
+    if (data != null){
+      console.log("DEBUG: Parsing handleActionStates data:");
       console.log(data);
       var currentLastUpdate = data.lastUpdate.toString();
       // We only get data if it's been updated thanks to the timestamp
       // processing, so now we need to update our information. 
-
       for(var key in data){
         // Ignore the lastUpdate variable. 
         if(key != "lastUpdate"){
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            var buttonId = 'app-modules-' + roomId + '-' + actionId;
-            var button = document.getElementById(buttonId);
-            if(button != null){
-              button.innerHTML = actionsAsStrings[roomId + "." + actionId];
-              var actionState = room[actionId];
-              if(actionState == "1"){
-                button.style.backgroundColor = '#03a100'; // Green
-              }
-              else if(actionState == "0"){
-                button.style.backgroundColor = '#a60000';  // Red
-              }
-              else if(actionState == "10"){
-                button.style.backgroundColor = '#a60000'; // Red
-              }
-              else if(actionState == "11"){
-                button.style.backgroundColor = '#d9a30f';  // Orange
-              }
-              else if(actionState == "12"){
-                button.style.backgroundColor = '#03a100';  // Green
-              }
-              else if(actionState == "20"){
-                button.style.backgroundColor = '#a60000'; // Red
-              }
-              else if(actionState == "21"){
-                button.style.backgroundColor = '#d9a30f';  // Orange
-              }
-              else if(actionState == "22"){
-                button.style.backgroundColor = '#03a100';  // Green
-              }
-              else {
-                button.style.backgroundColor = '#222222';  // Default null color.
+            // Check if we've implemented this action in the list of interface
+            // actions. 
+            var buttonText = implementedButtons[roomId + "." + actionId];
+            if(buttonText == null || buttonText == ""){
+              // This action is not applicable to buttons. Check to see
+              // if we applied it to other elements. 
+              var featureName = implementedFeatures[roomId + "." + actionId];
+              if(featureName != null && featureName != ""){
+                // We have a feature.
+                switch(featureName){
+                  case "temperature":
+                    // Handle temperatures. Expects a state like "str_27.70_42.20".
+                    var tempDivId = 'app-temps-' + roomId + '-' + actionId;
+                    var tempDiv = document.getElementById(tempDivId);
+                    var humDivId = 'app-hum-' + roomId + '-' + actionId;
+                    var humDiv = document.getElementById(humDivId);
+                    if(tempDiv != null && humDiv != null){
+                      var actionStateString = String(room[actionId]);
+                      var tempInfo = actionStateString.split("_");
+                      if(tempInfo.length >= 2){
+                        var temp = parseFloat(tempInfo[0]);
+                        var hum = parseFloat(tempInfo[1]).toFixed(0);
+                        // Convert temp to F from C
+                        var tempStr =  ((temp * 1.8) +32).toFixed(0);
+                        tempDiv.innerHTML = tempStr + " F";
+                        humDiv.innerHTML = hum + " %";
+                      }
+                    }
+                    else{
+                      console.log("WARNING: handleActionStates attempted to find a temp div with id " + tempDivId + " and hum div with id "+humDivId+ " that did not exist!");
+                    }
+                    break;
+                  default:
+                    console.log("WARNING: handleActionStates attempted to handle a feature that did not exist!");
+                }
               }
             }
             else{
-              console.log("WARNING: updateActionStates attempted to find a button with id " + buttonId + " that did not exist!");
+              // Handle buttons. 
+              var buttonId = 'app-modules-' + roomId + '-' + actionId;
+              var buttons = document.getElementsByClassName(buttonId) as HTMLCollectionOf<HTMLElement>; // Cuz this is necessary i guess. 
+              if(buttons != null && buttons.length > 0){
+                for (var j = 0; j < buttons.length; j++){
+                  var button = buttons[j];
+                  var individualButtonText = buttonText; // In case we modify it here. 
+
+                  var buttonName = button.getAttribute("name"); // Only used for further button naming. 
+                  var buttonNameInt = null; // Only used for state info. 
+                  if(buttonName != null && buttonName != ""){
+                    var buttonTextAddendum = "";
+                    if(!Number.isNaN(buttonName) && parseInt(buttonName) != 0){
+                      var ledModeTextAddendum = ledModeText[parseInt(buttonName)];
+                      if(ledModeTextAddendum != null){
+                        buttonTextAddendum = ledModeTextAddendum;
+                        buttonNameInt = parseInt(buttonName);
+                      }
+                    }
+                    individualButtonText = individualButtonText + " " + buttonTextAddendum;
+                  }
+                  button.innerHTML = individualButtonText;
+                  var actionState = room[actionId];
+                  var actionStateInt = parseInt(actionState);
+                  if(actionState == "1"){
+                    button.style.backgroundColor = '#03a100'; // Green
+                  }
+                  else if(actionState == "0"){
+                    button.style.backgroundColor = '#a60000';  // Red
+                  }
+                  else if(actionState == "10"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "11"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "12"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "20"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "21"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "22"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "30"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionState == "31"){
+                    button.style.backgroundColor = '#d9a30f';  // Orange
+                  }
+                  else if(actionState == "32"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else if(actionState == "100"){
+                    button.style.backgroundColor = '#a60000'; // Red
+                  }
+                  else if(actionStateInt > 100 && actionStateInt < 130){
+                    // Handle LEDs modes.
+                    if(buttonNameInt == null || buttonNameInt == actionStateInt){
+                      button.style.backgroundColor = '#03a100';  // Green
+                    }
+                    else{
+                      // We specified a buttonName and this ain't it fam. 
+                      button.style.backgroundColor = '#a60000'; // Red
+                    }
+                  }
+                  else if(actionState == "32"){
+                    button.style.backgroundColor = '#03a100';  // Green
+                  }
+                  else {
+                    button.style.backgroundColor = '#222222';  // Default null color.
+                  }
+                }
+              }
+              else{
+                console.log("WARNING: handleActionStates attempted to find a button with id " + buttonId + " that did not exist!");
+              }
             }
           }
         }
@@ -434,8 +567,9 @@ export class App extends React.Component {
   }
 
   // Query the web server to update an action to a different state
-  // based on what we know.
-  async moduleToggle(roomId, actionId){
+  // based on what we know. Optionally takes in a ledMode that 
+  // only applies when the actionId matches LEDStrips. 
+  async moduleToggle(roomId, actionId, ledMode = null){
     console.log("DEBUG: moduleToggle called with roomId " + roomId + " and actionId " + actionId + ".");
     var toState = null;
     var currentState = this.state.actionStates[roomId][actionId];
@@ -467,6 +601,35 @@ export class App extends React.Component {
       else{
         // current state is 21 or something else. Ignore. 
         console.log("WARNING: moduleToggle attempted to toggle action with current state of 21. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.KNOB5 && parseInt(actionId) >= actions.KNOB1){
+      if(currentState == 30) {
+        toState = 32;
+      }
+      else if (currentState == 32){
+        toState = 30;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 31. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) >= actions.LEDSTRIP1){
+      // TODO: Right now this is hard coded. We should be able to 
+      // store state numbers per combination (i.e. "2.1000: 107")
+      if(ledMode == null){
+        ledMode = 107;
+      }
+      if(currentState == 100 || currentState != ledMode) {
+        toState = ledMode;
+      }
+      else if (currentState != 100){
+        toState = 100;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("WARNING: moduleToggle attempted to toggle action with current state of 31. Ignored.");
       }
     }
     else{
@@ -504,6 +667,66 @@ export class App extends React.Component {
     }
   }
 
+  // Tells the server to replace it's existing module input dict
+  // with one that we've modified here. 
+  async moduleInputModify(roomId, newModuleInput){
+    console.log("INFO: Submitting newModuleInput object for roomId " + roomId + ":");
+    console.log(newModuleInput);
+
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      var bodyToSend = {
+        "roomId": roomId,
+        "newModuleInput": newModuleInput,
+      };
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/moduleInputModify", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyToSend),
+      });
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: moduleInputModify call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: moduleInputModify call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: moduleInputModify returned with status " + apiResponse.status + ".");
+    }
+  }
+    
+  // Expects a positive/negative integer to modify the existing 
+  // thermostat with. Ultimately submits a modified moduleInput
+  // object to the server. 
+  async modifyThermostat(amount){
+    // We saved this value, so no rifling through homeStatus. 
+    var currentOnHeat = this.state.thermostatOnHeat;
+    var newHeat = currentOnHeat + amount; 
+    if(newHeat > 0 && newHeat < 100){
+      // Create the new moduleInput dict.  
+      var currentHomeStatus = this.state.homeStatus;
+      if(currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)] != null 
+      && currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
+        var newModuleInput = currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)];
+        newModuleInput[String(actions.TEMP1)].onHeat = newHeat;
+        newModuleInput[String(actions.TEMP1)].offHeat = newHeat-offHeatOffset;
+        // We have our product. Let's submit this to the server. 
+        this.moduleInputModify(rooms.LIVINGROOM, newModuleInput);
+      }
+    }
+    else{
+      console.log("WARNING: modifyThermostat rejected an action because new heat would be " + amount + "!");
+    }
+  }
+
   // Enter and exit the debug mode, which allows users to manually
   // specify current states for 10 11 12 actions. 
   async toggleVirtualMode(){
@@ -525,7 +748,7 @@ export class App extends React.Component {
   // this essentially harmonizes all light states. Converts 
   // the majority to the minority. If they are equal, always
   // turns everything on. 
-  featureAllLights(){
+  featureAllModules(){
     var data = this.state.actionStates;
     if (data != null){
       var onCount = 0;
@@ -536,15 +759,20 @@ export class App extends React.Component {
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            // For every single room and action, check the state. 
-            var actionState = parseInt(room[actionId]);
-            if(actionState == 1 || actionState == 12 || actionState == 22){
-              onCount++;
-            }
-            else{
-              // We'll just count everything else as on (even if we're in 11 to go
-              // to 10, for example.)
-              offCount++;
+            // Do not trigger actionIds that we don't implement on the client app. 
+            // That means no spamming the server with motion detection reports
+            // and no triggering actions that shouldn't be client app modifiable. 
+            if(implementedButtons[roomId + "." + actionId]!= null){
+              // For every single room and action, check the state. 
+              var actionState = parseInt(room[actionId]);
+              if(actionState == 1 || actionState == 12 || actionState == 22 || actionState == 32 || (actionState <= 130 && actionState > 100)){
+                onCount++;
+              }
+              else{
+                // We'll just count everything else as on (even if we're in 11 to go
+                // to 10, for example.)
+                offCount++;
+              }
             }
           }
         }
@@ -559,15 +787,24 @@ export class App extends React.Component {
           var roomId = key; // Just to make things clearer.
           var room = data[key];
           for(var actionId in room){
-            var actionState = parseInt(room[actionId]);
-            if(turnAllOn){
-              if(actionState != 1 && actionState != 12 && actionState != 22){
-                this.moduleToggle(roomId, actionId);
+            // Do not trigger actionIds that we don't implement on the client app. 
+            // That means no spamming the server with motion detection reports
+            // and no triggering actions that shouldn't be client app modifiable. 
+            if(implementedButtons[roomId + "." + actionId] != null){
+              var actionState = parseInt(room[actionId]);
+              if(turnAllOn){
+                // Special LED handling.
+                if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) <= actions.LEDSTRIP1){
+                  this.moduleToggle(roomId, actionId, ledModeCycle); // We just use party LEDs. Why not. 
+                }
+                else if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32){
+                  this.moduleToggle(roomId, actionId);
+                }
               }
-            }
-            else{
-              if(actionState != 0 && actionState != 10 && actionState != 20){
-                this.moduleToggle(roomId, actionId);
+              else{
+                if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
+                  this.moduleToggle(roomId, actionId);
+                }
               }
             }
           }
@@ -594,7 +831,142 @@ export class App extends React.Component {
       // TODO - do something to save the state in the web server...? 
     }
     else{
-      console.log("WARNING: Module Lighting Bedroom call (bedroomModule1) call returned with status " + apiResponse.status + ".");
+      console.log("WARNING: featureSpeechServer returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Experimental - turn the server's speech server on. 
+  async featureSpeechServerSingle(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/moduleInput/2/5351/1");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: featureSpeechServerSingle call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: featureSpeechServerSingle call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: featureSpeechServerSingle returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Experimental - turn the SATELLITE server's speech server on.
+  async featureSatelliteServerSingle(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/toggleHotwordNoneSatellite");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: featureSatelliteServerSingle call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: featureSatelliteServerSingle call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: featureSatelliteServerSingle returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  async featureSatelliteSpeechServer(){
+    var apiResponse = null;
+    var startTime, endTime; // We report in debug the api time.
+    try{
+      startTime = new Date();
+      apiResponse = await fetch(apiURL + "/toggleSpeechServerSatellite");
+      endTime = new Date();
+      var timeDiff = endTime - startTime;
+      console.log("DEBUG: featureSatelliteSpeechServer call returned in " + timeDiff/1000 + " seconds.");
+    }
+    catch(error){
+      console.log("ERROR: featureSatelliteSpeechServer call failed!");
+    }
+    if(apiResponse.status == 200){
+      // TODO - do something to save the state in the web server...? 
+    }
+    else{
+      console.log("WARNING: featureSatelliteSpeechServer returned with status " + apiResponse.status + ".");
+    }
+  }
+
+  // Disables the server's moduleInput and moduleToggle
+  // functionaity. Reverses what boolean we know right
+  // now based on current home status. 
+  async setServerDisabled(){
+    var homeStatus = this.state.homeStatus;
+    if(homeStatus != null){
+      var currentServerDisabled = homeStatus.serverDisabled;
+      if(currentServerDisabled != null){
+        var toState = "true";
+        if(currentServerDisabled == "true" || currentServerDisabled == true){
+          toState = "false";
+        } 
+        // We're good, send the request. 
+        var apiResponse = null;
+        var startTime, endTime; // We report in debug the api time.
+        try{
+          startTime = new Date();
+          apiResponse = await fetch(apiURL + "/serverDisabled/" + toState);
+          endTime = new Date();
+          var timeDiff = endTime - startTime;
+          console.log("DEBUG: setServerDisabled call returned in " + timeDiff/1000 + " seconds.");
+        }
+        catch(error){
+          console.log("ERROR: setServerDisabled call failed!");
+        }
+        if(apiResponse.status == 200){
+          // TODO - do something to save the state in the web server...? 
+        }
+        else{
+          console.log("WARNING: setServerDisabled call returned with status " + apiResponse.status + ".");
+        }
+      }
+    }
+  }
+
+  // Disables the server's moduleInput functionaity. 
+  // only. Reverses what boolean we know right
+  // now based on current home status. 
+  async setModuleInputDisabled(){
+    var homeStatus = this.state.homeStatus;
+    if(homeStatus != null){
+      var currentModuleInputDisabled = homeStatus.moduleInputDisabled;
+      if(currentModuleInputDisabled != null){
+        var toState = "true";
+        if(currentModuleInputDisabled == "true" || currentModuleInputDisabled == true){
+          toState = "false";
+        } 
+        // We're good, send the request. 
+        var apiResponse = null;
+        var startTime, endTime; // We report in debug the api time.
+        try{
+          startTime = new Date();
+          apiResponse = await fetch(apiURL + "/moduleInputDisabled/" + toState);
+          endTime = new Date();
+          var timeDiff = endTime - startTime;
+          console.log("DEBUG: setModuleInputDisabled call returned in " + timeDiff/1000 + " seconds.");
+        }
+        catch(error){
+          console.log("ERROR: setModuleInputDisabled call failed!");
+        }
+        if(apiResponse.status == 200){
+          // TODO - do something to save the state in the web server...? 
+        }
+        else{
+          console.log("WARNING: setModuleInputDisabled call returned with status " + apiResponse.status + ".");
+        }
+      }
     }
   }
 
@@ -624,10 +996,29 @@ export class App extends React.Component {
     return(
       <div>
         <div id="app-location">
-          <div>Santa Clara, CA</div>
-          <div><button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button></div>
-          <div><button class="app-location-debug" onClick={this.featureAllLights}>All Modules</button></div>
-          <div><button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button></div>
+          <div>
+            <button class="app-location-debug" onClick={this.toggleVirtualMode}>Virtual Mode</button>
+            <button class="app-location-debug" onClick={this.featureAllModules}>All Modules</button>
+          </div>
+          <div>
+            <button class="app-location-debug" onClick={this.setServerDisabled}>Server On/Off</button>
+            <button class="app-location-debug" onClick={this.setModuleInputDisabled}>Auto On/Off</button>
+          </div>
+          <div>
+            <button class="app-location-debug" onClick={this.featureSpeechServer}>Speech Server</button>
+            <button class="app-location-debug" onClick={this.featureSatelliteSpeechServer}>Satellite Server</button>
+          </div>
+          <div>
+            <button class="app-location-debug" onClick={this.featureSpeechServerSingle}>Speech Single</button>
+            <button class="app-location-debug" onClick={this.featureSatelliteServerSingle}>Satellite Single</button>
+          </div>
+          <div id="app-thermostat">
+            <div id="app-thermostat-main">{this.state.thermostatOnHeat - onHeatOffset} F</div>
+            <div id="app-thermostat-buttons">
+              <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(1)}>+</button>
+              <button class="app-thermostat-buttons-button" onClick={evt => this.modifyThermostat(-1)}>-</button>
+            </div>
+          </div>
         </div>
 
         <div id="app-clock">
@@ -643,28 +1034,40 @@ export class App extends React.Component {
           <div id="app-weather-main">{this.state.currentWeatherMain}</div>
           <div id="app-weather-minMax">{this.state.currentWeatherMinMax}</div>
           <div id="app-weather-feelsLike">{this.state.currentWeatherFeelsLike}</div>
+          <hr></hr>
+          <div id="app-temps">
+            <div class="app-temps-line">LR 1 - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">LR 2 - <span id={"app-temps-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 F</span> (<span id={"app-hum-"+rooms.LIVINGROOM+"-"+actions.TEMP2}>00 %</span>)</div>
+            <div class="app-temps-line">BR - <span id={"app-temps-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BEDROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+            <div class="app-temps-line">BA - <span id={"app-temps-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 F</span> (<span id={"app-hum-"+rooms.BATHROOM+"-"+actions.TEMP1}>00 %</span>)</div>
+          </div>
         </div>
 
         <div id="app-modules-row1">
-          <button id={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
+          <button class={"app-modules-"+rooms.BEDROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.SWITCH1) }}></button>
         </div>
 
         <div id="app-modules-row2">
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
-          <button id={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH1) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.SWITCH2} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.SWITCH2) }}></button>
+          <button class={"app-modules-"+rooms.BATHROOM+"-"+actions.LIGHTING1} onClick={() => { this.moduleToggle(rooms.BATHROOM, actions.LIGHTING1) }}></button>
+          <button name={ledModeCycle} class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button name={ledModeNight} class={"app-modules-"+rooms.BEDROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.BEDROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-modules-row3">
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
-          <button id={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE2} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE2) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE1) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.REMOTE3} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.REMOTE3) }}></button>
+          <button class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.KNOB1} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.KNOB1) }}></button>
+          <button name={ledModeCycle} class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeCycle) }}></button>
+          <button name={ledModeNight} class={"app-modules-"+rooms.LIVINGROOM+"-"+actions.LEDSTRIP1 + " buttonHalfSize"} onClick={() => { this.moduleToggle(rooms.LIVINGROOM, actions.LEDSTRIP1, ledModeNight) }}></button>
         </div>
 
         <div id="app-home-status">
-          <div id="app-home-status-modules">Modules: {this.state.currentModulesCount}</div>
+        | Server Status: <span id="app-home-status-serverDisabled" style={{color: "green"}}>{this.state.serverStatus}</span> | Auto Mode: <span id="app-home-status-moduleInputDisabled" style={{color: "green"}}>{this.state.moduleInputDisabled}</span> | <span id="app-home-status-modules">Modules: {this.state.currentModulesCount}</span> |
         </div>
       </div>
     );
