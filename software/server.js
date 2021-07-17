@@ -607,7 +607,7 @@ app.get('/moduleInputDisabled/:bool', (req, res) => {
 // multiple satellites. 
 app.get('/toggleHotwordNoneSatellite', (req, res) => {
   console.log("[DEBUG] /toggleHotwordNoneSatellite GET request received.");
-  fetch("http://" + satellite1 + ":8080/toggleHotwordNone");
+  fetch("http://" + satellite1 + "/toggleHotwordNone");
   return res.status(200).send();
 });
 
