@@ -130,6 +130,11 @@ const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
 // Create the app
 const app = express();
 
+// Satellite Servers
+// TODO: we could really flush this out and add more than one server. These
+// could (should) be an abstracted class. 
+const satellite1 = "192.168.0.114:8080"
+
 // When adding modules, create module object and add to room's
 // array of Modules. 
 
@@ -152,8 +157,8 @@ const module2LR = new Module(module2LRId, module2LRRoomId, module2LRActions, mod
 // Arduino 3 Living Room
 const module3LRId = 3; // Internal server use only. 
 const module3LRRoomId = rooms.LIVINGROOM; 
-const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.ADMIN2, actions.LIGHTING2, actions.TEMP1]; // Admin action that is inert for this module. 
-const module3LRPins = [12, 0, 0, 2, 16];
+const module3LRActions = [actions.REMOTE1, actions.ADMIN1, actions.ADMIN2, actions.LIGHTING2, actions.TEMP1, actions.LIGHTING3]; // Admin action that is inert for this module. 
+const module3LRPins = [12, 0, 0, 2, 16, 3];
 const module3LRIpAddress = "192.168.0.100";
 const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, module3LRPins, module3LRIpAddress);
 
@@ -595,6 +600,14 @@ app.get('/moduleInputDisabled/:bool', (req, res) => {
     home.setModuleInputDisabled(req.params.bool);
     return res.status(200).send();
   }
+});
+
+// TODO: Abstract this so that we could potentially have 
+// multiple satellites. 
+app.get('/toggleHotwordNoneSatellite', (req, res) => {
+  console.log("[DEBUG] /toggleHotwordNoneSatellite GET request received.");
+  fetch("http://" + satellite1 + ":8080/toggleHotwordNone");
+  return res.status(200).send();
 });
 
 // Start the server to listen on this port.

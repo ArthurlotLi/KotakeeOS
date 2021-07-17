@@ -23,7 +23,7 @@ const apiURL = "http://192.168.0.197:8080";
 const speechServerCommand = "python3 ../speechServer/hotwordPocketSphinx.py";
 const hotwordNoneCommand =  "python3 ../speechServer/hotwordNone.py";
 const block = {
-  51: 1,
+  52: 1,
 }
 const blockRoom = 2;
 
