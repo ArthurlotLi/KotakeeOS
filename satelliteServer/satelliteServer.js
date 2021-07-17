@@ -20,8 +20,8 @@ const { exec } = require('child_process');
 const listeningPort = 8080;
 const apiURL = "http://192.168.0.197:8080";
 
-const speechServerCommand = "python3 ../speechServer/hotwordPocketSphinx.py";
-const hotwordNoneCommand =  "python3 ../speechServer/hotwordNone.py";
+const speechServerCommand = "python3 ../speechServer/hotwordPocketSphinx.py -a"; // Use alt light. 
+const hotwordNoneCommand =  "python3 ../speechServer/hotwordNone.py -a";
 const block = {
   52: 1,
 }

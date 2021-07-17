@@ -78,7 +78,7 @@ models_path = '../triggerWordDetection/models'
 model = None
 commandParser = CommandParser()
 
-def runApplicationServer(iternum):
+def runApplicationServer(iternum, useAlt):
   print("[DEBUG] Initializing kotakeeOS speech application server with Trigger Word model iteration number " + str(iternum) + ".")
 
   global model
@@ -100,7 +100,10 @@ def runApplicationServer(iternum):
   
   # Experimental - query the server to turn on the LED to signal
   # Speech server is online. 
-  commandParser.querySpeechServerLED(1)
+  if useAlt:
+    commandParser.querySpeechServerLED(1, 2, 52)
+  else:
+    commandParser.querySpeechServerLED(1, 2, 51)
   commandParser.startupProcedure()
   
   #while stopServer is not True:
@@ -108,7 +111,10 @@ def runApplicationServer(iternum):
 
   # Experimental - query the server to turn on the LED to signal
   # Speech server is no longer online. 
-  commandParser.querySpeechServerLED(0)
+  if useAlt:
+    commandParser.querySpeechServerLED(0, 2, 52)
+  else:
+    commandParser.querySpeechServerLED(0, 2, 51)
   print("Shutting down. Goodnight.")
   
   print("\n[DEBUG] Shutting down. Goodnight.")
@@ -272,8 +278,15 @@ def get_audio_input_stream(callback):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('iternum')
+  parser.add_argument('-a', action='store_true', default=False) # TODO: maybe make this scalable to more than one server. 
   args = parser.parse_args()
+  useAlt = args.a
+
+  if(useAlt is True or useAlt is None):
+    useAlt = True
+  else:
+    useAlt = False
 
   iternum = int(args.iternum)
 
-  runApplicationServer(iternum)
+  runApplicationServer(iternum, useAlt)

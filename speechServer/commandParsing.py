@@ -238,8 +238,8 @@ class CommandParser:
       print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
 
   # Experimental - queries server to turn speech server signal light on/off. 
-  def querySpeechServerLED(self, toState):
-    query = self.webServerIpAddress + "/moduleToggle/2/51/" + str(toState)
+  def querySpeechServerLED(self, toState, roomId, actionId):
+    query = self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
     print("[DEBUG] Querying server: " + query)
     response = requests.get(query)
     if(response.status_code == 200):
