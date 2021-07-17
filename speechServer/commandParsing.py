@@ -148,7 +148,7 @@ class CommandParser:
       # Wait a moment to allow the recognizer to adjust
       # the energy threshold based on surrounding noise
       # level...
-      self.r2.adjust_for_ambient_noise(source2)
+      self.r2.adjust_for_ambient_noise(source2, duration=0.7)
 
       # Try three times, or until user cancels, or command was
       # executed.
