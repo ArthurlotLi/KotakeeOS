@@ -361,7 +361,7 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 1000 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
+  epochs = 100 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
@@ -413,6 +413,7 @@ def train_model(X, Y):
   # And yet another one, this one trying to mimic the original model as much as possible.
   #opt = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Results in a model that hangs on 87%.
   opt = Adam(learning_rate=learning_rate)
+  #opt = RMSprop(learning_rate=learning_rate)
   model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
   mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
   history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
