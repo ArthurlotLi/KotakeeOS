@@ -207,7 +207,7 @@ const livingRoomInputActionsTimeBounds = {
 const airConditioningOn = 81; // How hot it must be to turn on the air conditioner. 
 const airConditioningOff = 79; // How hot it must be to turn off the air conditioner. 
 const livingRoomInputActions = {
-  5250: { // Temperature input
+  5251: { // Temperature input
     "function":"temperatureOnOff",
     "onHeat":airConditioningOn,
     "offHeat": airConditioningOff,
