@@ -335,8 +335,8 @@ export class App extends React.Component {
       // Thermostat
       // A loadda garbage for finding LIVINGROOM's TEMP1's onHeat.
       if(data.moduleInput[String(rooms.LIVINGROOM)] != null 
-      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
-        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)].onHeat;
+      && data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP2)] != null){
+        var onHeat = data.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP2)].onHeat;
         if(onHeat != null){
           if(onHeat != this.state.thermostatOnHeat){
             await this.setState({
@@ -714,10 +714,10 @@ export class App extends React.Component {
       // Create the new moduleInput dict.  
       var currentHomeStatus = this.state.homeStatus;
       if(currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)] != null 
-      && currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP1)] != null){
+      && currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)][String(actions.TEMP2)] != null){
         var newModuleInput = currentHomeStatus.moduleInput[String(rooms.LIVINGROOM)];
-        newModuleInput[String(actions.TEMP1)].onHeat = newHeat;
-        newModuleInput[String(actions.TEMP1)].offHeat = newHeat-offHeatOffset;
+        newModuleInput[String(actions.TEMP2)].onHeat = newHeat;
+        newModuleInput[String(actions.TEMP2)].offHeat = newHeat-offHeatOffset;
         // We have our product. Let's submit this to the server. 
         this.moduleInputModify(rooms.LIVINGROOM, newModuleInput);
       }
