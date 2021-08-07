@@ -5,6 +5,13 @@
             "name": "Arduino",
             "compilerPath": "/Users/arthur/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++",
             "compilerArgs": [
+                "-u",
+                "--language-force=c++",
+                "-f",
+                "-",
+                "--c++-kinds=svpf",
+                "--fields=KSTtzns",
+                "--line-directives",
                 "-mcpu=cortex-m0plus",
                 "-mthumb",
                 "-std=gnu++11",
