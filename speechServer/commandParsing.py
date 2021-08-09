@@ -185,6 +185,8 @@ class CommandParser:
           print("[ERROR] Could not request results from speech_recognition; {0}.format(e)")
         except sr.UnknownValueError:
           print("[Warning] Last sentence was not understood.")
+        except sr.WaitTimeoutError:
+          pass
     
     # Stopping. Let user know big brother google is no longer
     # listening. 
