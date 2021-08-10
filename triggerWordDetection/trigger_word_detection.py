@@ -361,7 +361,7 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 300 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
+  epochs = 500 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
@@ -459,7 +459,7 @@ def define_model(input_shape):
     X = Conv1D(196, kernel_size=15, strides=4)(X_input)                                 # CONV1D
     X = BatchNormalization()(X)                                 # Batch normalization
     X = Activation('relu')(X)                                 # ReLu activation
-    X = Dropout(0.8)(X)                                 # dropout (use 0.8).
+    X = Dropout(0.5)(X)                                 # dropout (use 0.8).
     # TODO note: changed all dropouts from 0.8 to 0.5
 
     # Step 2: First GRU Layer (≈4 lines)
