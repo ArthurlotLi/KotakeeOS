@@ -91,21 +91,23 @@ def main(generateDataset, datasetSize, iternum):
 def create_dataset(generateDataset, datasetSize, iternum):
   print("[INFO] Running create_dataset...")
 
-  # Load audio segments using pydub 
-  activates, negatives, backgrounds = load_raw_audio()
-
-  # What we output for the model to use. 
-  final_x = None
-  final_y = None
-
-  # To generate our dataset: select a random background and push that
-  # into the create_training_example loop. Repeat this for as many times
-  # as you'd like. Write all that stuff to a file and you're done? 
-  clips_to_generate = datasetSize
-
   # Ask for confirmation, because we might be overwriting stuff.
   promptInput = None
   if generateDataset:
+    print("[INFO] Loading raw audio (This may take some time)...")
+    # Load audio segments using pydub 
+    activates, negatives, backgrounds = load_raw_audio()
+    print("[INFO] Raw audio loaded!")
+
+    # What we output for the model to use. 
+    final_x = None
+    final_y = None
+
+    # To generate our dataset: select a random background and push that
+    # into the create_training_example loop. Repeat this for as many times
+    # as you'd like. Write all that stuff to a file and you're done? 
+    clips_to_generate = datasetSize
+
     while promptInput is None or (promptInput != "y" and promptInput != "n"):
       promptInput = input("[NOTICE] A new training dataset of size " +str(clips_to_generate)+" will be generated. Continue? (y/n)\n")
       promptInput = promptInput.lower()

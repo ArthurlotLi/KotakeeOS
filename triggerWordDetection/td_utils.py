@@ -28,6 +28,8 @@ def match_target_amplitude(sound, target_dBFS):
 
 # Load raw audio files for speech synthesis
 def load_raw_audio():
+    totalFiles = 0
+
     activates = []
     backgrounds = []
     negatives = []
@@ -35,12 +37,28 @@ def load_raw_audio():
         if filename.endswith("wav"):
             activate = AudioSegment.from_wav("./raw_data/activates/"+filename)
             activates.append(activate)
+
+            totalFiles = totalFiles + 1
+            print("   Loaded WAV file " + str(totalFiles) + " " + "./raw_data/activates/"+filename)
     for filename in os.listdir("./raw_data/backgrounds"):
         if filename.endswith("wav"):
             background = AudioSegment.from_wav("./raw_data/backgrounds/"+filename)
             backgrounds.append(background)
+
+            totalFiles = totalFiles + 1
+            print("   Loaded WAV file " + str(totalFiles) + " " + "./raw_data/backgrounds/"+filename)
     for filename in os.listdir("./raw_data/negatives"):
         if filename.endswith("wav"):
             negative = AudioSegment.from_wav("./raw_data/negatives/"+filename)
             negatives.append(negative)
+
+            totalFiles = totalFiles + 1
+            print("   Loaded WAV file " + str(totalFiles) + " " + "./raw_data/negatives/"+filename)
+        elif filename.endswith("ogg"):
+            # Support oggs downloaded from lingualibre.org.
+            negative = AudioSegment.from_ogg("./raw_data/negatives/"+filename)
+            negatives.append(negative)
+
+            totalFiles = totalFiles + 1
+            print("   Loaded OGG file " + str(totalFiles) + " " + "./raw_data/negatives/"+filename)
     return activates, negatives, backgrounds
