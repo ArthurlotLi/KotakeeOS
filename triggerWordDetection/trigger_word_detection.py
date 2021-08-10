@@ -464,14 +464,14 @@ def define_model(input_shape):
 
     # Step 2: First GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
-    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                 # Batch normalization
     
     # Step 3: Second GRU Layer (≈4 lines)
     X = GRU(units = 128, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
-    X = Dropout(0.5)(X)                                 # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                 # dropout (use 0.8)
     X = BatchNormalization()(X)                                  # Batch normalization
-    X = Dropout(0.5)(X)                                  # dropout (use 0.8)
+    X = Dropout(0.8)(X)                                  # dropout (use 0.8)
     
     # Step 4: Time-distributed dense layer (≈1 line)
     X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
