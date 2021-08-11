@@ -363,7 +363,7 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 300 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
+  epochs = 500 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
