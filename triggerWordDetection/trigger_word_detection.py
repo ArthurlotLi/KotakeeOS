@@ -91,6 +91,10 @@ def main(generateDataset, datasetSize, iternum):
 def create_dataset(generateDataset, datasetSize, iternum):
   print("[INFO] Running create_dataset...")
 
+  # What we output for the model to use. 
+  final_x = None
+  final_y = None
+
   # Ask for confirmation, because we might be overwriting stuff.
   promptInput = None
   if generateDataset:
@@ -98,10 +102,6 @@ def create_dataset(generateDataset, datasetSize, iternum):
     # Load audio segments using pydub 
     activates, negatives, backgrounds = load_raw_audio()
     print("[INFO] Raw audio loaded!")
-
-    # What we output for the model to use. 
-    final_x = None
-    final_y = None
 
     # To generate our dataset: select a random background and push that
     # into the create_training_example loop. Repeat this for as many times
@@ -363,7 +363,7 @@ def train_model(X, Y):
   # Tuning parameters that can be tweaked. 
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
-  epochs = 500 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
+  epochs = 800 # Around this point is where we hit 97% accuracy, so let's try stopping here. 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
   rlr_patience = 5
