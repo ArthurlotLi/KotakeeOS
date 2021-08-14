@@ -104,7 +104,7 @@ def runApplicationServer(iternum, useAlt):
     commandParser.querySpeechServerLED(1, 2, 52)
   else:
     commandParser.querySpeechServerLED(1, 2, 51)
-  commandParser.startupProcedure()
+  commandParser.startupProcedureCustom("KotakeeOS Speech Server initialized. Machine learning model iteration " + str(iternum) + ".")
   
   #while stopServer is not True:
   listenForHotWord()

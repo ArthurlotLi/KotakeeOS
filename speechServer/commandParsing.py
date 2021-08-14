@@ -22,7 +22,7 @@ class CommandParser:
   hotWordReceiptPrompt = "Yes?"
   successfulCommandPrompt = "Understood."
   cancellationPrompt = "Going back to sleep."
-  stopServerPrompt = "Understood. Good night."
+  stopServerPrompt = "Understood. Shutting down."
   startupPrompt = "Good morning, Speech Server initialized. Now listening for hotwords."
   pauseThreshold = 1.0
   maxCommandAttempts = 2
@@ -131,6 +131,11 @@ class CommandParser:
   # want the whole spiel.
   def startupProcedureFast(self):
     self.executeTextThread(self.startupPrompt)
+
+  # A custom startup so we can announce the type of hotword
+  # parser. 
+  def startupProcedureCustom(self, prompt):
+    self.executeTextThread(prompt)
 
   # Uses far more intelligent google API to parse a command. 
   # The main function that will be kicked off by the hotword
@@ -254,6 +259,7 @@ class CommandParser:
   def parseAndExecuteCommand(self, command):
     # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
     queries = []
+    confirmationPrompt = self.successfulCommandPrompt
 
     if any(x in command for x in self.stopServerCommands):
       self.executeTextThread(self.stopServerPrompt)
@@ -269,6 +275,11 @@ class CommandParser:
     elif("everything" in command or "all modules" in command):
       if(self.actionStates is not None):
         if("off" in command or "on" in command):
+          # Manage prompt. 
+          promptOnOff = "on"
+          if("off" in command):
+            promptOnOff = "off"
+          confirmationPrompt = "Turning everything " + promptOnOff + "."
           # Go through each room in actionStates.
           for roomId in self.actionStates:
             actionStatesDict = self.actionStates[roomId]
@@ -317,8 +328,47 @@ class CommandParser:
               print("[DEBUG] Request received successfully.")
             else:
               print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-            self.executeTextThread(self.successfulCommandPrompt)
+            self.executeTextThread("Setting thermostat to " + str(newTemp) + ".")
             return True
+    elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
+      if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
+        currentAutoStatus = self.homeStatus["moduleInputDisabled"]
+        toState = "true"
+        if("on" in command or "enable" in command):
+          toState = "false"
+        queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + toState)
+        # Manage prompt. 
+        if(toState == "false"):
+          confirmationPrompt = "Enabling automatic server actions."
+        else:
+          confirmationPrompt = "Disabling automatic server actions."
+    elif("server" in command and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
+      if(self.homeStatus is not None and self.homeStatus["serverDisabled"] is not None):
+        currentAutoStatus = self.homeStatus["serverDisabled"]
+        toState = "true"
+        if("on" in command or "enable" in command):
+          toState = "false"
+        queries.append(self.webServerIpAddress + "/serverDisabled/" + toState)
+        # Manage prompt. 
+        if(toState == "false"):
+          confirmationPrompt = "Enabling central server operations."
+        else:
+          confirmationPrompt = "Disabling central server operations."
+    elif("status" in command and ("home" in command or "system" in command or "server" in command)):
+      if(self.homeStatus is not None):
+        # Report all information. 
+        serverDisabled = "enabled"
+        if(self.homeStatus["serverDisabled"] == "true" or self.homeStatus['serverDisabled'] == True):
+          serverDisabled = "disabled"
+        moduleInputDisabled = "enabled"
+        if(self.homeStatus["moduleInputDisabled"] == "true" or self.homeStatus['moduleInputDisabled'] == True):
+          moduleInputDisabled = "disabled"
+        onHeat = int(self.homeStatus["moduleInput"]['2']['5251']["onHeat"])
+
+        statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.homeStatus["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
+        self.executeTextThread(statusString)
+        time.sleep(9) # Enough time to allow the speech prompt to complete. 
+        return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))
@@ -346,7 +396,7 @@ class CommandParser:
           print("[DEBUG] Request received successfully.")
         else:
           print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-      self.executeTextThread(self.successfulCommandPrompt)
+      self.executeTextThread(confirmationPrompt)
       return True
     else:
       print("[DEBUG] No valid command was received.")
