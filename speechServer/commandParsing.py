@@ -291,6 +291,34 @@ class CommandParser:
                     onState = 107 # PARTY MODE ONLY!
                     offState = 100
                   queries.append(self.generateQuery(command, roomId, actionId, onState, offState))
+    elif("thermostat" in command or "temperature" in command):
+      if(self.homeStatus is not None and self.homeStatus["moduleInput"] is not None and self.homeStatus["moduleInput"]['2'] is not None):
+        if(self.homeStatus["moduleInput"]['2']['5251'] is not None and self.homeStatus["moduleInput"]['2']['5251']["offHeat"] is not None and self.homeStatus["moduleInput"]['2']['5251']["onHeat"] is not None):
+          onHeat = self.homeStatus["moduleInput"]['2']['5251']["onHeat"]
+          offHeat = self.homeStatus["moduleInput"]['2']['5251']["offHeat"]
+          newTemp = self.text2int(command)
+          print("[DEBUG] Parsed number " + str(newTemp) + " from thermostat request.")
+          if(newTemp > 30 and newTemp < 100):
+            onHeat = newTemp+1
+            offHeat = onHeat-2
+            newHomeStatus = self.homeStatus["moduleInput"]['2']
+            newHomeStatus['5251']["onHeat"] = onHeat
+            newHomeStatus['5251']["offHeat"] = offHeat
+            dataToSend = {
+              "roomId": 2,
+              "newModuleInput": newHomeStatus
+            }
+            # Send a post message from here. 
+            query = self.webServerIpAddress + "/moduleInputModify"
+            print("[DEBUG] Sending query: " + query + " with body:")
+            print(dataToSend)
+            response = requests.post(query, data=json.dumps(dataToSend, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
+            if(response.status_code == 200):
+              print("[DEBUG] Request received successfully.")
+            else:
+              print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+            self.executeTextThread(self.successfulCommandPrompt)
+            return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))
@@ -338,4 +366,48 @@ class CommandParser:
           return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
         else:
           return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+
+  # Helper function I got off stack overflow - really sweet code!
+  # Slightly modified to allow non-number characters. 
+  # https://stackoverflow.com/questions/493174/is-there-a-way-to-convert-number-words-to-integers
+  def text2int(self, textnum, numwords={}):
+    if not numwords:
+      units = [
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+        "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+        "sixteen", "seventeen", "eighteen", "nineteen",
+      ]
+
+      tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+
+      scales = ["hundred", "thousand", "million", "billion", "trillion"]
+
+      numwords["and"] = (1, 0)
+      for idx, word in enumerate(units):    numwords[word] = (1, idx)
+      for idx, word in enumerate(tens):     numwords[word] = (1, idx * 10)
+      for idx, word in enumerate(scales):   numwords[word] = (10 ** (idx * 3 or 2), 0)
+
+    current = result = 0
+    for word in textnum.split():
+        if word not in numwords:
+          print("[DEBUG] text2int parsing invalid word: " + str(word))
+          if self.intTryParse(word) is True:
+            return int(word)
+          continue
+          #raise Exception("Illegal word: " + word)
+
+        scale, increment = numwords[word]
+        current = current * scale + increment
+        if scale > 100:
+            result += current
+            current = 0
+
+    return result + current
     
+  # Dunno why this isn't standard. 
+  def intTryParse(self, value):
+    try:
+      int(value)
+      return True
+    except ValueError:
+      return False
