@@ -12,8 +12,8 @@ import numpy as np
 
 from_directory = "./raw_data_lingua_libre"
 to_directory = "./raw_data/negatives"
-#number_of_negatives = 1666 # 33% of 5000.
-number_of_negatives = 200
+number_of_negatives = 1866 # 33% of 5000.
+#number_of_negatives = 200
 
 def cherry_pick_lingua_libre():
   print("[INFO] Initializing cherry_pick_lingua_libre...")
