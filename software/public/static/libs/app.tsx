@@ -230,10 +230,10 @@ export class App extends React.Component {
     var currentSeconds = ":" + seconds;
 
     var currentDay = date.getDate().toString();
-    var currentMonth = date.toLocaleString('default', {month: 'long'});
+    var currentMonth = date.toLocaleString('default', {month: 'short'});
     var curentYear = date.getFullYear().toString();
     var currentWeekDay = dayOfWeek[date.getDay()];
-    var currentDayMonthYear = currentWeekDay + " - " + currentDay + " " + currentMonth + " " + curentYear;
+    var currentDayMonthYear = currentWeekDay + " - " + currentMonth + " " + currentDay + ", " + curentYear;
 
     this.setState({
       currentHoursMinutes: currentHoursMinutes,
