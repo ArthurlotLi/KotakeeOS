@@ -229,7 +229,7 @@ const livingRoomInputActions = {
       },
       "timeout": {
         350: { 
-          "duration" : 20000,
+          "duration" : 40000,
           "toState": 20,
           "timeBounds": livingRoomInputActionsTimeBounds[350],
         },
@@ -306,12 +306,12 @@ const bathroomInputActions = {
       },
       "timeout": {
         350: { 
-          "duration" : 16000,
+          "duration" : 40000,
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         50: {
-          "duration" : 13000,
+          "duration" : 20000,
           "toState": 0,
           "timeBounds": bathroomInputActionsTimeBounds[50]
         },
@@ -335,18 +335,18 @@ const bathroomInputActions = {
     0: { // Door was opened after being closed. 
       "timeout": {
         350: { 
-          "duration" : 16000,
+          "duration" : 40000,
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
         50: {
-          "duration" : 13000,
+          "duration" : 20000,
           "toState": 0,
           "timeBounds": bathroomInputActionsTimeBounds[50]
         },
         // Vent fan
         351: { 
-          "duration" : 30000,
+          "duration" : 80000,
           "toState": 20
         },
       },
