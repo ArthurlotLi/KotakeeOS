@@ -323,8 +323,8 @@ def create_training_example(background, activates, negatives):
         y = insert_ones(y, segment_end_ms=segment_end)
   ### END CODE HERE ###
 
-  # Select 0-4 random negatives audio recordings from the entire list of "negatives" recordings
-  number_of_negatives = np.random.randint(0, 5)
+  # Select 0-2 random negatives audio recordings from the entire list of "negatives" recordings
+  number_of_negatives = np.random.randint(0, 3)
   random_indices = np.random.randint(len(negatives), size=number_of_negatives)
   random_negatives = [negatives[i] for i in random_indices]
   print("[DEBUG] Attempting to insert", number_of_negatives, "negatives.")
