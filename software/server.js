@@ -229,7 +229,7 @@ const livingRoomInputActions = {
       },
       "timeout": {
         350: { 
-          "duration" : 40000,
+          "duration" : 60000,
           "toState": 20,
           "timeBounds": livingRoomInputActionsTimeBounds[350],
         },
@@ -306,7 +306,7 @@ const bathroomInputActions = {
       },
       "timeout": {
         350: { 
-          "duration" : 40000,
+          "duration" : 60000,
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
