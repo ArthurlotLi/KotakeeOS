@@ -133,8 +133,10 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 IPAddress webServerIpAddress(192,168,0,197);
 const int webServerPort = 8080;
 
-int status = WL_IDLE_STATUS;
+int status = WL_DISCONNECTED;
+int connectionAttemptDelay = 15000;
 WiFiServer server(80);
+WiFiClient client;   // listen for incoming clients
 
 void setup() {
   // Variable housekeeping.
@@ -154,11 +156,17 @@ void setup() {
   Serial.begin(9600);      // initialize serial communication
   Serial.println("[DEBUG] KotakeeOS Arduino Module booting...");
 
+  // Set master brightness control
+  FastLED.setBrightness(brightnessNormal);
+}
+
+// Attempt to connect to the server. 
+void connectToServer(){
   // check for the WiFi module:
-  if (WiFi.status() == WL_NO_MODULE) {
-    Serial.println("[ERROR] Communication with WiFi module failed! Giving up...");
-    // don't continue
-    while (true);
+  while (WiFi.status() == WL_NO_MODULE) {
+    Serial.println("[ERROR] Communication with WiFi module failed!");
+    // Wait endlessly untill the wifi is started back up. 
+    delay(connectionAttemptDelay);
   }
 
   String fv = WiFi.firmwareVersion();
@@ -173,13 +181,11 @@ void setup() {
 
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
-    delay(10000);
+    delay(connectionAttemptDelay);
   }
+  // We escaped the loop. So it worked just fine. 
   server.begin();
   printWifiStatus();
-
-  // Set master brightness control
-  FastLED.setBrightness(brightnessNormal);
 
   // Now that we're online, let's ask the server what
   // actions/pins we should have. 
@@ -188,13 +194,47 @@ void setup() {
 
 
 void loop() {
+  // Attempt to connect. If the connection doesn't go through, we'll
+  // stay in this function forever in a while loop until it does. 
+  if (status == WL_DISCONNECTED || 
+    status == WL_CONNECTION_LOST || 
+    status == WL_CONNECT_FAILED ||
+    status == WL_IDLE_STATUS){
+
+    WiFi.end();
+    WiFi.disconnect();
+
+    Serial.print("[DEBUG] Undesirable status detected: ");
+    Serial.print(status);
+    Serial.print("\n");
+
+    connectToServer();
+    if(client)
+    {
+      client.stop(); // In case of reset. 
+    }
+  }
+
+  EVERY_N_MILLISECONDS( 20000 ) {
+    Serial.print("[INFO] Current connection status: ");
+    Serial.print(status);
+    Serial.print("\n");
+  } 
+  
   readInputs(); // Read inputs if we need to. 
   updateLEDs();
-  WiFiClient client = server.available();   // listen for incoming clients
+
+  client = server.available();
+  status = WiFi.status();
 
   if (client) {                             // if you get a client,
     String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
+    while (client.connected() && 
+    (status != WL_DISCONNECTED && 
+    status != WL_CONNECTION_LOST && 
+    status != WL_CONNECT_FAILED &&
+    status != WL_IDLE_STATUS)) {            // loop while the client's connected
+      status = WiFi.status();
       // Read inputs if we need to for each client connected loop as well,
       // just in case so as to not block or lose any input. 
       readInputs(); 
@@ -1118,6 +1158,7 @@ void moduleStateUpdate(int actionId){
     webServer.stop();
   }
   else{
+    status = WiFi.status();
     Serial.println("[ERROR] querying Web Server with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
@@ -1177,6 +1218,7 @@ void moduleInput(int actionId, String explicitInput) {
     webServer.stop();
   }
   else{
+    status = WiFi.status();
     Serial.println("[ERROR] moduleInput failed querying Web Server with roomId "+ roomIdStr+ " and actionId "+actionIdStr+" and state " + toState + "...");
   }
 }
@@ -1195,6 +1237,7 @@ void moduleStartupRequest(){
     webServer.stop();
   }
   else{
+    status = WiFi.status();
     Serial.println("[ERROR] querying Web Server with moduleStartup with ipAddress " + ip + "...");
   }
 }
