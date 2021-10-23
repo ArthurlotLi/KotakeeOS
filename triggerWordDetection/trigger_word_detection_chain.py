@@ -25,17 +25,22 @@ class TriggerWordDetectionChain:
   def execute_chain_train(self):
     print("[INFO] Initializing Trigger Word Detection Chain Train...")
     for model_identifier in self.chain_train_dict:
-      print("\n[INFO] Processing model variant with identifier " + str(model_identifier) + ".")
-      model = self.chain_train_dict[model_identifier]
+      try:
+        print("\n[INFO] Processing model variant with identifier " + str(model_identifier) + ".")
+        model = self.chain_train_dict[model_identifier]
 
-      trigger_word_detection = TriggerWordDetection()
-      best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
+        trigger_word_detection = TriggerWordDetection()
+        best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
 
-      if best_accuracy is None or acc is None:
+        if best_accuracy is None or acc is None:
+          print("[ERROR] Failed to process model variant " + str(model_identifier) + "!")
+        else:
+          print("[INFO] Model variant " + str(model_identifier) + " processing complete.")
+          self.chain_train_results.append(str(model_identifier) + " Train Accuracy: %.8f Dev Accuracy: %.8f\n" % (best_accuracy*100,acc*100))
+      except:
+        # Use a try/except so that we still write the remaining stuff 
+        # to file in case of a failure or the user cancels the rest.
         print("[ERROR] Failed to process model variant " + str(model_identifier) + "!")
-      else:
-        print("[INFO] Model variant " + str(model_identifier) + " processing complete.")
-        self.chain_train_results.append(str(model_identifier) + " Train Accuracy: %.8f Dev Accuracy: %.8f\n" % (best_accuracy*100,acc*100))
 
     # All results obtained. Write to file. 
     self.write_results()
