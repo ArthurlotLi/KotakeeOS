@@ -1,0 +1,11 @@
+=================================
+Spot Check Results
+=================================
+
+10001 - learning_rate:0.0001  loss_function:binary_crossentropy  epochs:1  batch_size:32  validation_split:0.2  
+10002 - learning_rate:0.0001  loss_function:binary_crossentropy  epochs:1  batch_size:32  validation_split:0.2  
+10003 - learning_rate:0.0001  loss_function:binary_crossentropy  epochs:1  batch_size:32  validation_split:0.2  
+
+10001 Results: 64.10 (4.05)
+10002 Results: 78.38 (13.63)
+10003 Results: 44.09 (14.59)
