@@ -61,22 +61,88 @@ Ty = 1375 # The number of time steps in the output of our model
 # Takes in two arguments:
 # generateDataset (True/False)
 # datasetSize (int) - Will be ignored if generateDataset is False. 
-def main(generateDataset, datasetSize, iternum):
+def main(generateDataset, datasetSize, iternum, chain_train = False):
   print("[INFO] Initializing main...")
   x = None
   y = None
   x, y = create_dataset(generateDataset, datasetSize, iternum)
   if x is not None and y is not None:
     model = None
-    model = train_model(x, y)
-    if model is not None:
-      result = save_model(model, iternum)
-      if result:
-        print("[INFO] Program finished successfully! Goodnight...")
-      else:
-        print("[ERROR] Unable to save the model! Execution failed.")
+
+    # Chain train capability for generating multiple models overnight.
+    # Boolean is passed by the user to turn on; once on, the hard-coded
+    # dict is used. The saved models will utilize the model numbers 
+    # present in the dict; the passed iternum will therefore only 
+    # correlate to the dataset number. 
+    #
+    # If disabled, the normal single-model train occurs.
+    #
+    # NOTE: Given a flaw with tensorflow, GPU memory is allocated
+    # globally and will not be released until shutdown. 
+    if chain_train is True:
+      chain_train_dict = {
+        "10001" : {
+          "learning_rate" : 0.0001,
+          "loss_function" : 'binary_crossentropy',
+          "epochs" : 10,
+          "batch_size" : 32, 
+          "validation_split" : 0.2,
+        },
+        "10002" : {
+          "learning_rate" : 0.0001,
+          "loss_function" : 'binary_crossentropy',
+          "epochs" : 25,
+          "batch_size" : 32, 
+          "validation_split" : 0.2,
+        },
+        "10003" : {
+          "learning_rate" : 0.0001,
+          "loss_function" : 'binary_crossentropy',
+          "epochs" : 17,
+          "batch_size" : 32, 
+          "validation_split" : 0.2,
+        },
+      }
+      for model_number in chain_train_dict:
+        print("[INFO] Chain Train model beginning to train model " + str(model_number) + "...")
+        model_values = chain_train_dict[model_number]
+
+        learning_rate = model_values["learning_rate"] 
+        loss_function = model_values["loss_function"] 
+        epochs = model_values["epochs"] 
+        batch_size = model_values["batch_size"] 
+        validation_split = model_values["validation_split"] 
+
+        model = train_model(x, y, learning_rate, loss_function, epochs, batch_size, validation_split)
+
+        if model is not None:
+          # We save using the model number stored, not the iternum passed. 
+          result = save_model(model, model_number)
+          if result:
+            print("[INFO] Chain Train model successfully saved model " + str(model_number) + "!")
+          else:
+            print("[ERROR] Chain Train was unable to save model " + str(model_number) + "!")
+        else:
+          print("[ERROR] Chain Train model " + str(model_number) + " was None! Execution failed.")
+
     else:
-      print("[ERROR] model was None! Execution failed.")
+      learning_rate = 0.0001 # A healthy learning rate. 
+      loss_function = 'binary_crossentropy'
+      epochs = 800
+      batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
+      validation_split = 0.2
+
+      model = train_model(x, y, learning_rate, loss_function, epochs, batch_size, validation_split)
+
+      if model is not None:
+        result = save_model(model, iternum)
+        if result:
+          print("[INFO] Program finished successfully! Goodnight...")
+        else:
+          print("[ERROR] Unable to save the model! Execution failed.")
+      else:
+        print("[ERROR] model was None! Execution failed.")
+
   else:
       print("[ERROR] datasets x and/or y was None! Execution failed.")
 
@@ -353,7 +419,7 @@ def create_training_example(background, activates, negatives):
 #
 
 # 3. Train the model with the generated model.
-def train_model(X, Y):
+def train_model(X, Y, learning_rate, loss_function, epochs, batch_size, validation_split):
   print("[INFO] Running train_model...")
 
   model = define_model(input_shape = (Tx, n_freq))
@@ -361,15 +427,18 @@ def train_model(X, Y):
   model.summary()
 
   # Tuning parameters that can be tweaked. 
+  """
   learning_rate = 0.0001 # A healthy learning rate. 
   loss_function = 'binary_crossentropy'
   epochs = 1500 
   batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
   validation_split = 0.2
+
   rlr_patience = 5
   rlr_factor = 0.5
   es_patience = 8 # Don't want overfitting!!
   es_min_delta = 1e-10
+  """
   verbose = True
 
   # Compiling the Neural Network with all of this, using RMSprop optimizer, with no callbacks. 
@@ -503,15 +572,17 @@ if __name__ == "__main__":
   parser.add_argument('iternum')
   parser.add_argument('-d', action='store_false', default=True)
   parser.add_argument('-g', action='store_true', default=False)
+  parser.add_argument('-c', action='store_true', default=False)
   args = parser.parse_args()
 
   datasetSize = int(args.datasetSize)
   iternum = int(args.iternum)
   generateDataset = args.d
   stopGpu = args.g
+  chain_train = args.c
 
   if(stopGpu is True or stopGpu is None):
     # In case you have a CUDA enabled GPU and don't want to use it. 
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1' 
 
-  main(generateDataset, datasetSize, iternum)
+  main(generateDataset, datasetSize, iternum, chain_train)
