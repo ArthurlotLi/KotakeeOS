@@ -1,9 +1,0 @@
-=================================
-Chain Train Results
-=================================
-
-11005 - iternum:11000  learning_rate:0.0001  loss_function:binary_crossentropy  epochs:5  batch_size:32  validation_split:0.2  
-11006 - iternum:10999  learning_rate:0.0001  loss_function:binary_crossentropy  epochs:3  batch_size:32  validation_split:0.2  
-
-11005 Train Accuracy: 70.69345117 Dev Accuracy: 93.12872887
-11006 Train Accuracy: 80.82380891 Dev Accuracy: 93.12872887

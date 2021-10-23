@@ -10,6 +10,8 @@
 # TODO: Implement process usage to properly allow for multiple large-dataset training sessions to occur consecutively. 
 
 from trigger_word_detection import TriggerWordDetection
+ 
+import os
 
 class TriggerWordDetectionChain:
 
@@ -41,7 +43,21 @@ class TriggerWordDetectionChain:
   def write_results(self):
     print("[INFO] Chain train complete. Writing results to file...")
     try:
-      f = open(self.chain_train_results_location + "/results.txt", "w")
+      results_folder_contents = os.listdir(self.chain_train_results_location)
+      result_index = 0
+      file_name_prefix = "chain_train_results_"
+      file_name_suffix = ".txt"
+      for file in results_folder_contents:
+        file_number_str = file.replace(file_name_prefix, "").replace(file_name_suffix, "")
+        file_number = -1
+        try:
+          file_number = int(file_number_str)
+          if(file_number >= result_index):
+            result_index = file_number + 1
+        except:
+          print("[WARN] Unexpected file in results directory. Ignoring...")
+
+      f = open(self.chain_train_results_location + "/"+file_name_prefix+str(result_index)+file_name_suffix, "w")
       f.write("=================================\nChain Train Results\n=================================\n\n")
       # Write model specifications
       for model_identifier in self.chain_train_dict:
@@ -70,7 +86,7 @@ if __name__ == "__main__":
       "iternum" : "11000",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
-      "epochs" : 5,
+      "epochs" : 2,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
@@ -78,7 +94,7 @@ if __name__ == "__main__":
       "iternum" : "10999",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
-      "epochs" : 3,
+      "epochs" : 1,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
