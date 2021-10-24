@@ -12,6 +12,8 @@
 from trigger_word_detection import TriggerWordDetection
  
 import os
+import multiprocessing
+import time
 
 class TriggerWordDetectionChain:
 
@@ -28,15 +30,33 @@ class TriggerWordDetectionChain:
       try:
         print("\n[INFO] Processing model variant with identifier " + str(model_identifier) + ".")
         model = self.chain_train_dict[model_identifier]
+        time_start = time.time()
 
-        trigger_word_detection = TriggerWordDetection()
-        best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
+        # Execute training as a separate process. Use a queue to
+        # obtain results. 
+        ret_dict = {"best_accuracy":None, "acc":None}
+        queue = multiprocessing.Queue()
+        queue.put(ret_dict)
+
+        print("[INFO] Executing new process...")
+        p = multiprocessing.Process(target=self.trigger_word_detection_worker, args=(queue, model, model_identifier,))
+        p.start()
+        p.join()
+        ret_dict_result = queue.get()
+        print("\n[INFO] Process complete; result: ")
+        print(ret_dict_result)
+        best_accuracy = ret_dict_result["best_accuracy"]
+        acc = ret_dict_result["acc"]
+
+        time_end = time.time()
+        time_elapsed_seconds = time_end - time_start # time in seconds. 
+        time_elapsed_hours = time_elapsed_seconds/3600 
 
         if best_accuracy is None or acc is None:
           print("[ERROR] Failed to process model variant " + str(model_identifier) + "!")
         else:
           print("[INFO] Model variant " + str(model_identifier) + " processing complete.")
-          self.chain_train_results.append(str(model_identifier) + " Train Accuracy: %.8f Dev Accuracy: %.8f\n" % (best_accuracy*100,acc*100))
+          self.chain_train_results.append(str(model_identifier) + " Train Accuracy: %.8f Dev Accuracy: %.8f Time: %.4f hrs\n" % (best_accuracy*100,acc*100, time_elapsed_hours))
       except:
         # Use a try/except so that we still write the remaining stuff 
         # to file in case of a failure or the user cancels the rest.
@@ -44,9 +64,20 @@ class TriggerWordDetectionChain:
 
     # All results obtained. Write to file. 
     self.write_results()
+
+  # Executed as a separate process so it can be purged as a
+  # seperate process, allowing Tensorflow to clear out the
+  # memory of the GPU and not freak out when we train another
+  # right after.
+  def trigger_word_detection_worker(self, queue, model, model_identifier):
+    trigger_word_detection = TriggerWordDetection()
+    best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
+    ret_dict = queue.get()
+    ret_dict["best_accuracy"] = best_accuracy
+    ret_dict["acc"] = acc
+    queue.put(ret_dict)
     
   def write_results(self):
-    print("[INFO] Chain train complete. Writing results to file...")
     try:
       results_folder_contents = os.listdir(self.chain_train_results_location)
       result_index = 0
@@ -62,7 +93,9 @@ class TriggerWordDetectionChain:
         except:
           print("[WARN] Unexpected file in results directory. Ignoring...")
 
-      f = open(self.chain_train_results_location + "/"+file_name_prefix+str(result_index)+file_name_suffix, "w")
+      filename = self.chain_train_results_location + "/"+file_name_prefix+str(result_index)+file_name_suffix
+      f = open(filename, "w")
+      print("\n[INFO] Chain train complete. Writing results to file '"+filename+"'...")
       f.write("=================================\nChain Train Results\n=================================\n\n")
       # Write model specifications
       for model_identifier in self.chain_train_dict:
@@ -107,15 +140,43 @@ if __name__ == "__main__":
       "validation_split" : 0.2,
     },
   }
-
   """
   # Experiment 1
+  """
   chain_dict = {
     "12001" : {
       "iternum" : "12000",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 1300,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+  # Experiment 2
+  chain_dict = {
+    "12051" : {
+      "iternum" : "1",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12052" : {
+      "iternum" : "1",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12053" : {
+      "iternum" : "1",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
