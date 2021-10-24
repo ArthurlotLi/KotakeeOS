@@ -38,7 +38,10 @@ def cherry_pick_lingua_libre():
     random_indices = np.random.randint(len(negatives), size=number_of_negatives)
     random_negatives = [negatives[i] for i in random_indices]
     for random_negative in random_negatives:
-      command = 'cp ' + from_directory + "/" + random_negative + ' ' + to_directory + "/" + random_negative
+      # Mac: 
+      # command = 'cp ' + from_directory + "/" + random_negative + ' ' + to_directory + "/" + random_negative
+      # Windows:
+      command = 'xcopy "' + from_directory + '/' + random_negative + '" "' + to_directory  + '/" /F /C /K /O /Y'
       print("[INFO] Executing command: " + command)
       os.system(command)
 

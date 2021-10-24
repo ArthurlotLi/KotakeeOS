@@ -54,6 +54,7 @@ class TriggerWordDetectionChain:
 
         if best_accuracy is None or acc is None:
           print("[ERROR] Failed to process model variant " + str(model_identifier) + "!")
+          self.chain_train_results.append(str(model_identifier) + " EXECUTION FAILED!\n")
         else:
           print("[INFO] Model variant " + str(model_identifier) + " processing complete.")
           self.chain_train_results.append(str(model_identifier) + " Train Accuracy: %.8f Dev Accuracy: %.8f Time: %.4f hrs\n" % (best_accuracy*100,acc*100, time_elapsed_hours))
@@ -156,27 +157,75 @@ if __name__ == "__main__":
   """
   # Experiment 2
   chain_dict = {
-    "12051" : {
-      "iternum" : "1",
+    "12151" : {
+      "iternum" : "12051",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
-      "epochs" : 1,
+      "epochs" : 800,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
-    "12052" : {
-      "iternum" : "1",
+    "12152" : {
+      "iternum" : "12052",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
-      "epochs" : 1,
+      "epochs" : 800,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
-    "12053" : {
-      "iternum" : "1",
+    "12153" : {
+      "iternum" : "12053",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
-      "epochs" : 1,
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12154" : {
+      "iternum" : "12054",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12155" : {
+      "iternum" : "12055",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12156" : {
+      "iternum" : "12056",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12157" : {
+      "iternum" : "12057",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12158" : {
+      "iternum" : "12058",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12159" : {
+      "iternum" : "12059",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 800,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
