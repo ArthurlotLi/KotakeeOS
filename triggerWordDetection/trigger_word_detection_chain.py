@@ -86,6 +86,9 @@ if __name__ == "__main__":
   # saved as (don't let this overwrite other models.) The iternum
   # specified in each model's arguments refers to the dataset number
   # that will be used. 
+
+  # Experiment 0
+  """
   chain_dict = {
     "11005" : {
       "iternum" : "11000",
@@ -100,6 +103,19 @@ if __name__ == "__main__":
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 1000,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+
+  """
+  # Experiment 1
+  chain_dict = {
+    "12001" : {
+      "iternum" : "12000",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1300,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
