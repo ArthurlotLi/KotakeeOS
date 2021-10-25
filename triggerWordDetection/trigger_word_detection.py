@@ -431,7 +431,7 @@ class TriggerWordDetection:
     opt = Adam(learning_rate=learning_rate)
     #opt = RMSprop(learning_rate=learning_rate)
     model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-    mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
+    mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True)
     history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
     best_accuracy = max(history.history['accuracy'])
