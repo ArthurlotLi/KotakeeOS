@@ -293,6 +293,7 @@ if __name__ == "__main__":
   }
   """
   # Experiment 7
+  """
   chain_dict = {
     "12165" : {
       "iternum" : "12065",
@@ -323,6 +324,18 @@ if __name__ == "__main__":
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 2000,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+   # Experiment 6
+  chain_dict = {
+    "12169" : {
+      "iternum" : "12069",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1500,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
