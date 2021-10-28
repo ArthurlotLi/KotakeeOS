@@ -162,9 +162,14 @@ class CommandParser:
       # executed.
       for i in range(self.maxCommandAttempts): 
         try:
-            # Specify the microphone as the input source.
-            self.executeTextThread(self.hotWordReceiptPrompt)
-            time.sleep(0.7) # Try not to detet the prompt. 
+            # Notify user via text prompt. 
+            #self.executeTextThread(self.hotWordReceiptPrompt)
+            #time.sleep(0.7) # Try not to detet the prompt. 
+
+            # Notify user that we're listening via chime.
+            self.querySpeechServerLED(1, 2, 5352)
+            time.sleep(0.3) # Try not to detet the chime. 
+
             print("[DEBUG] Now Listening for Command...")
             start = time.time()
 

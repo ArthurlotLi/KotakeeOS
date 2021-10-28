@@ -266,6 +266,12 @@ const livingRoomInputActions = {
       }
     }
   },
+  5352:{
+    "function":"command",
+    1: { // When the speech server is triggered. 
+      "command" : "afplay ./assets/testChime.wav"
+    }
+  },
 }
 const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputActions);
 
