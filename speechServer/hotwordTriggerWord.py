@@ -101,9 +101,9 @@ def runApplicationServer(iternum, useAlt):
   # Experimental - query the server to turn on the LED to signal
   # Speech server is online. 
   if useAlt:
-    commandParser.querySpeechServerLED(1, 2, 52)
-  else:
     commandParser.querySpeechServerLED(1, 2, 51)
+  else:
+    commandParser.querySpeechServerLED(1, 2, 52)
   commandParser.startupProcedureCustom("KotakeeOS Speech Server initialized. Machine learning model iteration " + str(iternum) + ".")
   
   #while stopServer is not True:
@@ -112,9 +112,9 @@ def runApplicationServer(iternum, useAlt):
   # Experimental - query the server to turn on the LED to signal
   # Speech server is no longer online. 
   if useAlt:
-    commandParser.querySpeechServerLED(0, 2, 52)
-  else:
     commandParser.querySpeechServerLED(0, 2, 51)
+  else:
+    commandParser.querySpeechServerLED(0, 2, 52)
   print("Shutting down. Goodnight.")
   
   print("\n[DEBUG] Shutting down. Goodnight.")

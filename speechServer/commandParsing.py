@@ -17,7 +17,7 @@ import json
 class CommandParser:
   # Constants that may be configured.
   webServerIpAddress = "http://192.168.0.197:8080"
-  cancelWords = ["stop", "cancel", "go away", "quit", "no thanks"] # stops google query.
+  cancelWords = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops google query.
   stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
   hotWordReceiptPrompt = "Yes?"
   successfulCommandPrompt = "Understood."
@@ -25,7 +25,7 @@ class CommandParser:
   stopServerPrompt = "Understood. Shutting down."
   startupPrompt = "Good morning, Speech Server initialized. Now listening for hotwords."
   pauseThreshold = 1.0
-  maxCommandAttempts = 2
+  maxCommandAttempts = 1
 
   # Ah, I'm so happy this matches perfectly with the client code. 
   # Thanks, python. 
@@ -155,11 +155,14 @@ class CommandParser:
       # level...
       self.r2.adjust_for_ambient_noise(source2, duration=0.7)
 
+      # Indicate that you are currently active. 
+      self.querySpeechServerLED(1, 2, 51)
+
       # Try three times, or until user cancels, or command was
       # executed.
       for i in range(self.maxCommandAttempts): 
         try:
-          # Specify the microphone as the input source.
+            # Specify the microphone as the input source.
             self.executeTextThread(self.hotWordReceiptPrompt)
             time.sleep(0.7) # Try not to detet the prompt. 
             print("[DEBUG] Now Listening for Command...")
@@ -193,10 +196,15 @@ class CommandParser:
         except sr.WaitTimeoutError:
           pass
     
+    # Indicate that you are no longer active. 
+    self.querySpeechServerLED(0, 2, 51)
+
     # Stopping. Let user know big brother google is no longer
     # listening. 
-    if successfulCommand is False:
-      self.executeTextThread(self.cancellationPrompt)
+    #
+    # Note: Disabled for more passive experience. 
+    #if successfulCommand is False:
+      #self.executeTextThread(self.cancellationPrompt)
 
   # Non-blocking text to speech. Do be warned this
   # might interefere with the speech recognition. 
