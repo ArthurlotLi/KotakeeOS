@@ -167,7 +167,7 @@ class CommandParser:
             #time.sleep(0.7) # Try not to detet the prompt. 
 
             # Notify user that we're listening via chime.
-            self.querySpeechServerLED(1, 2, 5352)
+            self.querySpeechServerInput(1, 2, 5352)
             time.sleep(0.3) # Try not to detet the chime. 
 
             print("[DEBUG] Now Listening for Command...")
@@ -266,6 +266,16 @@ class CommandParser:
       print("[DEBUG] querySpeechServerLED request received successfully.")
     elif(response.status_code != 204):
       print("[WARNING] Server rejected querySpeechServerLED request with status code " + str(response.status_code) + ".")
+
+  # Experimental - queries server providing input. 
+  def querySpeechServerInput(self, toState, roomId, actionId):
+    query = self.webServerIpAddress + "/moduleInput/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
+    print("[DEBUG] Querying server: " + query)
+    response = requests.get(query)
+    if(response.status_code == 200):
+      print("[DEBUG] querySpeechServerInput request received successfully.")
+    elif(response.status_code != 204):
+      print("[WARNING] Server rejected querySpeechServerInput request with status code " + str(response.status_code) + ".")
 
   # Given a queried command from the google text recognition
   # API, parse and execute accordingly.
