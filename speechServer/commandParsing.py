@@ -20,7 +20,7 @@ class CommandParser:
   cancelWords = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops google query.
   stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
   hotWordReceiptPrompt = "Yes?"
-  successfulCommandPrompt = "Understood."
+  successfulCommandPrompt = "" # By default, don't say anything and just activate something. 
   cancellationPrompt = "Going back to sleep."
   stopServerPrompt = "Understood. Shutting down."
   startupPrompt = "Good morning, Speech Server initialized. Now listening for hotwords."
@@ -419,7 +419,8 @@ class CommandParser:
           print("[DEBUG] Request received successfully.")
         else:
           print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-      self.executeTextThread(confirmationPrompt)
+      if(confirmationPrompt is not None and confirmationPrompt != ""):
+        self.executeTextThread(confirmationPrompt)
       return True
     else:
       print("[DEBUG] No valid command was received.")
