@@ -357,7 +357,7 @@ class CommandParser:
       if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
         currentAutoStatus = self.homeStatus["moduleInputDisabled"]
         newState = "true"
-        if("on" in command or "enable" in command):
+        if("activate" in command or "turn on" in command or "enable" in command):
           newState = "false"
         queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + newState)
         # Manage prompt. 
@@ -369,7 +369,7 @@ class CommandParser:
       if(self.homeStatus is not None and self.homeStatus["serverDisabled"] is not None):
         currentAutoStatus = self.homeStatus["serverDisabled"]
         newState = "true"
-        if("on" in command or "enable" in command):
+        if("activate" in command or "turn on" in command or "enable" in command):
           newState = "false"
         queries.append(self.webServerIpAddress + "/serverDisabled/" + newState)
         # Manage prompt. 
