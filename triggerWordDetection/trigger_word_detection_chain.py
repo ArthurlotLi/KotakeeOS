@@ -354,12 +354,24 @@ if __name__ == "__main__":
     },
   }
   """
+  """
   chain_dict = {
     "12170" : {
       "iternum" : "12070",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 2200,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+  chain_dict = {
+    "12172" : {
+      "iternum" : "12072",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1600,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
