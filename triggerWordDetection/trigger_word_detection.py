@@ -83,6 +83,9 @@ class TriggerWordDetection:
       batch_size = None
       validation_split = None
 
+      if outputnum is None:
+        outputnum = iternum
+
       if model_parameters is not None:
         learning_rate = model_parameters["learning_rate"] 
         loss_function = model_parameters["loss_function"] 
@@ -92,15 +95,13 @@ class TriggerWordDetection:
       else:
         learning_rate = 0.0001 # A healthy learning rate. 
         loss_function = 'binary_crossentropy'
-        epochs = 5
+        epochs = 50
         batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
         validation_split = 0.2
 
-      model, best_accuracy, acc = self.train_model(X=x, Y=y, iternum=iternum, learning_rate=learning_rate, loss_function=loss_function, epochs=epochs, batch_size=batch_size, validation_split=validation_split)
+      model, best_accuracy, acc = self.train_model(X=x, Y=y, modelnum = outputnum, iternum=iternum, learning_rate=learning_rate, loss_function=loss_function, epochs=epochs, batch_size=batch_size, validation_split=validation_split)
 
       if model is not None:
-        if outputnum is None:
-          outputnum = iternum
         result = self.save_model(model, outputnum)
         if result:
           print("[INFO] Program finished successfully! Goodnight...")
@@ -378,7 +379,7 @@ class TriggerWordDetection:
   #
 
   # 3. Train the model with the generated model.
-  def train_model(self, X, Y, iternum, learning_rate, loss_function, epochs, batch_size, validation_split):
+  def train_model(self, X, Y, modelnum, iternum, learning_rate, loss_function, epochs, batch_size, validation_split):
     print("[INFO] Running train_model...")
 
     model = self.define_model(input_shape = (self.Tx, self.n_freq))
@@ -428,10 +429,13 @@ class TriggerWordDetection:
 
     # And yet another one, this one trying to mimic the original model as much as possible.
     #opt = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Results in a model that hangs on 87%.
-    opt = Adam(learning_rate=learning_rate)
     #opt = RMSprop(learning_rate=learning_rate)
+
+    opt = Adam(learning_rate=learning_rate)
     model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-    mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True)
+
+    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=True)
+    
     history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
     best_accuracy = max(history.history['accuracy'])

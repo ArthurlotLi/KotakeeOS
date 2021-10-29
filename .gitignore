@@ -5,5 +5,6 @@
 /triggerWordDetection/XY_dev
 /triggerWordDetection/train.wav
 /triggerWordDetection/__pycache__
+/triggerWordDetection/model_checkpoints
 /speechServer/__pycache__
 /satelliteServer/node_modules
