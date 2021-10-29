@@ -200,10 +200,6 @@ class Home {
       console.log("[WARN] moduleInput rejected because the server has been disabled.");
       return false;
     }
-    if(this.moduleInputDisabled){
-      console.log("[WARN] moduleInput rejected because module input has been disabled.");
-      return false;
-    }
 
     // SANITY CHECKS. SO MANY SANTIY CHECKS.  
     var room = this.getRoom(roomId);
@@ -224,6 +220,13 @@ class Home {
     var inputFunction = actionInputActions["function"]
     if(inputFunction == null){
       console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a function definition!");
+      return false;
+    }
+
+    // Note we only stop here in the case of disabled module
+    // input because we want to let commands through. 
+    if(this.moduleInputDisabled && inputFunction != "command"){
+      console.log("[WARN] moduleInput rejected because module input has been disabled.");
       return false;
     }
 
@@ -248,6 +251,7 @@ class Home {
         console.log("[WARNING] moduleInput failed! roomId " + roomId + " inputActions entry for actionId " +actionId+" does not have a state "+toState+" definition!");
         return false;
       }
+
       // If we survived the great filter, let's act depending 
       // on the function given.
       switch(inputFunction){
