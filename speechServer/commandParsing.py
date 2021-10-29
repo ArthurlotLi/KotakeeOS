@@ -356,24 +356,24 @@ class CommandParser:
     elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
       if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
         currentAutoStatus = self.homeStatus["moduleInputDisabled"]
-        toState = "true"
+        newState = "true"
         if("on" in command or "enable" in command):
-          toState = "false"
-        queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + toState)
+          newState = "false"
+        queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + newState)
         # Manage prompt. 
-        if(toState == "false"):
+        if(newState == "false"):
           confirmationPrompt = "Enabling automatic server actions."
         else:
           confirmationPrompt = "Disabling automatic server actions."
     elif("server" in command and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
       if(self.homeStatus is not None and self.homeStatus["serverDisabled"] is not None):
         currentAutoStatus = self.homeStatus["serverDisabled"]
-        toState = "true"
+        newState = "true"
         if("on" in command or "enable" in command):
-          toState = "false"
-        queries.append(self.webServerIpAddress + "/serverDisabled/" + toState)
+          newState = "false"
+        queries.append(self.webServerIpAddress + "/serverDisabled/" + newState)
         # Manage prompt. 
-        if(toState == "false"):
+        if(newState == "false"):
           confirmationPrompt = "Enabling central server operations."
         else:
           confirmationPrompt = "Disabling central server operations."
