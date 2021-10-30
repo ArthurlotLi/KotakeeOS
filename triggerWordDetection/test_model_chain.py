@@ -46,11 +46,11 @@ class TestModelChain:
         
           if acc is None:
             print("[ERROR] Failed to process model " + str(filename) + "!")
-            self.chain_test_results[filename_uid] = str(filename) + " TEST FAILED!\n"
+            self.chain_test_results[filename_uid] = "00.00000000 - " + str(filename) + " TEST FAILED!\n"
             self.chain_test_results_acc_map[-1] = filename_uid
           else:
             print("[INFO] Model " + str(filename) + " processing complete.")
-            self.chain_test_results[filename_uid] = str(filename) + " - Dev Accuracy: %.8f\n" % (acc*100)
+            self.chain_test_results[filename_uid] = "%.8f - " % (acc*100) + str(filename) + "\n"
             self.chain_test_results_acc_map[acc] = filename_uid
         except:
           # Use a try/except so that we still write the remaining stuff 
@@ -105,7 +105,7 @@ class TestModelChain:
       print("[ERROR] Failed to write results to file!")
 
 if __name__ == "__main__":
-  location = "./models_DELETEME"
+  location = "./models"
 
   test_model_chain = TestModelChain(location)
   test_model_chain.execute_chain_test()
