@@ -38,7 +38,7 @@ class GenerateDevSet:
     #print(X)
     print("Original Y: ")
     print(Y.shape)
-    print(Y)
+    #print(Y)
 
   # Given the recordings provided in the dev_recordings_location,
   # automatically generate the X dev set npy array. Simple. Use
@@ -56,8 +56,7 @@ class GenerateDevSet:
     array_x = []
     array_y = []
     for filename in os.listdir(self.dev_recordings_location):
-        #if filename.endswith("wav"):
-        if filename.endswith("01.wav"): # TODO: Testing. 
+        if filename.endswith("wav"):
             # Process x by reading in file. 
             x = graph_spectrogram(self.dev_recordings_location + "/"+filename)
             if x.shape == (101, 5511):
@@ -121,54 +120,53 @@ if __name__ == "__main__":
   # the activation time via this timesteps dictionary and
   # the program will convert it automatically. 
   timesteps = {
-    "raw_data_kotakee_dev-01.wav": [4601, 9848],
-    "raw_data_kotakee_dev-02.wav": [],
-    "raw_data_kotakee_dev-03.wav": [],
-    "raw_data_kotakee_dev-04.wav": [],
-    "raw_data_kotakee_dev-05.wav": [],
-    "raw_data_kotakee_dev-06.wav": [],
-    "raw_data_kotakee_dev-07.wav": [],
-    "raw_data_kotakee_dev-08.wav": [],
-    "raw_data_kotakee_dev-09.wav": [],
-    "raw_data_kotakee_dev-10.wav": [],
-    "raw_data_kotakee_dev-11.wav": [],
-    "raw_data_kotakee_dev-12.wav": [],
-    "raw_data_kotakee_dev-13.wav": [],
-    "raw_data_kotakee_dev-14.wav": [],
-    "raw_data_kotakee_dev-15.wav": [],
-    "raw_data_kotakee_dev-16.wav": [],
-    "raw_data_kotakee_dev-17.wav": [],
-    "raw_data_kotakee_dev-18.wav": [],
-    "raw_data_kotakee_dev-19.wav": [],
-    "raw_data_kotakee_dev-20.wav": [],
-    "raw_data_kotakee_dev-21.wav": [],
-    "raw_data_kotakee_dev-22.wav": [],
-    "raw_data_kotakee_dev-23.wav": [],
-    "raw_data_kotakee_dev-24.wav": [],
-    "raw_data_kotakee_dev-25.wav": [],
+    "raw_data_kotakee_dev-01.wav": [4601,9848],
+    "raw_data_kotakee_dev-02.wav": [3288,8201],
+    "raw_data_kotakee_dev-03.wav": [2912,8702],
+    "raw_data_kotakee_dev-04.wav": [9160],
+    "raw_data_kotakee_dev-05.wav": [7171],
+    "raw_data_kotakee_dev-06.wav": [7338],
+    "raw_data_kotakee_dev-07.wav": [2007, 4908, 7284],
+    "raw_data_kotakee_dev-08.wav": [7886],
+    "raw_data_kotakee_dev-09.wav": [5926,8219],
+    "raw_data_kotakee_dev-10.wav": [3341,7832],
+    "raw_data_kotakee_dev-11.wav": [7409],
+    "raw_data_kotakee_dev-12.wav": [9041],
+    "raw_data_kotakee_dev-13.wav": [3913],
+    "raw_data_kotakee_dev-14.wav": [8624],
+    "raw_data_kotakee_dev-15.wav": [7308],
+    "raw_data_kotakee_dev-16.wav": [8594],
+    "raw_data_kotakee_dev-17.wav": [8249],
+    "raw_data_kotakee_dev-18.wav": [7403],
+    "raw_data_kotakee_dev-19.wav": [8773],
+    "raw_data_kotakee_dev-20.wav": [9226],
+    "raw_data_kotakee_dev-21.wav": [4544,8428],
+    "raw_data_kotakee_dev-22.wav": [7713],
+    "raw_data_kotakee_dev-23.wav": [4622,9774],
+    "raw_data_kotakee_dev-24.wav": [4205,8773],
+    "raw_data_kotakee_dev-25.wav": [5908],
     "raw_data_kotakee_dev-26.wav": [],
-    "raw_data_kotakee_dev-27.wav": [],
-    "raw_data_kotakee_dev-28.wav": [],
-    "raw_data_kotakee_dev-29.wav": [],
-    "raw_data_kotakee_dev-30.wav": [],
-    "raw_data_kotakee_dev-31.wav": [],
-    "raw_data_kotakee_dev-32.wav": [],
-    "raw_data_kotakee_dev-33.wav": [],
-    "raw_data_kotakee_dev-34.wav": [],
-    "raw_data_kotakee_dev-35.wav": [],
-    "raw_data_kotakee_dev-36.wav": [],
-    "raw_data_kotakee_dev-37.wav": [],
-    "raw_data_kotakee_dev-38.wav": [],
-    "raw_data_kotakee_dev-39.wav": [],
-    "raw_data_kotakee_dev-40.wav": [],
-    "raw_data_kotakee_dev-41.wav": [],
-    "raw_data_kotakee_dev-42.wav": [],
-    "raw_data_kotakee_dev-43.wav": [],
-    "raw_data_kotakee_dev-44.wav": [],
-    "raw_data_kotakee_dev-45.wav": [],
-    "raw_data_kotakee_dev-46.wav": [],
-    "raw_data_kotakee_dev-47.wav": [],
-
+    "raw_data_kotakee_dev-27.wav": [2787,6367],
+    "raw_data_kotakee_dev-28.wav": [8475],
+    "raw_data_kotakee_dev-29.wav": [7695],
+    "raw_data_kotakee_dev-30.wav": [5229,8809],
+    "raw_data_kotakee_dev-31.wav": [8416],
+    "raw_data_kotakee_dev-32.wav": [5247],
+    "raw_data_kotakee_dev-33.wav": [2823,6891],
+    "raw_data_kotakee_dev-34.wav": [4199,9553],
+    "raw_data_kotakee_dev-35.wav": [6385],
+    "raw_data_kotakee_dev-36.wav": [5670],
+    "raw_data_kotakee_dev-37.wav": [8654],
+    "raw_data_kotakee_dev-38.wav": [5533],
+    "raw_data_kotakee_dev-39.wav": [5855],
+    "raw_data_kotakee_dev-40.wav": [2895,7052],
+    "raw_data_kotakee_dev-41.wav": [5468,9476],
+    "raw_data_kotakee_dev-42.wav": [6659],
+    "raw_data_kotakee_dev-43.wav": [5342],
+    "raw_data_kotakee_dev-44.wav": [4127,8815],
+    "raw_data_kotakee_dev-45.wav": [5170],
+    "raw_data_kotakee_dev-46.wav": [3115,6825],
+    "raw_data_kotakee_dev-47.wav": [7242],
   }
 
   generate_dev_set.generate_XY(timesteps)

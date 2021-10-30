@@ -3,6 +3,7 @@
 /kotakeeosModule/arduino_secrets.h
 /triggerWordDetection/XY_train
 /triggerWordDetection/XY_dev
+/triggerWordDetection/XY_dev_kotakee
 /triggerWordDetection/train.wav
 /triggerWordDetection/__pycache__
 /triggerWordDetection/model_checkpoints

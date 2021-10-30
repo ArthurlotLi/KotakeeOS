@@ -1,0 +1,8 @@
+=================================
+Chain Test Results
+=================================
+
+tr_model_12184.h5 - Dev Accuracy: 95.33462524
+tr_model_12181.h5 - Dev Accuracy: 95.40270567
+tr_model_12183.h5 - Dev Accuracy: 95.41817904
+tr_model_12182.h5 - Dev Accuracy: 95.75241804

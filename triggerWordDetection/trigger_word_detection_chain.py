@@ -366,12 +366,36 @@ if __name__ == "__main__":
     },
   }
   """
+  """
   chain_dict = {
     "12172" : {
       "iternum" : "12072",
       "learning_rate" : 0.0001,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 1600,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+  """
+  chain_dict = {
+    "12180" : {
+      "iternum" : "12080",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 2000,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+  chain_dict = {
+    "12195" : {
+      "iternum" : "12095",
+      "learning_rate" : 0.0001,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 1700,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },
