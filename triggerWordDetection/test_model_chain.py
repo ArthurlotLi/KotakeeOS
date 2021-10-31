@@ -105,7 +105,7 @@ class TestModelChain:
       print("[ERROR] Failed to write results to file!")
 
 if __name__ == "__main__":
-  location = "./models"
+  location = "./model_checkpoints"
 
   test_model_chain = TestModelChain(location)
   test_model_chain.execute_chain_test()
