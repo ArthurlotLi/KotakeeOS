@@ -53,6 +53,11 @@ class TriggerWordDetection:
   n_freq = 101 # Number of frequencies input to the model at each time step of the spectrogram
   Ty = 1375 # The number of time steps in the output of our model
 
+  #X_dev_location = "./XY_dev/X_dev.npy"
+  #Y_dev_location = "./XY_dev/Y_dev.npy"
+  X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
+  Y_dev_location = "./XY_dev_kotakee/Y_dev_kotakee.npy"
+
   # Primary function that executes the main steps:
   # A) Dataset Processing
   #   1. Load the wav files that will make the dataset.
@@ -443,10 +448,10 @@ class TriggerWordDetection:
     print("\nModel training complete. Best accuracy: " + str(best_accuracy))
 
     try:
-      print("[INFO] Loading dev dataset file ./XY_dev/X_dev.npy...")
-      X_dev = np.load("./XY_dev/X_dev.npy")
-      print("[INFO] Loading existing dataset file ./XY_dev/Y_dev.npy...")
-      Y_dev = np.load("./XY_dev/Y_dev.npy")
+      print("[INFO] Loading dev dataset X file " + self.X_dev_location + "...")
+      X_dev = np.load(self.X_dev_location)
+      print("[INFO] Loading dev dataset Y file " + self.Y_dev_location + "...")
+      Y_dev = np.load(self.Y_dev_location)
       print("[DEBUG] X_dev.shape is:", X_dev.shape)  
       print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
 
