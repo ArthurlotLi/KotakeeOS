@@ -78,7 +78,7 @@ models_path = '../triggerWordDetection/models'
 model = None
 commandParser = CommandParser()
 
-def runApplicationServer(iternum, useAlt):
+def runApplicationServer(iternum, useAlt, raspberryPi):
   print("[DEBUG] Initializing kotakeeOS speech application server with Trigger Word model iteration number " + str(iternum) + ".")
 
   global model
@@ -107,7 +107,7 @@ def runApplicationServer(iternum, useAlt):
   commandParser.startupProcedureCustom("KotakeeOS Speech Server initialized. Machine learning model iteration " + str(iternum) + ".")
   
   #while stopServer is not True:
-  listenForHotWord()
+  listenForHotWord(raspberryPi)
 
   # Experimental - query the server to turn on the LED to signal
   # Speech server is no longer online. 
@@ -122,9 +122,9 @@ def runApplicationServer(iternum, useAlt):
 # When run, listens for a single command and executes
 # acceptable ones accordingly. This is the main method that
 # is different between this and pocketspinx. 
-def listenForHotWord():
+def listenForHotWord(raspberryPi = False):
   global run, model
-  stream = get_audio_input_stream(callback)
+  stream = get_audio_input_stream(callback, raspberryPi)
   stream.start_stream()
 
   # For outputting debug message. Only output once
@@ -149,6 +149,10 @@ def listenForHotWord():
         stream.close()
         commandParser.listenForCommand()
         # Once the command loop finishes. resume.
+        if raspberryPi:
+          # The raspberry pi is too slow and crashes if this block is not
+          # present. 
+          time.sleep(5)
         stream = get_audio_input_stream(callback)
         stream.start_stream()
         firstRun = True
@@ -264,14 +268,18 @@ def plt_spectrogram(data):
       pxx, _, _, _ = plt.specgram(data[:,0], nfft, fs, noverlap = noverlap)
   return pxx
 
-def get_audio_input_stream(callback):
+def get_audio_input_stream(callback, raspberryPi):
+  input_device_index = 0
+  if raspberryPi:
+    input_device_index = 1
+
   stream = pyaudio.PyAudio().open(
       format=pyaudio.paInt16,
       channels=1,
       rate=fs,
       input=True,
       frames_per_buffer=chunk_samples,
-      input_device_index=0,
+      input_device_index=input_device_index,
       stream_callback=callback)
   return stream
 
@@ -279,8 +287,10 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('iternum')
   parser.add_argument('-a', action='store_true', default=False) # TODO: maybe make this scalable to more than one server. 
+  parser.add_argument('-r', action='store_true', default=False) 
   args = parser.parse_args()
   useAlt = args.a
+  raspberryPi = args.r
 
   if(useAlt is True or useAlt is None):
     useAlt = True
@@ -289,4 +299,4 @@ if __name__ == "__main__":
 
   iternum = int(args.iternum)
 
-  runApplicationServer(iternum, useAlt)
+  runApplicationServer(iternum, useAlt, raspberryPi)
