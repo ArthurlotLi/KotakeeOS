@@ -153,7 +153,7 @@ def listenForHotWord(raspberryPi = False):
           # The raspberry pi is too slow and crashes if this block is not
           # present. 
           time.sleep(5)
-        stream = get_audio_input_stream(callback)
+        stream = get_audio_input_stream(callback, raspberryPi)
         stream.start_stream()
         firstRun = True
   except (KeyboardInterrupt, SystemExit):
@@ -268,7 +268,7 @@ def plt_spectrogram(data):
       pxx, _, _, _ = plt.specgram(data[:,0], nfft, fs, noverlap = noverlap)
   return pxx
 
-def get_audio_input_stream(callback, raspberryPi):
+def get_audio_input_stream(callback, raspberryPi=False):
   input_device_index = 0
   if raspberryPi:
     input_device_index = 1

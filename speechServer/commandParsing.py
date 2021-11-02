@@ -14,6 +14,9 @@ import time
 import threading
 import json
 
+import wave
+import pyaudio
+
 class CommandParser:
   # Constants that may be configured.
   webServerIpAddress = "http://192.168.0.197:8080"
@@ -26,6 +29,8 @@ class CommandParser:
   startupPrompt = "Good morning, Speech Server initialized. Now listening for hotwords."
   pauseThreshold = 1.0
   maxCommandAttempts = 1
+
+  chime_location = "./assets/testChime.wav"
 
   # Ah, I'm so happy this matches perfectly with the client code. 
   # Thanks, python. 
@@ -167,8 +172,8 @@ class CommandParser:
             #time.sleep(0.7) # Try not to detet the prompt. 
 
             # Notify user that we're listening via chime.
-            self.querySpeechServerInput(1, 2, 5352)
-            time.sleep(0.3) # Try not to detet the chime. 
+            #self.querySpeechServerInput(1, 2, 5352)
+            self.executeChime()
 
             print("[DEBUG] Now Listening for Command...")
             start = time.time()
@@ -276,6 +281,25 @@ class CommandParser:
       print("[DEBUG] querySpeechServerInput request received successfully.")
     elif(response.status_code != 204):
       print("[WARNING] Server rejected querySpeechServerInput request with status code " + str(response.status_code) + ".")
+
+  # Let out a chime to indicate that you're listening
+  def executeChime(self):
+    chunk = 1024
+    f = wave.open(self.chime_location, "rb")
+    p = pyaudio.PyAudio()
+    stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
+                channels = f.getnchannels(),  
+                rate = f.getframerate(),  
+                output = True) 
+    data = f.readframes(chunk)
+    while data:  
+      stream.write(data)  
+      data = f.readframes(chunk)
+    stream.stop_stream()  
+    stream.close()  
+
+    #close PyAudio  
+    p.terminate()
 
   # Given a queried command from the google text recognition
   # API, parse and execute accordingly.
