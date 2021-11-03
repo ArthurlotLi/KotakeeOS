@@ -433,6 +433,14 @@ class CommandParser:
         queries.append(self.generateQuery(command, 3, 351, 22, 20))
       if("printer" in command):
         queries.append(self.generateQuery(command, 2, 252, 12, 10))
+      if("bedroom" in command and ("night" in command or "red led" in command or "red leds" in command)):
+        queries.append(self.generateQuery(command, 1, 1000, 108, 100))
+      if("living" in command and ("night" in command or "red led" in command or "red leds" in command)):
+        queries.append(self.generateQuery(command, 2, 1000, 108, 100))
+      if("bedroom" in command and ("led" in command or "party" in command or "rgb" in command)):
+        queries.append(self.generateQuery(command, 1, 1000, 107, 100))
+      if("living" in command and ("led" in command or "party" in command or "rgb" in command)):
+        queries.append(self.generateQuery(command, 2, 1000, 107, 100))
 
     if len(queries) > 0:
       # We have received a valid command. Query the server. 
