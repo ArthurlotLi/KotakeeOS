@@ -414,12 +414,40 @@ if __name__ == "__main__":
     },
   }
   """
+  """
   chain_dict = {
     "12401" : {
       "iternum" : "12301",
       "learning_rate" : 0.0002,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 2300,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
+  """
+  chain_dict = {
+    "12405" : {
+      "iternum" : "12305",
+      "learning_rate" : 0.0002,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 2500,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12406" : {
+      "iternum" : "12305",
+      "learning_rate" : 0.0003,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 2500,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+    "12407" : {
+      "iternum" : "12307",
+      "learning_rate" : 0.0002,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 2500,
       "batch_size" : 32, 
       "validation_split" : 0.2,
     },

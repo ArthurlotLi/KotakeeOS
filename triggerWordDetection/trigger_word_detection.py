@@ -98,9 +98,9 @@ class TriggerWordDetection:
         batch_size = model_parameters["batch_size"] 
         validation_split = model_parameters["validation_split"] 
       else:
-        learning_rate = 0.0001 # A healthy learning rate. 
+        learning_rate = 0.0002# A healthy learning rate. 
         loss_function = 'binary_crossentropy'
-        epochs = 50
+        epochs = 1800
         batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
         validation_split = 0.2
 
