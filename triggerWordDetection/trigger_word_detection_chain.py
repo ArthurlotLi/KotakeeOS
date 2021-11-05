@@ -466,6 +466,16 @@ if __name__ == "__main__":
     },
   }
   """
+  chain_dict = {
+    "13100" : {
+      "iternum" : "12080",
+      "learning_rate" : 0.0002,
+      "loss_function" : 'binary_crossentropy',
+      "epochs" : 2000,
+      "batch_size" : 32, 
+      "validation_split" : 0.2,
+    },
+  }
 
   trigger_word_detection_chain = TriggerWordDetectionChain(chain_dict)
   trigger_word_detection_chain.execute_chain_train()
