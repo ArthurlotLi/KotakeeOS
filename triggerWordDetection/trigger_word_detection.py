@@ -434,9 +434,9 @@ class TriggerWordDetection:
 
     # And yet another one, this one trying to mimic the original model as much as possible.
     #opt = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Results in a model that hangs on 87%.
-    opt = RMSprop(learning_rate=learning_rate)
+    #opt = RMSprop(learning_rate=learning_rate)
 
-    #opt = Adam(learning_rate=learning_rate)
+    opt = Adam(learning_rate=learning_rate)
     model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
 
     mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=True)

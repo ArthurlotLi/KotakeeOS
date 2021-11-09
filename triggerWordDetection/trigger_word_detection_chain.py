@@ -467,9 +467,9 @@ if __name__ == "__main__":
   }
   """
   chain_dict = {
-    "13100" : {
+    "13101" : {
       "iternum" : "12080",
-      "learning_rate" : 0.0002,
+      "learning_rate" : 0.0005,
       "loss_function" : 'binary_crossentropy',
       "epochs" : 2000,
       "batch_size" : 32, 
