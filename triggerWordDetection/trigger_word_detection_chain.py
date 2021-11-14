@@ -71,8 +71,8 @@ class TriggerWordDetectionChain:
   # memory of the GPU and not freak out when we train another
   # right after.
   def trigger_word_detection_worker(self, queue, model, model_identifier):
-    trigger_word_detection = TriggerWordDetection()
-    best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
+    trigger_word_detection = TriggerWordDetection(model_parameters=model)
+    best_accuracy, acc = trigger_word_detection.main(iternum = int(model["iternum"]), outputnum = model_identifier)
     ret_dict = queue.get()
     ret_dict["best_accuracy"] = best_accuracy
     ret_dict["acc"] = acc
@@ -120,14 +120,54 @@ if __name__ == "__main__":
   # saved as (don't let this overwrite other models.) The iternum
   # specified in each model's arguments refers to the dataset number
   # that will be used. 
+  #
+  # Note that the only required field is the iternum - defaults will
+  # be used for other fields if not specified. 
   chain_dict = {
-    "13170" : {
+    "13200" : {
       "iternum" : "13010",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 5,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
+    },
+    "13220" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 64,
+      "model_gru_2": 64,
+    },
+    "13240" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 192,
+      "model_gru_2": 192,
+    },
+    "13260" : {
+      "iternum" : "13060",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "dataset_size" : 5, #TODO
+      "max_positives" : 9,
+      "force_create" : True,
+    },
+    "13280" : {
+      "iternum" : "13060",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "dataset_size" : 5, #TODO
+      "max_positives" : 9,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
+    },
+    "13300" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0003,
+      "model_epochs" : 1,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
     },
   }
 
