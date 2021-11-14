@@ -53,10 +53,19 @@ class TriggerWordDetection:
   n_freq = 101 # Number of frequencies input to the model at each time step of the spectrogram
   Ty = 1375 # The number of time steps in the output of our model
 
-  #X_dev_location = "./XY_dev/X_dev.npy"
-  #Y_dev_location = "./XY_dev/Y_dev.npy"
   X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
   Y_dev_location = "./XY_dev_kotakee/Y_dev_kotakee.npy"
+
+  # File sources
+  raw_data_folder = "./raw_data"
+  raw_data_dev_folder = "./raw_data_dev"
+  dataset_output_folder = "./XY_train"
+
+  # Dataset generation parameters
+  min_positives = 0
+  max_positives = 4
+  min_negatives = 0
+  max_negatives = 2
 
   # Primary function that executes the main steps:
   # A) Dataset Processing
@@ -69,17 +78,26 @@ class TriggerWordDetection:
   # Takes in two arguments:
   # generateDataset (True/False)
   # datasetSize (int) - Will be ignored if generateDataset is False. 
-  def main(self, generateDataset, datasetSize, iternum, stopGpu = False, model_parameters = None, outputnum = None, ):
+  def main(self, generateDataset, datasetSize, iternum, stopGpu = False, generateDevSetOnly = False, model_parameters = None, outputnum = None, ):
     print("[INFO] Initializing main...")
 
     if(stopGpu is True or stopGpu is None):
       # In case you have a CUDA enabled GPU and don't want to use it. 
       os.environ['CUDA_VISIBLE_DEVICES'] = '-1' 
 
+    # In dev set mode, we generate a dataset from the raw_data_dev folder
+    # And do not attempt to train a model on it. 
+    if(generateDevSetOnly):
+      generateDataset = True
+
     x = None
     y = None
-    x, y = self.create_dataset(generateDataset, datasetSize, iternum)
+    x, y = self.create_dataset(generateDataset, datasetSize, iternum, generateDevSetOnly)
     if x is not None and y is not None:
+      if generateDevSetOnly:
+        print("[INFO] Dev set generated successfully! Goodnight...")
+        return
+
       model = None
 
       learning_rate = None
@@ -127,7 +145,7 @@ class TriggerWordDetection:
   # 2. Dynamically generate the dataset.
   # Expects raw data to be in the raw_data folder in subfolders
   # named activates, backgrounds, and negatives. 
-  def create_dataset(self, generateDataset, datasetSize, iternum):
+  def create_dataset(self, generateDataset, datasetSize, iternum, generateDevSetOnly = False):
     print("[INFO] Running create_dataset...")
 
     # What we output for the model to use. 
@@ -138,8 +156,14 @@ class TriggerWordDetection:
     promptInput = None
     if generateDataset:
       print("[INFO] Loading raw audio (This may take some time)...")
+      activates = None
+      negatives = None
+      backgrounds = None
       # Load audio segments using pydub 
-      activates, negatives, backgrounds = load_raw_audio()
+      if(generateDevSetOnly):
+        activates, negatives, backgrounds = load_raw_audio(self.raw_data_dev_folder)
+      else:
+        activates, negatives, backgrounds = load_raw_audio(self.raw_data_folder)
       print("[INFO] Raw audio loaded!")
 
       # To generate our dataset: select a random background and push that
@@ -177,12 +201,20 @@ class TriggerWordDetection:
         print("[DEBUG] final_y.shape is:", final_y.shape)    
 
         # Save the generated datasets to file. 
-        print("[INFO] Saving final_x to file...")
-        np.save("./XY_train/X_"+str(iternum)+".npy", final_x)
-        print("[INFO] Saving final_y to file...")
-        np.save("./XY_train/Y_"+str(iternum)+".npy", final_y)
+        if(generateDevSetOnly):
+          print("[INFO] Saving dev_X to file...")
+          np.save(self.X_dev_location, final_x)
+          print("[INFO] Saving dev_Y to file...")
+          np.save(self.Y_dev_location, final_y)
 
-        print("[INFO] Successfully saved X_"+str(iternum)+".npy and Y_"+str(iternum)+".npy to XY_train folder.")
+          print("[INFO] Successfully saved dev sets.")
+        else:
+          print("[INFO] Saving final_x to file...")
+          np.save(self.dataset_output_folder + "/X_"+str(iternum)+".npy", final_x)
+          print("[INFO] Saving final_y to file...")
+          np.save(self.dataset_output_folder + "/Y_"+str(iternum)+".npy", final_y)
+
+          print("[INFO] Successfully saved X_"+str(iternum)+".npy and Y_"+str(iternum)+".npy to XY_train folder.")
       else:
         print("[INFO] Skipping dataset generation...")
     else:
@@ -190,9 +222,9 @@ class TriggerWordDetection:
 
     if final_x is None and final_y is None:
       print("[INFO] Loading existing dataset file ./XY_train/X_"+str(iternum)+".npy...")
-      final_x = np.load("./XY_train/X_"+str(iternum)+".npy")
+      final_x = np.load(self.dataset_output_folder + "/X_"+str(iternum)+".npy")
       print("[INFO] Loading existing dataset file ./XY_train/Y_"+str(iternum)+".npy...")
-      final_y = np.load("./XY_train/Y_"+str(iternum)+".npy")
+      final_y = np.load(self.dataset_output_folder + "/Y_"+str(iternum)+".npy")
       print("[DEBUG] final_x.shape is:", final_x.shape)  
       print("[DEBUG] final_y.shape is:", final_y.shape) 
 
@@ -341,7 +373,7 @@ class TriggerWordDetection:
     previous_segments = []
     
     # Select 0-4 random "activate" audio clips from the entire list of "activates" recordings
-    number_of_activates = np.random.randint(0, 5)
+    number_of_activates = np.random.randint(self.min_positives, self.max_positives + 1)
     print("[DEBUG] Attempting to insert", number_of_activates, "activates.")
     random_indices = np.random.randint(len(activates), size=number_of_activates)
     random_activates = [activates[i] for i in random_indices]
@@ -358,7 +390,7 @@ class TriggerWordDetection:
           y = self.insert_ones(y, segment_end_ms=segment_end)
 
     # Select 0-2 random negatives audio recordings from the entire list of "negatives" recordings
-    number_of_negatives = np.random.randint(0, 3)
+    number_of_negatives = np.random.randint(self.min_negatives, self.max_negatives + 1)
     random_indices = np.random.randint(len(negatives), size=number_of_negatives)
     random_negatives = [negatives[i] for i in random_indices]
     print("[DEBUG] Attempting to insert", number_of_negatives, "negatives.")
@@ -439,7 +471,7 @@ class TriggerWordDetection:
     opt = Adam(learning_rate=learning_rate)
     model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
 
-    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=True)
+    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=False)
     
     history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
 
@@ -472,7 +504,6 @@ class TriggerWordDetection:
       X = BatchNormalization()(X)                                 # Batch normalization
       X = Activation('relu')(X)                                 # ReLu activation
       X = Dropout(0.8)(X)                                 # dropout (use 0.8).
-      # TODO note: changed all dropouts from 0.8 to 0.5
 
       # Step 2: First GRU Layer (≈4 lines)
       X = GRU(units = 128, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
@@ -511,12 +542,14 @@ if __name__ == "__main__":
   parser.add_argument('iternum')
   parser.add_argument('-d', action='store_false', default=True)
   parser.add_argument('-g', action='store_true', default=False)
+  parser.add_argument('-t', action='store_true', default=False)
   args = parser.parse_args()
 
   datasetSize = int(args.datasetSize)
   iternum = int(args.iternum)
   generateDataset = args.d
   stopGpu = args.g
+  generateDevSetOnly = args.t
 
   trigger_word_detection = TriggerWordDetection()
-  trigger_word_detection.main(generateDataset, datasetSize, iternum, stopGpu)
+  trigger_word_detection.main(generateDataset, datasetSize, iternum, stopGpu, generateDevSetOnly)
