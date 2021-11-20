@@ -183,8 +183,16 @@ class CommandParser:
             # Listen for input
             audio2 = self.r2.listen(source2, timeout=5,phrase_time_limit=5)
 
-            # Use Google's API to recognize the audio.
-            recognizedText = self.r2.recognize_google(audio2)
+            # However, if we do not have access to the internet,
+            # utilize pocketsphinx instead (even though it's
+            # kinda trash, becuase it's better than nothing). 
+            recognizedText = None
+            if self.actionStates is not None:
+              # Use Google's API to recognize the audio.
+              recognizedText = self.r2.recognize_google(audio2)
+            else:
+              # Use offline CMU Sphinx recognizer
+              recognizedText = self.r2.recognize_sphinx(audio2)
 
             # String cleanup
             recognizedText = recognizedText.lower()
