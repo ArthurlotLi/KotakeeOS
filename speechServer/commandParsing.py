@@ -335,31 +335,12 @@ class CommandParser:
         if("off" in command or "on" in command):
           # Manage prompt. 
           promptOnOff = "on"
+          toState = 1
           if("off" in command):
             promptOnOff = "off"
+            toState = 0
           confirmationPrompt = "Turning everything " + promptOnOff + "."
-          # Go through each room in actionStates.
-          for roomId in self.actionStates:
-            actionStatesDict = self.actionStates[roomId]
-            if isinstance(actionStatesDict, dict): # for actionStates elements that aren't dict, i.e. lastUpdate. 
-              for actionId in self.actionStates[roomId]:
-                if(str(roomId) + "." + str(actionId) in self.implementedButtons):
-                  # We have a valid action that we've implemented. 
-                  onState = 1
-                  offState = 0
-                  if(int(actionId) <= self.actions["REMOTE20"] and int(actionId) >= self.actions["REMOTE1"]):
-                    onState = 12
-                    offState = 10
-                  elif(int(actionId) <= self.actions["SWITCH5"] and int(actionId) >= self.actions["SWITCH1"]):
-                    onState = 22
-                    offState = 20
-                  elif(int(actionId) <= self.actions["KNOB5"] and int(actionId) >= self.actions["KNOB1"]):
-                    onState = 32
-                    offState = 30
-                  elif(int(actionId) <= self.actions["LEDSTRIP10"] and int(actionId) >= self.actions["LEDSTRIP1"]):
-                    onState = 107 # PARTY MODE ONLY!
-                    offState = 100
-                  queries.append(self.generateQuery(command, roomId, actionId, onState, offState))
+          queries.append(self.webServerIpAddress + "/moduleToggleAll/" + str(toState))
     elif("thermostat" in command or "temperature" in command):
       if(self.homeStatus is not None and self.homeStatus["moduleInput"] is not None and self.homeStatus["moduleInput"]['2'] is not None):
         if(self.homeStatus["moduleInput"]['2']['5251'] is not None and self.homeStatus["moduleInput"]['2']['5251']["offHeat"] is not None and self.homeStatus["moduleInput"]['2']['5251']["onHeat"] is not None):
@@ -498,12 +479,8 @@ class CommandParser:
     elif("on" in command or "activate" in command or "initialize" in command):
       return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
     else:
-      #No on or off specified. Check queried information. 
-      if(self.actionStates is not None):
-        if(self.actionStates[str(roomId)][str(actionId)] == int(onState)):
-          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
-        else:
-          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+      #No on or off specified. Let the server decide. 
+      return self.webServerIpAddress + "/moduleSwitch/"+str(roomId)+"/"+str(actionId)
 
   # Helper function I got off stack overflow - really sweet code!
   # Slightly modified to allow non-number characters. 
