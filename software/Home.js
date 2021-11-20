@@ -290,21 +290,24 @@ class Home {
   // 1 = everything turns on (party mode)
   actionToggleAll(toState){
     for(var roomId in this.roomsDict){
-      room = this.roomsDict[roomId]
-      for(actionId in room.inputActions)
-      {
-        if(parseInt(toState) == 1){
-          // Turn everything that isn't on, on
-          if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32 && actionState != 107){
-            this.actionSwitch(roomId, actionId);
+      if(this.roomsDict.hasOwnProperty(roomId)){
+        var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
+        for(var actionId in roomItem.inputActions)
+        {
+          var actionState = this.getActionState(roomId, actionId)
+          if(parseInt(toState) == 1){
+            // Turn everything that isn't on, on
+            if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32 && actionState != 107){
+              this.actionSwitch(roomId, actionId, actionState);
+            }
           }
+          else{
+            // TUrn everything that isn't off, off. 
+            if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
+              this.actionSwitch(roomId, actionId, actionState);
+            }
+          }        
         }
-        else{
-          // TUrn everything that isn't off, off. 
-          if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
-            this.actionSwitch(roomId, actionId);
-          }
-        }        
       }
     }
   }
@@ -320,11 +323,12 @@ class Home {
   // This function was migrated from clients to simplify the
   // calls necessary, reducing the need to examine the action
   // states unecessarily. 
-  actionSwitch(roomId, actionId)
+  actionSwitch(roomId, actionId, currentState = null)
   {
     // Figure out what toState is. 
     var toState = null;
-    var currentState = this.getActionState(roomId, actionId)
+    if (currentState ==  null)
+      currentState = this.getActionState(roomId, actionId)
     if(currentState == null){
       console.log("[ERROR] actionSwitch attempted to switch room " + roomId + " action " +actionId+" that has no reported state!");
       return;
