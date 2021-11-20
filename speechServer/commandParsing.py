@@ -416,7 +416,7 @@ class CommandParser:
         else:
           confirmationPrompt = "Disabling central server operations."
     elif("status" in command and ("home" in command or "system" in command or "server" in command)):
-      if(self.homeStatus is not None):
+      if(self.homeStatus is not None and self.actionStates is not None):
         # Report all information. 
         serverDisabled = "enabled"
         if(self.homeStatus["serverDisabled"] == "true" or self.homeStatus['serverDisabled'] == True):
@@ -426,9 +426,16 @@ class CommandParser:
           moduleInputDisabled = "disabled"
         onHeat = int(self.homeStatus["moduleInput"]['2']['5251']["onHeat"])
 
+        # Handle temperatures. Expects a state like "27.70_42.20".
+        lr_2_state = self.actionStates["2"]["5251"].split("_")
+        br_state = self.actionStates["1"]["5250"].split("_")
+
+        # Operational server status
         statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.homeStatus["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
+        # Action states status
+        statusString = statusString + " The Living Room is currently " + lr_2_state[0] + " degrees. The Bedroom is currently " + br_state[0] + " degrees."
         self.executeTextThread(statusString)
-        time.sleep(9) # Enough time to allow the speech prompt to complete. 
+        time.sleep(10) # Enough time to allow the speech prompt to complete. 
         return True
     elif("time" in command):
       currentTime = time.strftime("%H:%M", time.localtime())
@@ -438,9 +445,9 @@ class CommandParser:
       return True
     elif("date" in command):
       dateToday = date.today()
-      dateString = "Today is "+ calendar.day_name[dateToday.weekday()] + ", " + str(dateToday.month) + " " + str(dateToday.day)
+      dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + " " + str(dateToday.year)
       self.executeTextThread(dateString)
-      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+      time.sleep(3) # Enough time to allow the speech prompt to complete. 
       return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
@@ -457,6 +464,8 @@ class CommandParser:
         queries.append(self.generateQuery(command, 3, 350, 22, 20))
       if("bathroom" in command and ("fan" in command or "vent")):
         queries.append(self.generateQuery(command, 3, 351, 22, 20))
+      if("bathroom" in command and ("led" in command or "night" in command)):
+        queries.append(self.generateQuery(command, 3, 50, 1, 0))
       if("printer" in command):
         queries.append(self.generateQuery(command, 2, 252, 12, 10))
       if("bedroom" in command and ("night" in command or "red led" in command or "red leds" in command)):
