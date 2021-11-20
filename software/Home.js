@@ -55,6 +55,99 @@ const cannedWeatherData = {
   "cod": 200
 };
 
+/*
+  Enums to keep constant with client logic. 
+*/
+
+// TODO: Utilize the constants.js file properly instead of copy and pasting
+// this all over. 
+const actions = {
+  LIGHTING1: 50,
+  LIGHTING2: 51,
+  LIGHTING3: 52,
+  LIGHTING4: 53,
+  LIGHTING5: 54,
+  CURTAINS1: 150,
+  CURTAINS2: 151,
+  CURTAINS3: 152,
+  CURTAINS4: 153,
+  CURTAINS5: 154,
+  REMOTE1: 250,
+  REMOTE2: 251,
+  REMOTE3: 252,
+  REMOTE4: 253,
+  REMOTE5: 254,
+  REMOTE6: 255,
+  REMOTE7: 256,
+  REMOTE8: 257,
+  REMOTE9: 258,
+  REMOTE10: 259,
+  REMOTE11: 260,
+  REMOTE12: 261,
+  REMOTE13: 262,
+  REMOTE14: 263,
+  REMOTE15: 264,
+  REMOTE16: 265,
+  REMOTE17: 266,
+  REMOTE18: 267,
+  REMOTE19: 268,
+  REMOTE20: 269,
+  SWITCH1: 350,
+  SWITCH2: 351,
+  SWITCH3: 352,
+  SWITCH4: 353,
+  SWITCH5: 354,
+  KNOB1: 450,
+  KNOB2: 451,
+  KNOB3: 452,
+  KNOB4: 453,
+  KNOB5: 454,
+  // These get handled rather differently from other actions.
+  // (toState represents different pre-programmed modes.)
+  LEDSTRIP1: 1000,
+  LEDSTRIP2: 1001,
+  LEDSTRIP3: 1002,
+  LEDSTRIP4: 1003,
+  LEDSTRIP5: 1004,
+  LEDSTRIP6: 1005,
+  LEDSTRIP7: 1006,
+  LEDSTRIP8: 1007,
+  LEDSTRIP9: 1008,
+  LEDSTRIP10: 1009,
+  // Input enums. Are considered "actions" but are treated entirely differently. 
+  // Seperated from actions by 5000. Do not need to be known by client.
+  MOTION1: 5050,
+  MOTION2: 5051,
+  MOTION3: 5052,
+  MOTION4: 5053,
+  MOTION5: 5054,
+  DOOR1: 5150,
+  DOOR2: 5151,
+  DOOR3: 5152,
+  DOOR4: 5153,
+  DOOR5: 5154,
+  TEMP1: 5250,
+  TEMP2: 5251,
+  TEMP3: 5252,
+  TEMP4: 5253,
+  TEMP5: 5254,
+  ADMIN1: 5350, // Not meant to be connected to anything physical. For interactions between clients and webserver.
+  ADMIN2: 5351,
+  ADMIN3: 5352,
+  ADMIN4: 5353,
+  ADMIN5: 5354,
+}
+
+// Bedroom IDs - Should be kept constant betweeen this and client
+// application logic. 
+const rooms = {
+  BEDROOM: 1,
+  LIVINGROOM: 2,
+  BATHROOM: 3,
+}
+
+// End enums
+
 // Encompassing class for all rooms. Contains various attributes
 // regarding the home at large. 
 class Home {
@@ -189,6 +282,120 @@ class Home {
     else
       console.log("[ERROR] actionToggle failed! roomId " + roomId + " does not exist.");
     return false;
+  }
+
+  // For the entire home, execute actions corresponding to the
+  // provided state. 
+  // 0 = everything turns off
+  // 1 = everything turns on (party mode)
+  actionToggleAll(toState){
+    for(var roomId in this.roomsDict){
+      room = this.roomsDict[roomId]
+      for(actionId in room.inputActions)
+      {
+        if(parseInt(toState) == 1){
+          // Turn everything that isn't on, on
+          if(actionState != 1 && actionState != 12 && actionState != 22 && actionState != 32 && actionState != 107){
+            this.actionSwitch(roomId, actionId);
+          }
+        }
+        else{
+          // TUrn everything that isn't off, off. 
+          if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
+            this.actionSwitch(roomId, actionId);
+          }
+        }        
+      }
+    }
+  }
+
+  // In comparison to actionToggle, this function only takes
+  // in the roomId + actionId and automatically changes the
+  // state of something to the opposite state, given that 
+  // it is a binary function. 
+  //
+  // A special case to note is that of LED strips - we only
+  // go between off and 107 for those via this. 
+  //
+  // This function was migrated from clients to simplify the
+  // calls necessary, reducing the need to examine the action
+  // states unecessarily. 
+  actionSwitch(roomId, actionId)
+  {
+    // Figure out what toState is. 
+    var toState = null;
+    var currentState = this.getActionState(roomId, actionId)
+    if(currentState == null){
+      console.log("[ERROR] actionSwitch attempted to switch room " + roomId + " action " +actionId+" that has no reported state!");
+      return;
+    }
+    // Highest Lighting and Lowest Lighting are expected to be
+    // numerical bounds for general category. 
+    if(parseInt(actionId) <= actions.REMOTE19 && parseInt(actionId) >= actions.REMOTE1){
+      if(currentState == 10) {
+        toState = 12;
+      }
+      else if (currentState == 12){
+        toState = 10;
+      }
+      else{
+        // current state is 11 or something else. Ignore. 
+        console.log("[WARNING] actionSwitch attempted to toggle action with current state of 11. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.SWITCH5 && parseInt(actionId) >= actions.SWITCH1){
+      if(currentState == 20) {
+        toState = 22;
+      }
+      else if (currentState == 22){
+        toState = 20;
+      }
+      else{
+        // current state is 21 or something else. Ignore. 
+        console.log("[WARNING] actionSwitch attempted to toggle action with current state of 21. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.KNOB5 && parseInt(actionId) >= actions.KNOB1){
+      if(currentState == 30) {
+        toState = 32;
+      }
+      else if (currentState == 32){
+        toState = 30;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("[WARNING] actionSwitch attempted to toggle action with current state of 31. Ignored.");
+      }
+    }
+    else if(parseInt(actionId) <= actions.LEDSTRIP10 && parseInt(actionId) >= actions.LEDSTRIP1){
+      // TODO: Right now this is hard coded. We should be able to 
+      // store state numbers per combination (i.e. "2.1000: 107")
+      if(ledMode == null){
+        ledMode = 107;
+      }
+      if(currentState == 100 || currentState != ledMode) {
+        toState = ledMode;
+      }
+      else if (currentState != 100){
+        toState = 100;
+      }
+      else{
+        // current state is 31 or something else. Ignore. 
+        console.log("[WARNING] actionSwitch attempted to toggle action with current state of 31. Ignored.");
+      }
+    }
+    else{
+      // We default to a binary paradigm.
+      if(currentState == 0){
+        toState = 1;
+      }
+      else {
+        toState = 0;
+      }
+    }
+
+    // We now have the correct state. Switch it. 
+    this.actionToggle(roomId, actionId, toState)
   }
 
   // Given roomId, actionId, and toState, use stored room 

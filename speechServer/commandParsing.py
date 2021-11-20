@@ -169,12 +169,6 @@ class CommandParser:
       # executed.
       for i in range(self.maxCommandAttempts): 
         try:
-            # Notify user via text prompt. 
-            #self.executeTextThread(self.hotWordReceiptPrompt)
-            #time.sleep(0.7) # Try not to detet the prompt. 
-
-            # Notify user that we're listening via chime.
-            #self.querySpeechServerInput(1, 2, 5352)
             self.executeChime()
 
             print("[DEBUG] Now Listening for Command...")
@@ -218,13 +212,6 @@ class CommandParser:
     
     # Indicate that you are no longer active. 
     self.querySpeechServerLED(0, 2, 51)
-
-    # Stopping. Let user know big brother google is no longer
-    # listening. 
-    #
-    # Note: Disabled for more passive experience. 
-    #if successfulCommand is False:
-      #self.executeTextThread(self.cancellationPrompt)
 
   # Non-blocking text to speech. Do be warned this
   # might interefere with the speech recognition. 
@@ -304,7 +291,8 @@ class CommandParser:
     except:
       print("[WARNING] querySpeechServerInput unable to connect to server.")
 
-  # Let out a chime to indicate that you're listening
+  # Let out a chime to indicate that you're listening. This code
+  # is not mine, but it works like a charm!
   def executeChime(self):
     chunk = 1024
     f = wave.open(self.chime_location, "rb")
@@ -324,7 +312,8 @@ class CommandParser:
     p.terminate()
 
   # Given a queried command from the google text recognition
-  # API, parse and execute accordingly.
+  # API, parse and execute accordingly. Executes rudimentary
+  # language processing by finding keywords and acting accordingly. 
   def parseAndExecuteCommand(self, command):
     # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
     queries = []

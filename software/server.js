@@ -609,6 +609,39 @@ app.get('/moduleInputDisabled/:bool', (req, res) => {
   }
 });
 
+// Handle requests to either turn everything off or on. 
+// 1 or 0 is synonymous with what you'd expect.
+// Ex) http://192.168.0.197/moduleToggleAll/1
+app.get('/moduleToggleAll/:toState', (req, res) => {
+  console.log("[DEBUG] /moduleToggleAll GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.toState != null && req.params.toState != "null"){
+    var toState = parseInt(req.params.toState);
+    if(toState != null){
+      home.actionToggleAll(toState);
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
+});
+
+// Handle requests from clients to switch modules without
+// explicitly stating the desired final state. 
+// Ex) http://192.168.0.197/moduleSwitch/1/50
+app.get('/moduleSwitch/:roomId/:actionId', (req, res) => {
+  console.log("[DEBUG] /moduleSwitch GET request received. Arguments: " + JSON.stringify(req.params));
+  if(req.params.roomId != null && req.params.roomId != "null" && req.params.actionId != null && req.params.actionId != "null"){
+    var roomId = parseInt(req.params.roomId);
+    var actionId = parseInt(req.params.actionId);
+    if(roomId != null && actionId != null){
+      home.actionSwitch(roomId, actionId);
+      // For now, we'll send 200 regardless of status. We won't block for actionToggle to execute. 
+      return res.status(200).send();
+    }
+  }
+  return res.status(400).send();
+});
+
 // TODO: Abstract this so that we could potentially have 
 // multiple satellites. 
 app.get('/toggleHotwordNoneSatellite', (req, res) => {
