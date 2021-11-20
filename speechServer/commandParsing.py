@@ -11,6 +11,8 @@ import speech_recognition as sr
 import pyttsx3
 import requests
 import time
+from datetime import date
+import calendar
 import threading
 import json
 
@@ -204,7 +206,7 @@ class CommandParser:
         except sr.UnknownValueError:
           print("[Warning] Last sentence was not understood.")
         except sr.WaitTimeoutError:
-          pass
+          print("[Warning] Timeout occured.")
     
     # Indicate that you are no longer active. 
     self.querySpeechServerLED(0, 2, 51)
@@ -240,47 +242,59 @@ class CommandParser:
   def queryActionStates(self):
     query = self.webServerIpAddress + "/actionStates/" + str(self.actionStatesLastUpdate)
     print("[DEBUG] Querying server: " + query)
-    response = requests.get(query)
-    if(response.status_code == 200):
-      self.actionStates = json.loads(response.text)
-      self.actionStatesLastUpdate = self.actionStates['lastUpdate']
-      print("[DEBUG] Action States request received successfully. actionStatesLastUpdate is now: " + str(self.actionStatesLastUpdate))
-      #print(str(actionStates))
-    elif(response.status_code != 204):
-      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    try:
+      response = requests.get(query)
+      if(response.status_code == 200):
+        self.actionStates = json.loads(response.text)
+        self.actionStatesLastUpdate = self.actionStates['lastUpdate']
+        print("[DEBUG] Action States request received successfully. actionStatesLastUpdate is now: " + str(self.actionStatesLastUpdate))
+        #print(str(actionStates))
+      elif(response.status_code != 204):
+        print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    except:
+      print("[WARNING] queryActionStates unable to connect to server.")
 
   # Queries server for misc non-module information
   def queryHomeStatus(self):
     query = self.webServerIpAddress + "/homeStatus/" + str(self.homeStatusLastUpdate)
     print("[DEBUG] Querying server: " + query)
-    response = requests.get(query)
-    if(response.status_code == 200):
-      self.homeStatus = json.loads(response.text)
-      self.homeStatusLastUpdate = self.homeStatus['lastUpdate']
-      print("[DEBUG] Home Status request received successfully. homeStatusLastUpdate is now: " + str(self.homeStatusLastUpdate))
-      #print(str(homeStatus))
-    elif(response.status_code != 204):
-      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    try:
+      response = requests.get(query)
+      if(response.status_code == 200):
+        self.homeStatus = json.loads(response.text)
+        self.homeStatusLastUpdate = self.homeStatus['lastUpdate']
+        print("[DEBUG] Home Status request received successfully. homeStatusLastUpdate is now: " + str(self.homeStatusLastUpdate))
+        #print(str(homeStatus))
+      elif(response.status_code != 204):
+        print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    except:
+      print("[WARNING] queryHomeStatus unable to connect to server.")
 
   # Experimental - queries server to turn speech server signal light on/off. 
   def querySpeechServerLED(self, toState, roomId, actionId):
     query = self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
     print("[DEBUG] Querying server: " + query)
-    response = requests.get(query)
-    if(response.status_code == 200):
-      print("[DEBUG] querySpeechServerLED request received successfully.")
-    elif(response.status_code != 204):
-      print("[WARNING] Server rejected querySpeechServerLED request with status code " + str(response.status_code) + ".")
+    try:
+      response = requests.get(query)
+      if(response.status_code == 200):
+        print("[DEBUG] querySpeechServerLED request received successfully.")
+      elif(response.status_code != 204):
+        print("[WARNING] Server rejected querySpeechServerLED request with status code " + str(response.status_code) + ".")
+    except:
+      print("[WARNING] querySpeechServerLED unable to connect to server.")
 
   # Experimental - queries server providing input. 
   def querySpeechServerInput(self, toState, roomId, actionId):
     query = self.webServerIpAddress + "/moduleInput/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
     print("[DEBUG] Querying server: " + query)
-    response = requests.get(query)
-    if(response.status_code == 200):
-      print("[DEBUG] querySpeechServerInput request received successfully.")
-    elif(response.status_code != 204):
-      print("[WARNING] Server rejected querySpeechServerInput request with status code " + str(response.status_code) + ".")
+    try:
+      response = requests.get(query)
+      if(response.status_code == 200):
+        print("[DEBUG] querySpeechServerInput request received successfully.")
+      elif(response.status_code != 204):
+        print("[WARNING] Server rejected querySpeechServerInput request with status code " + str(response.status_code) + ".")
+    except:
+      print("[WARNING] querySpeechServerInput unable to connect to server.")
 
   # Let out a chime to indicate that you're listening
   def executeChime(self):
@@ -416,6 +430,18 @@ class CommandParser:
         self.executeTextThread(statusString)
         time.sleep(9) # Enough time to allow the speech prompt to complete. 
         return True
+    elif("time" in command):
+      currentTime = time.strftime("%H:%M", time.localtime())
+      timeString = "It is currently " + currentTime + "."
+      self.executeTextThread(timeString)
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+      return True
+    elif("date" in command):
+      dateToday = date.today()
+      dateString = "Today is "+ calendar.day_name[dateToday.weekday()] + ", " + str(dateToday.month) + " " + str(dateToday.day)
+      self.executeTextThread(dateString)
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+      return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))
