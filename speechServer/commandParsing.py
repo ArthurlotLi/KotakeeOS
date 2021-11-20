@@ -415,15 +415,15 @@ class CommandParser:
         self.executeTextThread(statusString)
         time.sleep(10) # Enough time to allow the speech prompt to complete. 
         return True
-    elif("time" in command):
-      currentTime = time.strftime("%H:%M", time.localtime())
+    elif("time" in command or "clock" in command):
+      currentTime = time.strftime("%H%M", time.localtime())
       timeString = "It is currently " + currentTime + "."
       self.executeTextThread(timeString)
       time.sleep(2) # Enough time to allow the speech prompt to complete. 
       return True
-    elif("date" in command):
+    elif("date" in command or "day" in command or "month" in command):
       dateToday = date.today()
-      dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + " " + str(dateToday.year)
+      dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
       self.executeTextThread(dateString)
       time.sleep(3) # Enough time to allow the speech prompt to complete. 
       return True
