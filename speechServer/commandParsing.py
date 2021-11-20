@@ -1,6 +1,5 @@
 #
 # commandParsing.py
-# (Yes I know my camelCase vs _ styling is all over the place)
 #
 # Contains command parsing software used by all variants
 # of the kotakeeOS speechServer. Uses google speech recognition
@@ -12,7 +11,6 @@ import pyttsx3
 import requests
 import time
 from datetime import date
-import calendar
 import threading
 import json
 
@@ -421,7 +419,7 @@ class CommandParser:
       self.executeTextThread(timeString)
       time.sleep(2) # Enough time to allow the speech prompt to complete. 
       return True
-    elif("date" in command or "day" in command or "month" in command):
+    elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()
       dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
       self.executeTextThread(dateString)

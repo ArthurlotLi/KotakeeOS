@@ -54,7 +54,7 @@ https://stackoverflow.com/questions/34617452/how-to-update-xcode-from-command-li
 ------------------------------------------------------------------------------
 
 1) Navigate inside of software directory
-2) Execute "npm install". 
+2) Execute "npm install"
 3) Execute "npm start"
 
 ------------------------------------------------------------------------------
