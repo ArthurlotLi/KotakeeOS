@@ -71,8 +71,8 @@ class TriggerWordDetectionChain:
   # memory of the GPU and not freak out when we train another
   # right after.
   def trigger_word_detection_worker(self, queue, model, model_identifier):
-    trigger_word_detection = TriggerWordDetection()
-    best_accuracy, acc = trigger_word_detection.main(generateDataset = False, datasetSize = 1, iternum = int(model["iternum"]), outputnum = model_identifier, model_parameters=model)
+    trigger_word_detection = TriggerWordDetection(model_parameters=model)
+    best_accuracy, acc = trigger_word_detection.main(iternum = int(model["iternum"]), outputnum = model_identifier)
     ret_dict = queue.get()
     ret_dict["best_accuracy"] = best_accuracy
     ret_dict["acc"] = acc
@@ -120,360 +120,54 @@ if __name__ == "__main__":
   # saved as (don't let this overwrite other models.) The iternum
   # specified in each model's arguments refers to the dataset number
   # that will be used. 
-
-  # Experiment 0
-  """
+  #
+  # Note that the only required field is the iternum - defaults will
+  # be used for other fields if not specified. 
   chain_dict = {
-    "11005" : {
-      "iternum" : "11000",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13200" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
     },
-    "11006" : {
-      "iternum" : "10999",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13220" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 64,
+      "model_gru_2": 64,
     },
-  }
-  """
-  # Experiment 1
-  """
-  chain_dict = {
-    "12001" : {
-      "iternum" : "12000",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1300,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13240" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "model_gru_1": 192,
+      "model_gru_2": 192,
     },
-  }
-  """
-  # Experiment 2
-  """
-  chain_dict = {
-    "12151" : {
-      "iternum" : "12051",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13260" : {
+      "iternum" : "13060",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "dataset_size" : 5, #TODO
+      "max_positives" : 9,
+      "force_create" : True,
     },
-    "12152" : {
-      "iternum" : "12052",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13280" : {
+      "iternum" : "13060",
+      "model_learning_rate" : 0.0002,
+      "model_epochs" : 1,
+      "dataset_size" : 5, #TODO
+      "max_positives" : 9,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
     },
-    "12153" : {
-      "iternum" : "12053",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12154" : {
-      "iternum" : "12054",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12155" : {
-      "iternum" : "12055",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12156" : {
-      "iternum" : "12056",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12157" : {
-      "iternum" : "12057",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12158" : {
-      "iternum" : "12058",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12159" : {
-      "iternum" : "12059",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  # Experiment 3
-  """
-  chain_dict = {
-    "12160" : {
-      "iternum" : "12060",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 800,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12161" : {
-      "iternum" : "12060",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  # Experiment 4
-  """
-  chain_dict = {
-    "12162" : {
-      "iternum" : "12062",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  # Experiment 5
-  """
-  chain_dict = {
-    "12163" : {
-      "iternum" : "12063",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  # Experiment 6
-  """
-  chain_dict = {
-    "12164" : {
-      "iternum" : "12064",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  # Experiment 7
-  """
-  chain_dict = {
-    "12165" : {
-      "iternum" : "12065",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12166" : {
-      "iternum" : "12066",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12167" : {
-      "iternum" : "12067",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12168" : {
-      "iternum" : "12068",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-   # Experiment 6
-  """
-  chain_dict = {
-    "12169" : {
-      "iternum" : "12069",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12171" : {
-      "iternum" : "12071",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12170" : {
-      "iternum" : "12070",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2200,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12172" : {
-      "iternum" : "12072",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1600,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12180" : {
-      "iternum" : "12080",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12195" : {
-      "iternum" : "12095",
-      "learning_rate" : 0.0001,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 1700,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12250" : {
-      "iternum" : "12080",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2200,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12401" : {
-      "iternum" : "12301",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2300,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12405" : {
-      "iternum" : "12305",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12406" : {
-      "iternum" : "12305",
-      "learning_rate" : 0.0003,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-    "12407" : {
-      "iternum" : "12307",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2500,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  """
-  chain_dict = {
-    "12420" : {
-      "iternum" : "12320",
-      "learning_rate" : 0.0002,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
-    },
-  }
-  """
-  chain_dict = {
-    "13101" : {
-      "iternum" : "12080",
-      "learning_rate" : 0.0005,
-      "loss_function" : 'binary_crossentropy',
-      "epochs" : 2000,
-      "batch_size" : 32, 
-      "validation_split" : 0.2,
+    "13300" : {
+      "iternum" : "13010",
+      "model_learning_rate" : 0.0003,
+      "model_epochs" : 1,
+      "model_gru_1": 160,
+      "model_gru_2": 160,
     },
   }
 

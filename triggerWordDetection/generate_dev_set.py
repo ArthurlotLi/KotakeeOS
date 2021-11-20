@@ -57,18 +57,25 @@ class GenerateDevSet:
     array_y = []
     for filename in os.listdir(self.dev_recordings_location):
         if filename.endswith("wav"):
+            # Process y by generating array from provided timestep entry. 
+            if(filename not in timesteps):
+              print("[INFO] No corresponding timestep entry for filename " + filename + "was found! Skipping.")
+              continue
+            
+            # Update 11/12/21 - Do not add empty clips to the dataset to
+            # encourage models that have better true positives rather than
+            # true negatives. 
+            if (len(timesteps[filename]) == 0):
+              print("[INFO] Skipping filename " + filename + " as it contains no true positives.")
+              continue
+
             # Process x by reading in file. 
             x = graph_spectrogram(self.dev_recordings_location + "/"+filename)
             if x.shape == (101, 5511):
               array_x.append(np.transpose(x, (1, 0)))
             else:
               print("[WARNING] File "+filename+" had an X array of incorrect shape!")
-              return
-
-            # Process y by generating array from provided timestep entry. 
-            if(filename not in timesteps):
-              print("[ERROR] No corresponding timestep entry for filename " + filename + "was found!")
-              return
+              continue
 
             # We are given the ms. Need to convert to ts. (x = 0.1375t) where
             # t is in milliseconds and x is the resulting timestep. 
@@ -90,11 +97,11 @@ class GenerateDevSet:
               array_y.append(np.transpose(y, (1, 0))) # We want to go from (1, 1375) to (1375, 1)
             else:
               print("[WARNING] File "+filename+" was provided a Y array of incorrect shape!")
-              return
+              continue
 
             totalFiles = totalFiles + 1
             print("[INFO] Processed WAV file " + str(totalFiles) + " " + self.dev_recordings_location + "/"+filename + ".")
-            print("       " + str(num_activates) + " trigger words added with timesteps: " + activates_string)
+            print("       ->" + str(num_activates) + " trigger words added with timesteps: " + activates_string)
 
     print("[INFO] Combining all generated x arrays...")
     final_x = np.array(array_x)

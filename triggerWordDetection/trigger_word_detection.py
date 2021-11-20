@@ -53,10 +53,67 @@ class TriggerWordDetection:
   n_freq = 101 # Number of frequencies input to the model at each time step of the spectrogram
   Ty = 1375 # The number of time steps in the output of our model
 
-  #X_dev_location = "./XY_dev/X_dev.npy"
-  #Y_dev_location = "./XY_dev/Y_dev.npy"
+  # File sources
+  raw_data_folder = "./raw_data"
+  raw_data_dev_folder = "./raw_data_dev"
+  dataset_output_folder = "./XY_train"
   X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
   Y_dev_location = "./XY_dev_kotakee/Y_dev_kotakee.npy"
+
+  # The following are parameters that may be provided programatically 
+  # to the class. Defaults are used if none are provided. 
+
+  # Dataset generation parameters
+  dataset_size = 10
+  min_positives = 0
+  max_positives = 4
+  min_negatives = 0
+  max_negatives = 2
+  force_create = False # We'll overwrite an existing dataset if exists. 
+
+  # Model parameters. 
+  model_learning_rate = 0.0002
+  model_loss_function = 'binary_crossentropy'
+  model_epochs = 5
+  model_batch_size = 32
+  model_validation_split = 0.2
+  model_conv1d = 196
+  model_gru_1 = 128
+  model_gru_2 = 128
+
+  # Additional parameters
+  mcp_save_best_only = False
+  use_adam_instead_of_rmsprop = True
+  adam_beta_1 = None 
+  adam_beta_2 = None
+  adam_decay = None
+  #adam_beta_1 = 0.9 
+  #adam_beta_2 = 0.999
+  #adam_decay = 0.01
+  
+  # All arguments are optional. 
+  def __init__(self, model_parameters = None):
+    if "dataset_size" in model_parameters: self.dataset_size = model_parameters["dataset_size"]
+    if "min_positives" in model_parameters: self.min_positives = model_parameters["min_positives"]
+    if "max_positives" in model_parameters: self.max_positives = model_parameters["max_positives"]
+    if "min_negatives" in model_parameters: self.min_negatives = model_parameters["min_negatives"]
+    if "max_negatives" in model_parameters: self.max_negatives = model_parameters["max_negatives"]
+    if "force_create" in model_parameters: self.force_create = model_parameters["force_create"]
+
+    if "model_learning_rate" in model_parameters: self.model_learning_rate = model_parameters["model_learning_rate"]
+    if "model_loss_function" in model_parameters: self.model_loss_function = model_parameters["model_loss_function"]
+    if "model_epochs" in model_parameters: self.model_epochs = model_parameters["model_epochs"]
+    if "model_batch_size" in model_parameters: self.model_batch_size = model_parameters["model_batch_size"]
+    if "model_validation_split" in model_parameters: self.model_validation_split = model_parameters["model_validation_split"]
+    if "model_conv1d" in model_parameters: self.model_conv1d = model_parameters["model_conv1d"]
+    if "model_gru_1" in model_parameters: self.model_gru_1 = model_parameters["model_gru_1"]
+    if "model_gru_2" in model_parameters: self.model_gru_2 = model_parameters["model_gru_2"]
+
+    if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
+    if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
+    if "adam_beta_1" in model_parameters: self.adam_beta_1 = model_parameters["adam_beta_1"]
+    if "adam_beta_2" in model_parameters: self.adam_beta_2 = model_parameters["adam_beta_2"]
+    if "adam_decay" in model_parameters: self.adam_decay = model_parameters["adam_decay"]
 
   # Primary function that executes the main steps:
   # A) Dataset Processing
@@ -65,46 +122,25 @@ class TriggerWordDetection:
   # B) Model Processing
   #    3. Train the model with the generated dataset.
   #    4. Save the model.
-  #
-  # Takes in two arguments:
-  # generateDataset (True/False)
-  # datasetSize (int) - Will be ignored if generateDataset is False. 
-  def main(self, generateDataset, datasetSize, iternum, stopGpu = False, model_parameters = None, outputnum = None, ):
+  def main(self, iternum, outputnum = None, stopGpu = False, generateDevSetOnly = False):
     print("[INFO] Initializing main...")
-
     if(stopGpu is True or stopGpu is None):
       # In case you have a CUDA enabled GPU and don't want to use it. 
       os.environ['CUDA_VISIBLE_DEVICES'] = '-1' 
 
     x = None
     y = None
-    x, y = self.create_dataset(generateDataset, datasetSize, iternum)
+    x, y = self.create_dataset(self.dataset_size, iternum, generateDevSetOnly)
+
     if x is not None and y is not None:
-      model = None
-
-      learning_rate = None
-      loss_function = None
-      epochs = None
-      batch_size = None
-      validation_split = None
-
+      if generateDevSetOnly:
+        print("[INFO] Dev set generated successfully! Goodnight...")
+        return
       if outputnum is None:
         outputnum = iternum
 
-      if model_parameters is not None:
-        learning_rate = model_parameters["learning_rate"] 
-        loss_function = model_parameters["loss_function"] 
-        epochs = model_parameters["epochs"] 
-        batch_size = model_parameters["batch_size"] 
-        validation_split = model_parameters["validation_split"] 
-      else:
-        learning_rate = 0.0002# A healthy learning rate. 
-        loss_function = 'binary_crossentropy'
-        epochs = 1800
-        batch_size=32 # In general, 32 is a good starting point, then try 64, 128, 256. Smaller but not too small is optimal for accuracy. 
-        validation_split = 0.2
-
-      model, best_accuracy, acc = self.train_model(X=x, Y=y, modelnum = outputnum, iternum=iternum, learning_rate=learning_rate, loss_function=loss_function, epochs=epochs, batch_size=batch_size, validation_split=validation_split)
+      model = None
+      model, best_accuracy, acc = self.train_model(X=x, Y=y, modelnum = outputnum, iternum=iternum)
 
       if model is not None:
         result = self.save_model(model, outputnum)
@@ -115,7 +151,6 @@ class TriggerWordDetection:
           print("[ERROR] Unable to save the model! Execution failed.")
       else:
         print("[ERROR] model was None! Execution failed.")
-
     else:
         print("[ERROR] datasets x and/or y was None! Execution failed.")
 
@@ -127,19 +162,39 @@ class TriggerWordDetection:
   # 2. Dynamically generate the dataset.
   # Expects raw data to be in the raw_data folder in subfolders
   # named activates, backgrounds, and negatives. 
-  def create_dataset(self, generateDataset, datasetSize, iternum):
+  def create_dataset(self, datasetSize, iternum, generateDevSetOnly = False):
     print("[INFO] Running create_dataset...")
 
     # What we output for the model to use. 
     final_x = None
     final_y = None
 
-    # Ask for confirmation, because we might be overwriting stuff.
-    promptInput = None
-    if generateDataset:
+    # On principle, we will not overwrite an existing dataset. If it
+    # does not exist, we'll create it according to the given parameters. 
+    if (final_x is None and final_y is None) and (self.force_create is False):
+      try:
+        print("[INFO] Attempting to load existing dataset file ./XY_train/X_"+str(iternum)+".npy...")
+        final_x = np.load(self.dataset_output_folder + "/X_"+str(iternum)+".npy")
+        print("[INFO] Attempting to load existing dataset file ./XY_train/Y_"+str(iternum)+".npy...")
+        final_y = np.load(self.dataset_output_folder + "/Y_"+str(iternum)+".npy")
+        print("[DEBUG] final_x.shape is:", final_x.shape)  
+        print("[DEBUG] final_y.shape is:", final_y.shape) 
+      except:
+        print("[INFO] Dataset file not found! Initiating dataset generation process...")
+        final_x = None
+        final_y = None
+
+    # Dataset does not exist, let's create a new dataset. 
+    if (final_x is None and final_y is None) or (self.force_create is True):
       print("[INFO] Loading raw audio (This may take some time)...")
+      activates = None
+      negatives = None
+      backgrounds = None
       # Load audio segments using pydub 
-      activates, negatives, backgrounds = load_raw_audio()
+      if(generateDevSetOnly):
+        activates, negatives, backgrounds = load_raw_audio(self.raw_data_dev_folder)
+      else:
+        activates, negatives, backgrounds = load_raw_audio(self.raw_data_folder)
       print("[INFO] Raw audio loaded!")
 
       # To generate our dataset: select a random background and push that
@@ -147,54 +202,45 @@ class TriggerWordDetection:
       # as you'd like. Write all that stuff to a file and you're done? 
       clips_to_generate = datasetSize
 
-      while promptInput is None or (promptInput != "y" and promptInput != "n"):
-        promptInput = input("[NOTICE] A new training dataset of size " +str(clips_to_generate)+" will be generated. Continue? (y/n)\n")
-        promptInput = promptInput.lower()
+      print("[INFO] Initiating dataset generation of size " +str(clips_to_generate)+".")
+      array_x = []
+      array_y = []
+      for i in range(clips_to_generate):
+        print("[DEBUG] Generating clip " + str(i) + "...")
+        random_indices = np.random.randint(len(backgrounds), size=1)
+        random_background = random_indices[0]
+        x, y = self.create_training_example(backgrounds[random_background], activates, negatives)
+        if x.shape == (101, 5511) and y.shape == (1, 1375):
+          array_x.append(np.transpose(x, (1, 0)))
+          array_y.append(np.transpose(y, (1, 0))) # We want to go from (1, 1375) to (1375, 1)
+        else:
+          print("[WARNING] Generated x and y of incorrect shapes! Discarding...")
+      # A nice little learning moment here for numpy arrays. You can use
+      # array() to create a new dimension, while concatenate() and vstack()
+      # work on existing dimensions. 
+      print("[INFO] Combining all generated x arrays...")
+      final_x = np.array(array_x)
+      print("[INFO] Combining all generated y arrays...")
+      final_y = np.array(array_y)
       
-      if promptInput == "y":
-        print("[INFO] Initiating dataset generation...")
-        array_x = []
-        array_y = []
-        for i in range(clips_to_generate):
-          print("[DEBUG] Generating clip " + str(i) + "...")
-          random_indices = np.random.randint(len(backgrounds), size=1)
-          random_background = random_indices[0]
-          x, y = self.create_training_example(backgrounds[random_background], activates, negatives)
-          if x.shape == (101, 5511) and y.shape == (1, 1375):
-            array_x.append(np.transpose(x, (1, 0)))
-            array_y.append(np.transpose(y, (1, 0))) # We want to go from (1, 1375) to (1375, 1)
-          else:
-            print("[WARNING] Generated x and y of incorrect shapes! Discarding...")
-        # A nice little learning moment here for numpy arrays. You can use
-        # array() to create a new dimension, while concatenate() and vstack()
-        # work on existing dimensions. 
-        print("[INFO] Combining all generated x arrays...")
-        final_x = np.array(array_x)
-        print("[INFO] Combining all generated y arrays...")
-        final_y = np.array(array_y)
-        
-        print("[DEBUG] final_x.shape is:", final_x.shape)  
-        print("[DEBUG] final_y.shape is:", final_y.shape)    
+      print("[DEBUG] final_x.shape is:", final_x.shape)  
+      print("[DEBUG] final_y.shape is:", final_y.shape)    
 
-        # Save the generated datasets to file. 
+      # Save the generated datasets to file. 
+      if(generateDevSetOnly):
+        print("[INFO] Saving dev_X to file...")
+        np.save(self.X_dev_location, final_x)
+        print("[INFO] Saving dev_Y to file...")
+        np.save(self.Y_dev_location, final_y)
+
+        print("[INFO] Successfully saved dev sets.")
+      else:
         print("[INFO] Saving final_x to file...")
-        np.save("./XY_train/X_"+str(iternum)+".npy", final_x)
+        np.save(self.dataset_output_folder + "/X_"+str(iternum)+".npy", final_x)
         print("[INFO] Saving final_y to file...")
-        np.save("./XY_train/Y_"+str(iternum)+".npy", final_y)
+        np.save(self.dataset_output_folder + "/Y_"+str(iternum)+".npy", final_y)
 
         print("[INFO] Successfully saved X_"+str(iternum)+".npy and Y_"+str(iternum)+".npy to XY_train folder.")
-      else:
-        print("[INFO] Skipping dataset generation...")
-    else:
-      print("[INFO] Skipping dataset generation...")
-
-    if final_x is None and final_y is None:
-      print("[INFO] Loading existing dataset file ./XY_train/X_"+str(iternum)+".npy...")
-      final_x = np.load("./XY_train/X_"+str(iternum)+".npy")
-      print("[INFO] Loading existing dataset file ./XY_train/Y_"+str(iternum)+".npy...")
-      final_y = np.load("./XY_train/Y_"+str(iternum)+".npy")
-      print("[DEBUG] final_x.shape is:", final_x.shape)  
-      print("[DEBUG] final_y.shape is:", final_y.shape) 
 
     return final_x, final_y
 
@@ -341,7 +387,7 @@ class TriggerWordDetection:
     previous_segments = []
     
     # Select 0-4 random "activate" audio clips from the entire list of "activates" recordings
-    number_of_activates = np.random.randint(0, 5)
+    number_of_activates = np.random.randint(self.min_positives, self.max_positives + 1)
     print("[DEBUG] Attempting to insert", number_of_activates, "activates.")
     random_indices = np.random.randint(len(activates), size=number_of_activates)
     random_activates = [activates[i] for i in random_indices]
@@ -358,7 +404,7 @@ class TriggerWordDetection:
           y = self.insert_ones(y, segment_end_ms=segment_end)
 
     # Select 0-2 random negatives audio recordings from the entire list of "negatives" recordings
-    number_of_negatives = np.random.randint(0, 3)
+    number_of_negatives = np.random.randint(self.min_negatives, self.max_negatives + 1)
     random_indices = np.random.randint(len(negatives), size=number_of_negatives)
     random_negatives = [negatives[i] for i in random_indices]
     print("[DEBUG] Attempting to insert", number_of_negatives, "negatives.")
@@ -384,7 +430,7 @@ class TriggerWordDetection:
   #
 
   # 3. Train the model with the generated model.
-  def train_model(self, X, Y, modelnum, iternum, learning_rate, loss_function, epochs, batch_size, validation_split):
+  def train_model(self, X, Y, modelnum, iternum):
     print("[INFO] Running train_model...")
 
     model = self.define_model(input_shape = (self.Tx, self.n_freq))
@@ -392,56 +438,20 @@ class TriggerWordDetection:
     model.summary()
     verbose = True
 
-    # Compiling the Neural Network with all of this, using RMSprop optimizer, with no callbacks. 
-    # This resulted in a model that was overfit at around 98% train accuracy. 
-    #opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
-    #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-    #history = model.fit(X, Y, shuffle=True, epochs=epochs, validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+    opt = None
+    if(self.use_adam_instead_of_rmsprop):
+      if (self.adam_beta_1 is not None and self.adam_beta_2 is not None and self.adam_decay is not None):
+        opt = Adam(learning_rate=self.model_learning_rate, beta_1=self.adam_beta_1, beta_2=self.adam_beta_2, decay=self.adam_decay)
+      else:
+        opt = Adam(learning_rate=self.model_learning_rate)
+    else:
+      opt = RMSprop(learning_rate=self.model_learning_rate)
 
-    # A simplified version.
-    # Resulted in a model that was apparently underfit at 93-95 train accuracy trained on 0s. 
-    #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
-    #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-    #history = model.fit(X, Y, epochs=epochs, verbose=verbose, batch_size=batch_size)
+    model.compile(optimizer=opt, loss = self.model_loss_function, metrics=["accuracy"])
 
-    # A more complicated version using Adam and various measures against overfitting.
-    # Resulted in a model that was apparently underfit at 93-95 train accuracy trained on 0s. 
-    #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) I don't know what these mean
-    #opt = Adam(learning_rate=learning_rate)
-    #opt = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Let's try it? 
-    # Define early stopping to save time (don't train if nothing's improving.)
-    #es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
-    # Similarily, start spinning down the learning rate when a plateau has been detected.
-    #rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
-    # Define checkpointing so that we can revert in time if we end up worse than we were before. 
-    #mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
-    #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[es, rlr, mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
-
-    # And a new training parameter set to address both underfitting and overfitting (I think)
-    # 
-    # Observations:
-    # - Resulted in a model that had 86% DEV set accuracy trained on 1000 samples! Heck yeah! Ran for 343 epochs out of 400. 
-    # - Resulted in a homegrown trigger wrod model that had overfit on 1500 samples at exactly 500 epochs out of 500. 
-    #opt = RMSprop(learning_rate=learning_rate) # This was suggested on the github issues. 
-    #model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-    # Define early stopping to save time (don't train if nothing's improving.)
-    #es = EarlyStopping(monitor='accuracy', min_delta = es_min_delta, patience = es_patience, verbose = verbose)
-    # Similarily, start spinning down the learning rate when a plateau has been detected.
-    #rlr = ReduceLROnPlateau(monitor='accuracy', factor = rlr_factor, patience = rlr_patience, verbose = verbose)
-    # Define checkpointing so that we can revert in time if we end up worse than we were before. 
-    #mcp = ModelCheckpoint(filepath='./models/tr_model_weights_'+str(iternum)+'.h5', monitor='accuracy', verbose=1,save_best_only=True, save_weights_only=True)
-    #history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
-
-    # And yet another one, this one trying to mimic the original model as much as possible.
-    #opt = Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, decay=0.01) # Results in a model that hangs on 87%.
-    #opt = RMSprop(learning_rate=learning_rate)
-
-    opt = Adam(learning_rate=learning_rate)
-    model.compile(optimizer=opt, loss = loss_function, metrics=["accuracy"])
-
-    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=True)
+    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=self.mcp_save_best_only)
     
-    history = model.fit(X, Y, shuffle=True, epochs=epochs, callbacks=[mcp], validation_split=validation_split, verbose=verbose, batch_size=batch_size)
+    history = model.fit(X, Y, shuffle=True, epochs=self.model_epochs, callbacks=[mcp], validation_split=self.model_validation_split, verbose=verbose, batch_size=self.model_batch_size)
 
     best_accuracy = max(history.history['accuracy'])
 
@@ -457,30 +467,29 @@ class TriggerWordDetection:
 
       loss, acc = model.evaluate(X_dev, Y_dev)
       print("[INFO] Dev set accuracy is: ", acc) 
-      if(float(acc) <= 0.94 and float(acc) >= 0.90):
-        print("[INFO] When checked against clips of absolutely no positives, looks okay (should've given us all 0s.)")
     except:
       print("[WARN] Error loading X_dev and/or Y/dev.")
 
     return model, best_accuracy, acc
 
+  # Model definition. Class variables dictate the number of neurons in the 
+  # layers for chain train configuration. 
   def define_model(self, input_shape):
       X_input = Input(shape = input_shape)
       
       # Step 1: CONV layer (≈4 lines)
-      X = Conv1D(196, kernel_size=15, strides=4)(X_input)                                 # CONV1D
+      X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input)                                 # CONV1D
       X = BatchNormalization()(X)                                 # Batch normalization
       X = Activation('relu')(X)                                 # ReLu activation
       X = Dropout(0.8)(X)                                 # dropout (use 0.8).
-      # TODO note: changed all dropouts from 0.8 to 0.5
 
       # Step 2: First GRU Layer (≈4 lines)
-      X = GRU(units = 128, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
+      X = GRU(units = self.model_gru_1, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
       X = Dropout(0.8)(X)                                 # dropout (use 0.8)
       X = BatchNormalization()(X)                                 # Batch normalization
       
       # Step 3: Second GRU Layer (≈4 lines)
-      X = GRU(units = 128, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
+      X = GRU(units = self.model_gru_2, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
       X = Dropout(0.8)(X)                                 # dropout (use 0.8)
       X = BatchNormalization()(X)                                  # Batch normalization
       X = Dropout(0.8)(X)                                  # dropout (use 0.8)
@@ -509,14 +518,18 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('datasetSize')
   parser.add_argument('iternum')
-  parser.add_argument('-d', action='store_false', default=True)
   parser.add_argument('-g', action='store_true', default=False)
+  parser.add_argument('-t', action='store_true', default=False)
   args = parser.parse_args()
 
   datasetSize = int(args.datasetSize)
   iternum = int(args.iternum)
-  generateDataset = args.d
   stopGpu = args.g
+  generateDevSetOnly = args.t
 
-  trigger_word_detection = TriggerWordDetection()
-  trigger_word_detection.main(generateDataset, datasetSize, iternum, stopGpu)
+  model_parameters = {
+    "dataset_size": datasetSize
+  }
+
+  trigger_word_detection = TriggerWordDetection(model_parameters)
+  trigger_word_detection.main(iternum, stopGpu, generateDevSetOnly)
