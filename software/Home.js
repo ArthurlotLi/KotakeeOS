@@ -292,7 +292,8 @@ class Home {
     for(var roomId in this.roomsDict){
       if(this.roomsDict.hasOwnProperty(roomId)){
         var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
-        for(var actionId in Object.values(roomItem.actionsDict))
+        var roomActionStates = roomItem.actionStates();
+        for(var actionId in Object.keys(roomActionStates))
         {
           var actionState = this.getActionState(roomId, actionId)
           if(parseInt(toState) == 1){
