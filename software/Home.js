@@ -377,7 +377,7 @@ class Home {
       if(ledMode == null){
         ledMode = 107;
       }
-      if(currentState == 100 || currentState != ledMode) {
+      if(currentState == 100) {
         toState = ledMode;
       }
       else if (currentState != 100){
