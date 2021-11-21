@@ -477,8 +477,12 @@ class CommandParser:
     elif("on" in command or "activate" in command or "initialize" in command):
       return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
     else:
-      #No on or off specified. Let the server decide. 
-      return self.webServerIpAddress + "/moduleSwitch/"+str(roomId)+"/"+str(actionId)
+      #No on or off specified. Check queried information. 
+      if(self.actionStates is not None):
+        if(self.actionStates[str(roomId)][str(actionId)] == int(onState)):
+          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
+        else:
+          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
 
   # Helper function I got off stack overflow - really sweet code!
   # Slightly modified to allow non-number characters. 
