@@ -292,7 +292,7 @@ class Home {
     for(var roomId in this.roomsDict){
       if(this.roomsDict.hasOwnProperty(roomId)){
         var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
-        for(var actionId in Object.keys(roomItem.actionsDict))
+        for(var actionId in Object.values(roomItem.actionsDict))
         {
           var actionState = this.getActionState(roomId, actionId)
           if(parseInt(toState) == 1){
@@ -302,7 +302,7 @@ class Home {
             }
           }
           else{
-            // TUrn everything that isn't off, off. 
+            // Turn everything that isn't off, off. 
             if(actionState != 0 && actionState != 10 && actionState != 20 && actionState != 30 && actionState != 100){
               this.actionSwitch(roomId, actionId, actionState);
             }
