@@ -406,8 +406,8 @@ class CommandParser:
         lr_2_state = self.actionStates["2"]["5251"].split("_")
         br_state = self.actionStates["1"]["5250"].split("_")
         # Convert to Farenheit. 
-        lr_2_temp = str(((float(lr_2_state[0]) * 9) / 5) + 32)
-        br_temp = str(((float(br_state[0]) * 9) / 5) + 32)
+        lr_2_temp = str(round(((float(lr_2_state[0]) * 9) / 5) + 32))
+        br_temp = str(round(((float(br_state[0]) * 9) / 5) + 32))
 
         # Operational server status
         statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.homeStatus["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
