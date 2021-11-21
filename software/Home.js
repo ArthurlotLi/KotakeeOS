@@ -388,14 +388,17 @@ class Home {
         console.log("[WARNING] actionSwitch attempted to toggle action with current state of 31. Ignored.");
       }
     }
-    else{
-      // We default to a binary paradigm.
+    else if (parseInt(actionId) <= actions.LIGHTING5 && parseInt(actionId) >= actions.LIGHTING1){
       if(currentState == 0){
         toState = 1;
       }
       else {
         toState = 0;
       }
+    }
+    // If the action is not within the list of states, ignore it. 
+    else {
+      console.log("[WARNING] actionSwitch attempted to toggle actionId " + String(actionId) + ", which is invalid. Ignored.");
     }
 
     // We now have the correct state. Switch it. 
