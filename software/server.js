@@ -312,7 +312,7 @@ const bathroomInputActions = {
       },
       "timeout": {
         350: { 
-          "duration" : 90000,
+          "duration" : 150000,
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
@@ -341,7 +341,7 @@ const bathroomInputActions = {
     0: { // Door was opened after being closed. 
       "timeout": {
         350: { 
-          "duration" : 90000,
+          "duration" : 150000,
           "toState": 20,
           "timeBounds": bathroomInputActionsTimeBounds[350]
         },
