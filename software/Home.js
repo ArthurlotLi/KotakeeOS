@@ -323,7 +323,7 @@ class Home {
   // This function was migrated from clients to simplify the
   // calls necessary, reducing the need to examine the action
   // states unecessarily. 
-  actionSwitch(roomId, actionId, currentState = null)
+  actionSwitch(roomId, actionId, currentState = null, ledMode = null)
   {
     // Figure out what toState is. 
     var toState = null;
