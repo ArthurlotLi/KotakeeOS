@@ -292,7 +292,7 @@ class Home {
     for(var roomId in this.roomsDict){
       if(this.roomsDict.hasOwnProperty(roomId)){
         var roomItem = this.roomsDict[roomId]; // I know, this is kinda confusing. 
-        for(var actionId in roomItem.inputActions)
+        for(var actionId in Object.keys(roomItem.actionsDict))
         {
           var actionState = this.getActionState(roomId, actionId)
           if(parseInt(toState) == 1){
@@ -399,6 +399,7 @@ class Home {
     // If the action is not within the list of states, ignore it. 
     else {
       console.log("[WARNING] actionSwitch attempted to toggle actionId " + String(actionId) + ", which is invalid. Ignored.");
+      return;
     }
 
     console.log("[DEBUG] actionSwitch Attempting to toggle actionId " + actionId + " for roomId " + roomId + " to state " + toState + "." );
