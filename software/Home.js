@@ -401,6 +401,8 @@ class Home {
       console.log("[WARNING] actionSwitch attempted to toggle actionId " + String(actionId) + ", which is invalid. Ignored.");
     }
 
+    console.log("[DEBUG] actionSwitch Attempting to toggle actionId " + actionId + " for roomId " + roomId + " to state " + toState + "." );
+
     // We now have the correct state. Switch it. 
     this.actionToggle(roomId, actionId, toState)
   }
