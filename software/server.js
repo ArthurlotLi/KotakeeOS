@@ -278,8 +278,8 @@ const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputA
 const bathroomModules = [module5BA];
 const bathroomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
-  350: [5, 0, 21, 15], // These arrays must be multiples of 4. 
-  50: [21, 16, 23, 59, 0, 0, 4, 59],
+  350: [5, 0, 23, 55], // These arrays must be multiples of 4. 
+  50: [23, 56, 23, 59, 0, 0, 4, 59],
 }
 const fanOnHumidity = 85;
 const fanOffHumidity = 84; // Not used. 
