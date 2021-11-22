@@ -245,7 +245,7 @@ const livingRoomInputActions = {
   5350:{
     "function":"command",
     1: { // Admin command of 1 from clients. 
-      "command" : "python3 ../speechServer/hotwordTriggerWord.py 5005",
+      "command" : "python3 ../speechServer/hotwordTriggerWord.py 13112",
       // Don't start the server if the light is on, signaling that the server is already on.
       // Not the greatest solution (leaves gaps and isn't explicit) but it works for now.
       // Note this is all experimental. 
