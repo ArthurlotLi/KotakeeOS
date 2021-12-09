@@ -80,6 +80,7 @@ class TriggerWordDetection:
   model_conv1d = 196
   model_gru_1 = 128
   model_gru_2 = 128
+  model_gru_3 = 0
 
   # Additional parameters
   mcp_save_best_only = False
@@ -93,27 +94,29 @@ class TriggerWordDetection:
   
   # All arguments are optional. 
   def __init__(self, model_parameters = None):
-    if "dataset_size" in model_parameters: self.dataset_size = model_parameters["dataset_size"]
-    if "min_positives" in model_parameters: self.min_positives = model_parameters["min_positives"]
-    if "max_positives" in model_parameters: self.max_positives = model_parameters["max_positives"]
-    if "min_negatives" in model_parameters: self.min_negatives = model_parameters["min_negatives"]
-    if "max_negatives" in model_parameters: self.max_negatives = model_parameters["max_negatives"]
-    if "force_create" in model_parameters: self.force_create = model_parameters["force_create"]
+    if model_parameters is not None:
+      if "dataset_size" in model_parameters: self.dataset_size = model_parameters["dataset_size"]
+      if "min_positives" in model_parameters: self.min_positives = model_parameters["min_positives"]
+      if "max_positives" in model_parameters: self.max_positives = model_parameters["max_positives"]
+      if "min_negatives" in model_parameters: self.min_negatives = model_parameters["min_negatives"]
+      if "max_negatives" in model_parameters: self.max_negatives = model_parameters["max_negatives"]
+      if "force_create" in model_parameters: self.force_create = model_parameters["force_create"]
 
-    if "model_learning_rate" in model_parameters: self.model_learning_rate = model_parameters["model_learning_rate"]
-    if "model_loss_function" in model_parameters: self.model_loss_function = model_parameters["model_loss_function"]
-    if "model_epochs" in model_parameters: self.model_epochs = model_parameters["model_epochs"]
-    if "model_batch_size" in model_parameters: self.model_batch_size = model_parameters["model_batch_size"]
-    if "model_validation_split" in model_parameters: self.model_validation_split = model_parameters["model_validation_split"]
-    if "model_conv1d" in model_parameters: self.model_conv1d = model_parameters["model_conv1d"]
-    if "model_gru_1" in model_parameters: self.model_gru_1 = model_parameters["model_gru_1"]
-    if "model_gru_2" in model_parameters: self.model_gru_2 = model_parameters["model_gru_2"]
+      if "model_learning_rate" in model_parameters: self.model_learning_rate = model_parameters["model_learning_rate"]
+      if "model_loss_function" in model_parameters: self.model_loss_function = model_parameters["model_loss_function"]
+      if "model_epochs" in model_parameters: self.model_epochs = model_parameters["model_epochs"]
+      if "model_batch_size" in model_parameters: self.model_batch_size = model_parameters["model_batch_size"]
+      if "model_validation_split" in model_parameters: self.model_validation_split = model_parameters["model_validation_split"]
+      if "model_conv1d" in model_parameters: self.model_conv1d = model_parameters["model_conv1d"]
+      if "model_gru_1" in model_parameters: self.model_gru_1 = model_parameters["model_gru_1"]
+      if "model_gru_2" in model_parameters: self.model_gru_2 = model_parameters["model_gru_2"]
+      if "model_gru_3" in model_parameters: self.model_gru_3 = model_parameters["model_gru_3"]
 
-    if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
-    if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
-    if "adam_beta_1" in model_parameters: self.adam_beta_1 = model_parameters["adam_beta_1"]
-    if "adam_beta_2" in model_parameters: self.adam_beta_2 = model_parameters["adam_beta_2"]
-    if "adam_decay" in model_parameters: self.adam_decay = model_parameters["adam_decay"]
+      if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
+      if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
+      if "adam_beta_1" in model_parameters: self.adam_beta_1 = model_parameters["adam_beta_1"]
+      if "adam_beta_2" in model_parameters: self.adam_beta_2 = model_parameters["adam_beta_2"]
+      if "adam_decay" in model_parameters: self.adam_decay = model_parameters["adam_decay"]
 
   # Primary function that executes the main steps:
   # A) Dataset Processing
@@ -476,25 +479,35 @@ class TriggerWordDetection:
   # layers for chain train configuration. 
   def define_model(self, input_shape):
       X_input = Input(shape = input_shape)
+      X = None
       
-      # Step 1: CONV layer (≈4 lines)
-      X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input)                                 # CONV1D
-      X = BatchNormalization()(X)                                 # Batch normalization
-      X = Activation('relu')(X)                                 # ReLu activation
-      X = Dropout(0.8)(X)                                 # dropout (use 0.8).
+      # CONV Layer 
+      X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input) 
+      X = BatchNormalization()(X)
+      X = Activation('relu')(X) 
+      X = Dropout(0.8)(X)
 
-      # Step 2: First GRU Layer (≈4 lines)
-      X = GRU(units = self.model_gru_1, return_sequences = True)(X) # GRU (use 128 units and return the sequences)
-      X = Dropout(0.8)(X)                                 # dropout (use 0.8)
-      X = BatchNormalization()(X)                                 # Batch normalization
+      # First GRU Layer
+      if(self.model_gru_1 is not None and self.model_gru_1 > 0):
+        X = GRU(units = self.model_gru_1, return_sequences = True)(X)
+        X = Dropout(0.8)(X)
+        X = BatchNormalization()(X)
       
-      # Step 3: Second GRU Layer (≈4 lines)
-      X = GRU(units = self.model_gru_2, return_sequences = True)(X)   # GRU (use 128 units and return the sequences)
-      X = Dropout(0.8)(X)                                 # dropout (use 0.8)
-      X = BatchNormalization()(X)                                  # Batch normalization
-      X = Dropout(0.8)(X)                                  # dropout (use 0.8)
-      
-      # Step 4: Time-distributed dense layer (≈1 line)
+      # Second GRU Layer
+      if(self.model_gru_2 is not None and self.model_gru_2 > 0):
+        X = GRU(units = self.model_gru_2, return_sequences = True)(X)
+        X = Dropout(0.8)(X)
+        X = BatchNormalization()(X)
+
+      # Third GRU Layer
+      if(self.model_gru_3 is not None and self.model_gru_3 > 0):
+        X = GRU(units = self.model_gru_3, return_sequences = True)(X)
+        X = Dropout(0.8)(X)
+        X = BatchNormalization()(X)
+        
+      # Add a final dropout before we get to the final layer
+      # that applies to the previous.
+      X = Dropout(0.8)(X)
       X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
 
       model = Model(inputs = X_input, outputs = X)
@@ -531,5 +544,20 @@ if __name__ == "__main__":
     "dataset_size": datasetSize
   }
 
+  # For Manual one-off creation like for dev sets. keep this commented
+  # out for defaults otherwise. 
+  #
+  # Ex) python trigger_word_detection.py 800 10 -t (iternum is ignored.)
+  """
+  model_parameters = {
+      "dataset_size": datasetSize,
+      "max_positives" : 4,
+      "min_positives" : 0,
+      "max_negatives" : 2,
+      "min_negatives" : 0,
+      "force_create" : True,
+  }
+  """
+
   trigger_word_detection = TriggerWordDetection(model_parameters)
-  trigger_word_detection.main(iternum, stopGpu, generateDevSetOnly)
+  trigger_word_detection.main(iternum, stopGpu = stopGpu, generateDevSetOnly = generateDevSetOnly)

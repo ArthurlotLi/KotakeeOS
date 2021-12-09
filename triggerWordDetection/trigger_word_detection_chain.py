@@ -124,50 +124,15 @@ if __name__ == "__main__":
   # Note that the only required field is the iternum - defaults will
   # be used for other fields if not specified. 
   chain_dict = {
-    "13200" : {
-      "iternum" : "13010",
+    "13480" : {
+      "iternum" : "13440",
       "model_learning_rate" : 0.0002,
-      "model_epochs" : 1,
-      "model_gru_1": 160,
-      "model_gru_2": 160,
-    },
-    "13220" : {
-      "iternum" : "13010",
-      "model_learning_rate" : 0.0002,
-      "model_epochs" : 1,
-      "model_gru_1": 64,
-      "model_gru_2": 64,
-    },
-    "13240" : {
-      "iternum" : "13010",
-      "model_learning_rate" : 0.0002,
-      "model_epochs" : 1,
-      "model_gru_1": 192,
-      "model_gru_2": 192,
-    },
-    "13260" : {
-      "iternum" : "13060",
-      "model_learning_rate" : 0.0002,
-      "model_epochs" : 1,
-      "dataset_size" : 5, #TODO
-      "max_positives" : 9,
-      "force_create" : True,
-    },
-    "13280" : {
-      "iternum" : "13060",
-      "model_learning_rate" : 0.0002,
-      "model_epochs" : 1,
-      "dataset_size" : 5, #TODO
-      "max_positives" : 9,
-      "model_gru_1": 160,
-      "model_gru_2": 160,
-    },
-    "13300" : {
-      "iternum" : "13010",
-      "model_learning_rate" : 0.0003,
-      "model_epochs" : 1,
-      "model_gru_1": 160,
-      "model_gru_2": 160,
+      "model_epochs" : 2500,
+      "dataset_size" : 9000,
+      "model_gru_1": 128,
+      "model_gru_2": 128,
+      "model_gru_3": 128,
+      "max_negatives" : 4,
     },
   }
 
