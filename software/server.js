@@ -166,8 +166,8 @@ const module3LR = new Module(module3LRId, module3LRRoomId, module3LRActions, mod
 // Arduino 4 Living Room
 const module4LRId = 4; // Internal server use only. 
 const module4LRRoomId = rooms.LIVINGROOM; 
-const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.REMOTE3, actions.MOTION1, actions.LEDSTRIP1, actions.TEMP2];
-const module4LRPins = [12, "10.11", 9, 8, "14.060", 15];
+const module4LRActions = [actions.REMOTE2, actions.SWITCH1, actions.MOTION1, actions.LEDSTRIP1, actions.TEMP2];
+const module4LRPins = [12, "10.11", 8, "14.060", 15];
 const module4LRIpAddress = "192.168.0.144";
 const module4LR = new Module(module4LRId, module4LRRoomId, module4LRActions, module4LRPins, module4LRIpAddress);
 
@@ -189,7 +189,9 @@ const module6BR = new Module(module6BRId, module6RRoomId, module6BRActions, modu
 
 const module7LRId = 7; // Internal server use only. 
 const module7LRRoomId = rooms.LIVINGROOM; 
-const module7LRActions = [actions.KNOB1];
+//const module7LRActions = [actions.KNOB1];
+//const module7LRPins = [12];
+const module7LRActions = [actions.REMOTE3];
 const module7LRPins = [12];
 const module7LRIpAddress = "192.168.0.146";
 const module7LR = new Module(module7LRId, module7LRRoomId, module7LRActions, module7LRPins, module7LRIpAddress);

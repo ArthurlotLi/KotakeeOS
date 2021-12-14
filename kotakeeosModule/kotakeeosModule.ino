@@ -47,7 +47,7 @@ const int ledStrip10 = 1009;
 
 const int servoNeutral = 170; // 180 is out of motion and will cause buzzing.
 const int servoActive = 110;
-const int servoActionWait = 600; // time to move arm between neutral and active.
+const int servoActionWait = 1000; // time to move arm between neutral and active.
 
 // Declare an alternate set of servo variables to use when 
 // controlling stuff like the AC knob. 
