@@ -9,6 +9,7 @@ from test_model import TestModel
 import os
 import multiprocessing
 import time
+import argparse
 
 class TestModelChain:
 
@@ -59,6 +60,10 @@ class TestModelChain:
         
         filename_uid = filename_uid + 1
 
+    if(filename_uid == 0):
+      print("[WARNING] No models found at location '" + self.test_model_location + "'. Please specify another location with an argument (example: python test_model_chain.py ./model_checkpoints) or move/copy the model(s) accordingly.")
+      return
+
     # Sort the results.
     self.chain_test_results_acc_map = dict(sorted(self.chain_test_results_acc_map.items(), key=lambda item: item[0]))
 
@@ -105,7 +110,12 @@ class TestModelChain:
       print("[ERROR] Failed to write results to file!")
 
 if __name__ == "__main__":
-  location = "./model_checkpoints"
+  parser = argparse.ArgumentParser()
+  # Add a '?' to make the argument optional
+  parser.add_argument("location", nargs='?', default="./model_chain_test")
+  args = parser.parse_args()
+
+  location = args.location
 
   test_model_chain = TestModelChain(location)
   test_model_chain.execute_chain_test()
