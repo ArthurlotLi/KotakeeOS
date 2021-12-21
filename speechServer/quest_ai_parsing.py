@@ -51,7 +51,7 @@ class QuestAiParsing:
   # Primary loop for this functionality. A user has activated 
   # QuestAI, and we handle further interactions here. 
   def standard_query(self):
-    print("[INFO] Initializing QuestAI Standard Query procedure.")
+    print("[DEBUG] Initializing QuestAI Standard Query procedure.")
     user_response = self.listenForResponse("What's your question?")
     if user_response in self.cancelWords:
       print("[DEBUG] User requested cancellation. Stopping QuestAI...")
@@ -62,10 +62,13 @@ class QuestAiParsing:
     # TODO: Handle confidence - perhaps implement 8 ball class in 
     #       a separate file? 
     ai_response, ai_confidence = self.questAi.generate_response(user_response)
+    print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + " - Confidence: " + str(ai_confidence) + ".")
     if ai_response is True:
-      self.speakText("Yes, I believe so.")
+      self.executeTextThread("Yes, I believe so.")
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
     else:
-      self.speakText("No, I don't think so.")
+      self.executeTextThread("No, I don't think so.")
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
 
   # Attempt to listen for valid text using Google speech recogntiion.
   # Returns valid text if recieved and None if not recieved. 
@@ -80,7 +83,8 @@ class QuestAiParsing:
         try:
           # Prompt the user each loop attempt. 
           if prompt is not None:
-            self.speakText(prompt)
+            self.executeTextThread(prompt)
+            time.sleep(1) # Enough time to allow the speech prompt to complete. 
           print("[DEBUG] Now Listening for Response...")
           start = time.time()
           audio2 = self.r2.listen(source2, timeout=self.response_timeout,phrase_time_limit=self.response_phrase_timeout)

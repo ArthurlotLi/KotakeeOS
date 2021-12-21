@@ -438,6 +438,7 @@ class CommandParser:
       # Provide boolean indicating internet connectivity. 
       quest_ai_parser = QuestAiParsing(self.actionStates is not None)
       quest_ai_parser.standard_query()
+      return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.generateQuery(command, 1, 50, 1, 0))
