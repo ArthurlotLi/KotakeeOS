@@ -432,8 +432,11 @@ class CommandParser:
       time.sleep(3) # Enough time to allow the speech prompt to complete. 
       return True
     elif("question" in command):
-      # Allow user to interact with QuestAI. Provide boolean indicating 
-      # internet connectivity. 
+      # Allow user to interact with QuestAI. For the speech to text
+      # to run, we need to stop our engine. 
+      if self.engine._inLoop:
+        self.engine.endLoop()
+      # Provide boolean indicating internet connectivity. 
       quest_ai_parser = QuestAiParsing(self.actionStates is not None)
       quest_ai_parser.standard_query()
     else:
