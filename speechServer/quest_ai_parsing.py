@@ -93,7 +93,7 @@ class QuestAiParsing:
           # String cleanup
           user_response_text = user_response_text.lower()
           end = time.time()
-          print("[DEBUG] Recognized command audio: '" + user_response_text + "' in " + str(end-start) + " ")
+          print("[DEBUG] Recognized response audio: '" + user_response_text + "' in " + str(end-start) + " ")
           # All done, let's return the text. 
           break
         except sr.RequestError as e:
