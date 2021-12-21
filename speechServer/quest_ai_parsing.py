@@ -44,7 +44,6 @@ class QuestAiParsing:
     self.engine = pyttsx3.init()
     self.r2.pause_threshold = self.pause_threshold
     self.online_functionality = online_functionality
-
     # Initialize QuestAI. 
     self.questAi = QuestAi()
 
@@ -52,7 +51,7 @@ class QuestAiParsing:
   # QuestAI, and we handle further interactions here. 
   def standard_query(self):
     print("[DEBUG] Initializing QuestAI Standard Query procedure.")
-    user_response = self.listenForResponse("What's your question?")
+    user_response = self.listenForResponse(prompt="What would you like to know?", sleep_duration=1.5)
     if user_response in self.cancelWords:
       print("[DEBUG] User requested cancellation. Stopping QuestAI...")
       self.speakText("Stopping Quest AI...")
@@ -64,16 +63,21 @@ class QuestAiParsing:
     ai_response, ai_confidence = self.questAi.generate_response(user_response)
     print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + " - Confidence: " + str(ai_confidence) + ".")
     if ai_response is True:
-      self.executeTextThread("Yes, I believe so.")
+      self.executeTextThread("I believe so.")
       time.sleep(2) # Enough time to allow the speech prompt to complete. 
     else:
-      self.executeTextThread("No, I don't think so.")
+      self.executeTextThread("I don't think so.")
       time.sleep(2) # Enough time to allow the speech prompt to complete. 
+    
+    # TODO In the future, we should add a mechanism to prompt for 
+    # whether we did good in that prediction (so we can append 
+    # the transcript to a SQL database or something as a new data point)
 
   # Attempt to listen for valid text using Google speech recogntiion.
   # Returns valid text if recieved and None if not recieved. 
-  # May provide a verbal prompt every loop. 
-  def listenForResponse(self, prompt = None):
+  # May provide a verbal prompt every loop. Can be specified with a
+  # sleep duration (how long to wait before starting to listen)
+  def listenForResponse(self, prompt = None, sleep_duration = 1):
     user_response_text = None
 
     with sr.Microphone() as source2:
@@ -84,7 +88,7 @@ class QuestAiParsing:
           # Prompt the user each loop attempt. 
           if prompt is not None:
             self.executeTextThread(prompt)
-            time.sleep(1) # Enough time to allow the speech prompt to complete. 
+            time.sleep(sleep_duration) # Enough time to allow the speech prompt to complete. 
           print("[DEBUG] Now Listening for Response...")
           start = time.time()
           audio2 = self.r2.listen(source2, timeout=self.response_timeout,phrase_time_limit=self.response_phrase_timeout)
