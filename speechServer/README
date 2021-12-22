@@ -63,7 +63,7 @@ local environment to function correctly.
 
 2. Install everything required by QuestAI. Run:
 
-   pip install tensorflow_hub transformers wikipedia pynytimes jsonlines pytextrank spacy==2.2
+   pip install tensorflow_hub transformers wikipedia pynytimes jsonlines pytextrank spacy --upgrade
 
 3. Install spacy separately (because it's kinda silly) with this link:
 

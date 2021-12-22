@@ -35,7 +35,7 @@ import pickle
 import jsonlines
 from scipy import spatial
 import spacy.cli
-from pytextrank import TextRank
+import pytextrank
 import spacy
 import pickle
 
@@ -81,8 +81,7 @@ class QuestAi:
     self.question_tree = spatial.KDTree(encoded_qs)
 
     self.nlp = spacy.load("en_core_web_sm")
-    tr = TextRank()
-    self.nlp.add_pipe(tr.PipelineComponent, name="textrank", last=True)
+    self.nlp.add_pipe("textrank")
     self.answers = pickle.load(open(self.dependencies_location + "answers.pkl", "rb"))
 
     end_time = time.time()
@@ -152,7 +151,6 @@ class QuestAi:
       nyt_passage += a["lead_paragraph"].strip() + " "
     nyt_yes, nyt_conf = self.predict(question_text, nyt_passage)
 
-    from scipy import spatial
     boolq_passage = ""
     print("Checking the BoolQ Dataset.\n")
     question_embed = self.embed(question_text)

@@ -60,13 +60,15 @@ class QuestAiParsing:
 
     if user_response in self.cancelWords:
       print("[DEBUG] User requested cancellation. Stopping QuestAI...")
-      self.speakText("Stopping Quest AI...")
+      self.executeTextThread("Stopping Quest AI...")
+      time.sleep(2) # Enough time to allow the speech prompt to complete. 
       return
 
     # We now have a question. Pass it to the model class - we
     # expect a boolean back + confidence. 
     # TODO: Handle confidence - perhaps implement 8 ball class in 
     #       a separate file? 
+    self.executeTextThread("Let's see...") # Because the response will likely take some time. 
     ai_response, ai_yes_amount, ai_confidence, ai_source, ai_8_ball = self.questAi.generate_response(user_response)
     print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + ".")
 
