@@ -188,6 +188,8 @@ class QuestAi:
     min_dist = float("inf")
     pick = 0
     answer_yes = False
+    if yes > 0.5:
+      answer_yes = True
 
     if (conf < 0.5):
       map_conf =  1 +  conf * 19 / 2
@@ -198,7 +200,6 @@ class QuestAi:
           min_dist = distance
           pick = i
     else:
-      answer_yes = True
       map_yes = 1 + (yes * 1.5 if yes > 2/3 else yes) * 19 / 1.5
       for i, a in enumerate(self.answers[5:]):
         y = a[1][0]
