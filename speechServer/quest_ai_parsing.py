@@ -39,35 +39,64 @@ class QuestAiParsing:
   questAi = None
 
   # Initialize speech recognition + pyttsx stuff.
-  def __init__(self, online_functionality = True):
+  def __init__(self):
     self.r2 = sr.Recognizer()
     self.engine = pyttsx3.init()
     self.r2.pause_threshold = self.pause_threshold
-    self.online_functionality = online_functionality
     # Initialize QuestAI. 
     self.questAi = QuestAi()
 
   # Primary loop for this functionality. A user has activated 
   # QuestAI, and we handle further interactions here. 
-  def standard_query(self):
+  #
+  # Various output types depending on user specification.
+  #   0 - Yes or no response.
+  #   1 - Advanced response.
+  #   2 - 8 Ball response. 
+  def standard_query(self, output_type = 0, online_functionality = True):
     print("[DEBUG] Initializing QuestAI Standard Query procedure.")
+    self.online_functionality = online_functionality
     user_response = self.listenForResponse(prompt="What would you like to know?", sleep_duration=1.5)
+
     if user_response in self.cancelWords:
       print("[DEBUG] User requested cancellation. Stopping QuestAI...")
       self.speakText("Stopping Quest AI...")
       return
+
     # We now have a question. Pass it to the model class - we
     # expect a boolean back + confidence. 
     # TODO: Handle confidence - perhaps implement 8 ball class in 
     #       a separate file? 
-    ai_response, ai_confidence = self.questAi.generate_response(user_response)
-    print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + " - Confidence: " + str(ai_confidence) + ".")
-    if ai_response is True:
-      self.executeTextThread("I believe so.")
-      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+    ai_response, ai_yes_amount, ai_confidence, ai_source, ai_8_ball = self.questAi.generate_response(user_response)
+    print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + ".")
+
+    # Handle the response to the user. 
+    # 0 = Standard response.
+    if(output_type == 0):
+      response_text = ""
+      if ai_response is True:
+        response_text = "I believe so."
+      else:
+        response_text = "I don't think so."
+      self.executeTextThread(response_text)
+      time.sleep(1) # Enough time to allow the speech prompt to complete. 
+
+    # 1 = Advanced response. 
+    elif(output_type == 1):
+      response_text = ""
+      if ai_response is True:
+        response_text = "I believe so, with " + str(round(ai_yes_amount*100, 2) + " percent certainty.")
+      else:
+        response_text = "I don't think so, with " + str(round((1-ai_yes_amount)*100, 2) + " percent certainty.")
+
+      response_text = response_text + " I am " + str(round(ai_confidence*100, 2)) + " percent confident. My source: " + str(ai_source) + "."
+      self.executeTextThread(response_text)
+      time.sleep(8) # Enough time to allow the speech prompt to complete. 
+
+    # 2 = Magic 8 ball response. 
     else:
-      self.executeTextThread("I don't think so.")
-      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+      self.executeTextThread(ai_8_ball)
+      time.sleep(1) # Enough time to allow the speech prompt to complete. 
     
     # TODO In the future, we should add a mechanism to prompt for 
     # whether we did good in that prediction (so we can append 

@@ -45,3 +45,32 @@ If using homebrewed Trigger Word models:
 
 Once you've installed those, the TriggerWord speech server should work
 just fine. 
+
+------------------------------------------------------------------------------
+Quest AI Setup
+------------------------------------------------------------------------------
+RoBERTa-powered Natural Language Processing introductory project. Given a 
+yes/no question, use various internet sources for context before using 
+RoBERTa to derive a boolean response. 
+
+To use QuestAI, you need to make sure you do some manual steps to allow your
+local environment to function correctly.
+
+1. Install pytorch. If you wish to use CUDA, you must go to pytorch.org. 
+   otherwise, run:
+  
+   pip pytorch
+
+2. Install everything required by QuestAI. Run:
+
+   pip install tensorflow_hub transformers wikipedia pynytimes jsonlines pytextrank
+
+3. Install spacy separately (because it's kinda silly) with this link:
+
+   python -m spacy download en
+
+4. Manually acquire roberta-large_fine-tuned and insert it inside the 
+   ./quest_ai_dependencies folder. Alternatively, if it's still up, you can get
+   this from the following link:
+
+   https://onedrive.live.com/download?cid=61FC7243E093B36A&resid=61FC7243E093B36A%211286&authkey=ALT4NEljIrPRmHk

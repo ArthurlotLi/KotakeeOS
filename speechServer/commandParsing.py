@@ -35,6 +35,8 @@ class CommandParser:
 
   chime_location = "./assets/testChime.wav"
 
+  quest_ai_parser = None
+
   # Ah, I'm so happy this matches perfectly with the client code. 
   # Thanks, python. 
   implementedButtons = {
@@ -435,9 +437,19 @@ class CommandParser:
       # Allow user to interact with QuestAI. For the speech to text
       # to run, we need to stop our engine. 
       self.engine.stop()
-      # Provide boolean indicating internet connectivity. 
-      quest_ai_parser = QuestAiParsing(self.actionStates is not None)
-      quest_ai_parser.standard_query()
+
+      # If we asked for advanced output or "8 ball", our output should be
+      # different.
+      output_type = 0
+      if("advanced" in command): output_type = 1
+      elif("eight ball" in command or "8-ball" in command or "8 ball" in command): output_type = 2
+
+      # Initialize if it's not running. Only do this once and keep it up
+      # afterwards because the quest_ai_parser takes a while to get running. 
+      if(self.quest_ai_parser is None):
+        self.executeTextThread("Initializing Quest AI... please wait.")
+        self.quest_ai_parser = QuestAiParsing()
+      self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.actionStates is not None)
       return True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
