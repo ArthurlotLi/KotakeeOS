@@ -87,11 +87,11 @@ class QuestAiParsing:
     elif(output_type == 1):
       response_text = ""
       if ai_response is True:
-        response_text = "I believe so, with " + str(round(ai_yes_amount*100, 2) + " percent certainty.")
+        response_text = "I believe so, with " + str(round(float(ai_yes_amount)*100, 2) + " percent certainty.")
       else:
-        response_text = "I don't think so, with " + str(round((1-ai_yes_amount)*100, 2) + " percent certainty.")
+        response_text = "I don't think so, with " + str(round((1.0-float(ai_yes_amount))*100, 2) + " percent certainty.")
 
-      response_text = response_text + " I am " + str(round(ai_confidence*100, 2)) + " percent confident. My source: " + str(ai_source) + "."
+      response_text = response_text + " I am " + str(round(float(ai_confidence)*100, 2)) + " percent confident. My source: " + str(ai_source) + "."
       self.executeTextThread(response_text)
       time.sleep(8) # Enough time to allow the speech prompt to complete. 
 
