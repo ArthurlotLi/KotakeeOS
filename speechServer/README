@@ -59,11 +59,11 @@ local environment to function correctly.
 1. Install pytorch. If you wish to use CUDA, you must go to pytorch.org. 
    otherwise, run:
   
-   pip pytorch
+   pip install torch
 
 2. Install everything required by QuestAI. Run:
 
-   pip install tensorflow_hub transformers wikipedia pynytimes jsonlines pytextrank
+   pip install tensorflow_hub transformers wikipedia pynytimes jsonlines pytextrank spacy==2.2
 
 3. Install spacy separately (because it's kinda silly) with this link:
 
