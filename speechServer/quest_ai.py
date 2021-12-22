@@ -35,7 +35,7 @@ import pickle
 import jsonlines
 from scipy import spatial
 import spacy.cli
-import pytextrank
+from pytextrank import TextRank
 import spacy
 import pickle
 
@@ -81,13 +81,8 @@ class QuestAi:
     self.question_tree = spatial.KDTree(encoded_qs)
 
     self.nlp = spacy.load("en_core_web_sm")
-    # Textrank can be fickle. If the initial try doesn't work, try a different
-    # appraoch. 
-    try:
-      tr = pytextrank.TextRank()
-      self.nlp.add_pipe(tr.PipelineComponent, name="textrank", last=True)
-    except:
-      self.nlp.add_pipe("textrank")
+    tr = TextRank()
+    self.nlp.add_pipe(tr.PipelineComponent, name="textrank", last=True)
     self.answers = pickle.load(open(self.dependencies_location + "answers.pkl", "rb"))
 
     end_time = time.time()
