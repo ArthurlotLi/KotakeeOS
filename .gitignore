@@ -9,3 +9,4 @@
 /triggerWordDetection/model_checkpoints
 /speechServer/__pycache__
 /satelliteServer/node_modules
+/speechServer/quest_ai_dependencies/roberta-large_fine-tuned
