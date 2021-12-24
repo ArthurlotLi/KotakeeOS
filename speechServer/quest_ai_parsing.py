@@ -39,10 +39,19 @@ class QuestAiParsing:
   questAi = None
 
   # Initialize speech recognition + pyttsx stuff.
-  def __init__(self):
-    self.r2 = sr.Recognizer()
-    self.engine = pyttsx3.init()
-    self.r2.pause_threshold = self.pause_threshold
+  # Providing the recognizer, engine, and pause threshold is optional but
+  # recommended for memory usage. 
+  def __init__(self, recognizer = None, engine = None, pause_threshold = None):
+    if recognizer is None:
+      recognizer = sr.Recognizer()
+    if engine is None:
+      engine = pyttsx3.init()
+    if pause_threshold is None:
+      pause_threshold = self.pause_threshold
+
+    self.r2 = recognizer
+    self.engine = engine
+    self.r2.pause_threshold = pause_threshold
     # Initialize QuestAI. 
     self.questAi = QuestAi()
 
