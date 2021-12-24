@@ -322,6 +322,7 @@ class CommandParser:
     # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
     queries = []
     confirmationPrompt = self.successfulCommandPrompt
+    valid_command = False
 
     if any(x in full_command for x in self.stopServerCommands):
       self.executeTextThread(self.stopServerPrompt)
@@ -344,8 +345,8 @@ class CommandParser:
         if(self.homeStatus is not None):
           weatherString = "It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
           self.executeTextThread(weatherString)
-          time.sleep(8) # Enough time to allow the speech prompt to complete. 
-          return True
+          time.sleep(9) # Enough time to allow the speech prompt to complete. 
+          valid_command = True
       elif("everything" in command or "all modules" in command):
         if(self.actionStates is not None):
           if("off" in command or "on" in command):
@@ -384,7 +385,7 @@ class CommandParser:
               else:
                 print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
               self.executeTextThread("Setting thermostat to " + str(newTemp) + ".")
-              return True
+              valid_command = True
       elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
         if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
           currentAutoStatus = self.homeStatus["moduleInputDisabled"]
@@ -432,20 +433,20 @@ class CommandParser:
           # Action states status
           statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
           self.executeTextThread(statusString)
-          time.sleep(10) # Enough time to allow the speech prompt to complete. 
-          return True
+          time.sleep(12) # Enough time to allow the speech prompt to complete. 
+          valid_command = True
       elif("time" in command or "clock" in command):
         currentTime = time.strftime("%H%M", time.localtime())
         timeString = "It is currently " + currentTime + "."
         self.executeTextThread(timeString)
         time.sleep(2) # Enough time to allow the speech prompt to complete. 
-        return True
+        valid_command = True
       elif("date" in command or "day" in command or "month" in command or "today" in command):
         dateToday = date.today()
         dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
         self.executeTextThread(dateString)
         time.sleep(3) # Enough time to allow the speech prompt to complete. 
-        return True
+        valid_command = True
       elif("question" in command):
         # If we asked for advanced output or "8 ball", our output should be
         # different.
@@ -458,7 +459,7 @@ class CommandParser:
           self.executeTextThread("Initializing Quest AI... please wait.")
           self.quest_ai_parser = QuestAiParsing(recognizer = self.r2, engine = self.engine, pause_threshold = self.pauseThreshold)
         self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.actionStates is not None)
-        return True
+        valid_command = True
       elif("calculator" in command or "calculate" in command):
         # Get the first number and then the second number in the query. Ignore
         # all others if there are any. Fail if there are not enough numbers.
@@ -511,6 +512,7 @@ class CommandParser:
             solution = first_term / second_term
           self.executeTextThread(str(first_term) + " " + operator + " " + str(second_term) + " equals " + str(solution) + ".")
           time.sleep(3) # Enough time to allow the speech prompt to complete. 
+          valid_command = True
       else:
         if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
           queries.append(self.generateQuery(command, 1, 50, 1, 0))
@@ -550,10 +552,12 @@ class CommandParser:
           print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
       if(confirmationPrompt is not None and confirmationPrompt != ""):
         self.executeTextThread(confirmationPrompt)
-      return True
-    else:
+      valid_command = True
+
+    if valid_command != True:
       print("[DEBUG] No valid command was received.")
-      return False
+    
+    return valid_command
 
   # Given the possible command string, roomId, actionId, and 
   # a binary set of states, return a query. If the command 
