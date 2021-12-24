@@ -467,7 +467,7 @@ class CommandParser:
         second_term = None
         operator = None # Term used in final message as well. 
         negative_term = False
-        for word in command:
+        for word in command.split():
           # Test as an operator.
           if operator is None:
             if word == "add" or word == "plus" or word == "+":
