@@ -360,7 +360,7 @@ class CommandParser:
               toState = 0
             confirmationPrompt = "Turning everything " + promptOnOff + "."
             queries.append(self.webServerIpAddress + "/moduleToggleAll/" + str(toState))
-      elif("thermostat" in command or "temperature" in command):
+      elif("thermostat" in command):
         if(self.homeStatus is not None and self.homeStatus["moduleInput"] is not None and self.homeStatus["moduleInput"]['2'] is not None):
           if(self.homeStatus["moduleInput"]['2']['5251'] is not None and self.homeStatus["moduleInput"]['2']['5251']["offHeat"] is not None and self.homeStatus["moduleInput"]['2']['5251']["onHeat"] is not None):
             onHeat = self.homeStatus["moduleInput"]['2']['5251']["onHeat"]
@@ -388,6 +388,19 @@ class CommandParser:
                 print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
               self.executeTextThread("Setting thermostat to " + str(newTemp) + ".")
               valid_command = True
+      elif("temperature" in command):
+        # Handle temperatures. Expects a state like "27.70_42.20".
+        lr_2_state = self.actionStates["2"]["5251"].split("_")
+        br_state = self.actionStates["1"]["5250"].split("_")
+        # Convert to Farenheit. 
+        lr_2_temp = str(round(((float(lr_2_state[0]) * 9) / 5) + 32))
+        br_temp = str(round(((float(br_state[0]) * 9) / 5) + 32))
+
+        # Operational server status
+        statusString = "The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
+        self.executeTextThread(statusString)
+        time.sleep(4) # Enough time to allow the speech prompt to complete. 
+        valid_command = True
       elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
         if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
           currentAutoStatus = self.homeStatus["moduleInputDisabled"]
@@ -562,9 +575,10 @@ class CommandParser:
     return valid_command
 
   # Given the possible command string, roomId, actionId, and 
-  # a binary set of states, return a query. If the command 
-  # contains the keyword "virtual", a virtual module toggle
-  # will be created instead of physical. 
+  # a binary set of states, return a query. 
+  # 
+  # If the command contains the keyword "virtual", a virtual 
+  # module toggle will be created instead of physical. 
   def generateQuery(self, command, roomId, actionId, onState, offState):
     endpoint = "/moduleToggle/"
     if "virtual" in command:
