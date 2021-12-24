@@ -25,6 +25,7 @@ class CommandParser:
   webServerIpAddress = "http://192.168.0.197:8080"
   cancelWords = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops google query.
   stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
+  command_split = "break"
   hotWordReceiptPrompt = "Yes?"
   successfulCommandPrompt = "" # By default, don't say anything and just activate something. 
   cancellationPrompt = "Going back to sleep."
@@ -317,167 +318,219 @@ class CommandParser:
   # Given a queried command from the google text recognition
   # API, parse and execute accordingly. Executes rudimentary
   # language processing by finding keywords and acting accordingly. 
-  def parseAndExecuteCommand(self, command):
+  def parseAndExecuteCommand(self, full_command):
     # Ex) http://192.168.0.197:8080/moduleToggle/1/50/1
     queries = []
     confirmationPrompt = self.successfulCommandPrompt
 
-    if any(x in command for x in self.stopServerCommands):
+    if any(x in full_command for x in self.stopServerCommands):
       self.executeTextThread(self.stopServerPrompt)
       time.sleep(2) # Enough time to allow the speech prompt to complete. 
       self.stopServer = True
       return True
-    elif("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
-      if(self.homeStatus is not None):
-        weatherString = "It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
-        self.executeTextThread(weatherString)
-        time.sleep(8) # Enough time to allow the speech prompt to complete. 
-        return True
-    elif("everything" in command or "all modules" in command):
-      if(self.actionStates is not None):
-        if("off" in command or "on" in command):
+
+    # Multi-command parsing. Break the command phrase in two
+    # given the keyword "Break". Parse chronologically.
+    commands = full_command.split(self.command_split)
+    for command in commands:
+      if("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
+        if(self.homeStatus is not None):
+          weatherString = "It is currently " + str(int(self.homeStatus["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.homeStatus["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.homeStatus["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.homeStatus["weatherData"]["main"]["humidity"]) + " percent."
+          self.executeTextThread(weatherString)
+          time.sleep(8) # Enough time to allow the speech prompt to complete. 
+          return True
+      elif("everything" in command or "all modules" in command):
+        if(self.actionStates is not None):
+          if("off" in command or "on" in command):
+            # Manage prompt. 
+            promptOnOff = "on"
+            toState = 1
+            if("off" in command):
+              promptOnOff = "off"
+              toState = 0
+            confirmationPrompt = "Turning everything " + promptOnOff + "."
+            queries.append(self.webServerIpAddress + "/moduleToggleAll/" + str(toState))
+      elif("thermostat" in command or "temperature" in command):
+        if(self.homeStatus is not None and self.homeStatus["moduleInput"] is not None and self.homeStatus["moduleInput"]['2'] is not None):
+          if(self.homeStatus["moduleInput"]['2']['5251'] is not None and self.homeStatus["moduleInput"]['2']['5251']["offHeat"] is not None and self.homeStatus["moduleInput"]['2']['5251']["onHeat"] is not None):
+            onHeat = self.homeStatus["moduleInput"]['2']['5251']["onHeat"]
+            offHeat = self.homeStatus["moduleInput"]['2']['5251']["offHeat"]
+            newTemp = self.text2int(command)
+            print("[DEBUG] Parsed number " + str(newTemp) + " from thermostat request.")
+            if(newTemp > 30 and newTemp < 100):
+              onHeat = newTemp+1
+              offHeat = onHeat-2
+              newHomeStatus = self.homeStatus["moduleInput"]['2']
+              newHomeStatus['5251']["onHeat"] = onHeat
+              newHomeStatus['5251']["offHeat"] = offHeat
+              dataToSend = {
+                "roomId": 2,
+                "newModuleInput": newHomeStatus
+              }
+              # Send a post message from here. 
+              query = self.webServerIpAddress + "/moduleInputModify"
+              print("[DEBUG] Sending query: " + query + " with body:")
+              print(dataToSend)
+              response = requests.post(query, data=json.dumps(dataToSend, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
+              if(response.status_code == 200):
+                print("[DEBUG] Request received successfully.")
+              else:
+                print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+              self.executeTextThread("Setting thermostat to " + str(newTemp) + ".")
+              return True
+      elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
+        if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
+          currentAutoStatus = self.homeStatus["moduleInputDisabled"]
+          newState = "true"
+          if("activate" in command or "turn on" in command or "enable" in command):
+            newState = "false"
+          queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + newState)
           # Manage prompt. 
-          promptOnOff = "on"
-          toState = 1
-          if("off" in command):
-            promptOnOff = "off"
-            toState = 0
-          confirmationPrompt = "Turning everything " + promptOnOff + "."
-          queries.append(self.webServerIpAddress + "/moduleToggleAll/" + str(toState))
-    elif("thermostat" in command or "temperature" in command):
-      if(self.homeStatus is not None and self.homeStatus["moduleInput"] is not None and self.homeStatus["moduleInput"]['2'] is not None):
-        if(self.homeStatus["moduleInput"]['2']['5251'] is not None and self.homeStatus["moduleInput"]['2']['5251']["offHeat"] is not None and self.homeStatus["moduleInput"]['2']['5251']["onHeat"] is not None):
-          onHeat = self.homeStatus["moduleInput"]['2']['5251']["onHeat"]
-          offHeat = self.homeStatus["moduleInput"]['2']['5251']["offHeat"]
-          newTemp = self.text2int(command)
-          print("[DEBUG] Parsed number " + str(newTemp) + " from thermostat request.")
-          if(newTemp > 30 and newTemp < 100):
-            onHeat = newTemp+1
-            offHeat = onHeat-2
-            newHomeStatus = self.homeStatus["moduleInput"]['2']
-            newHomeStatus['5251']["onHeat"] = onHeat
-            newHomeStatus['5251']["offHeat"] = offHeat
-            dataToSend = {
-              "roomId": 2,
-              "newModuleInput": newHomeStatus
-            }
-            # Send a post message from here. 
-            query = self.webServerIpAddress + "/moduleInputModify"
-            print("[DEBUG] Sending query: " + query + " with body:")
-            print(dataToSend)
-            response = requests.post(query, data=json.dumps(dataToSend, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
-            if(response.status_code == 200):
-              print("[DEBUG] Request received successfully.")
-            else:
-              print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-            self.executeTextThread("Setting thermostat to " + str(newTemp) + ".")
-            return True
-    elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
-      if(self.homeStatus is not None and self.homeStatus["moduleInputDisabled"] is not None):
-        currentAutoStatus = self.homeStatus["moduleInputDisabled"]
-        newState = "true"
-        if("activate" in command or "turn on" in command or "enable" in command):
-          newState = "false"
-        queries.append(self.webServerIpAddress + "/moduleInputDisabled/" + newState)
-        # Manage prompt. 
-        if(newState == "false"):
-          confirmationPrompt = "Enabling automatic server actions."
-        else:
-          confirmationPrompt = "Disabling automatic server actions."
-    elif("server" in command and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
-      if(self.homeStatus is not None and self.homeStatus["serverDisabled"] is not None):
-        currentAutoStatus = self.homeStatus["serverDisabled"]
-        newState = "true"
-        if("activate" in command or "turn on" in command or "enable" in command):
-          newState = "false"
-        queries.append(self.webServerIpAddress + "/serverDisabled/" + newState)
-        # Manage prompt. 
-        if(newState == "false"):
-          confirmationPrompt = "Enabling central server operations."
-        else:
-          confirmationPrompt = "Disabling central server operations."
-    elif("status" in command and ("home" in command or "system" in command or "server" in command)):
-      if(self.homeStatus is not None and self.actionStates is not None):
-        # Report all information. 
-        serverDisabled = "enabled"
-        if(self.homeStatus["serverDisabled"] == "true" or self.homeStatus['serverDisabled'] == True):
-          serverDisabled = "disabled"
-        moduleInputDisabled = "enabled"
-        if(self.homeStatus["moduleInputDisabled"] == "true" or self.homeStatus['moduleInputDisabled'] == True):
-          moduleInputDisabled = "disabled"
-        onHeat = int(self.homeStatus["moduleInput"]['2']['5251']["onHeat"])
+          if(newState == "false"):
+            confirmationPrompt = "Enabling automatic server actions."
+          else:
+            confirmationPrompt = "Disabling automatic server actions."
+      elif("server" in command and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
+        if(self.homeStatus is not None and self.homeStatus["serverDisabled"] is not None):
+          currentAutoStatus = self.homeStatus["serverDisabled"]
+          newState = "true"
+          if("activate" in command or "turn on" in command or "enable" in command):
+            newState = "false"
+          queries.append(self.webServerIpAddress + "/serverDisabled/" + newState)
+          # Manage prompt. 
+          if(newState == "false"):
+            confirmationPrompt = "Enabling central server operations."
+          else:
+            confirmationPrompt = "Disabling central server operations."
+      elif("status" in command and ("home" in command or "system" in command or "server" in command)):
+        if(self.homeStatus is not None and self.actionStates is not None):
+          # Report all information. 
+          serverDisabled = "enabled"
+          if(self.homeStatus["serverDisabled"] == "true" or self.homeStatus['serverDisabled'] == True):
+            serverDisabled = "disabled"
+          moduleInputDisabled = "enabled"
+          if(self.homeStatus["moduleInputDisabled"] == "true" or self.homeStatus['moduleInputDisabled'] == True):
+            moduleInputDisabled = "disabled"
+          onHeat = int(self.homeStatus["moduleInput"]['2']['5251']["onHeat"])
 
-        # Handle temperatures. Expects a state like "27.70_42.20".
-        lr_2_state = self.actionStates["2"]["5251"].split("_")
-        br_state = self.actionStates["1"]["5250"].split("_")
-        # Convert to Farenheit. 
-        lr_2_temp = str(round(((float(lr_2_state[0]) * 9) / 5) + 32))
-        br_temp = str(round(((float(br_state[0]) * 9) / 5) + 32))
+          # Handle temperatures. Expects a state like "27.70_42.20".
+          lr_2_state = self.actionStates["2"]["5251"].split("_")
+          br_state = self.actionStates["1"]["5250"].split("_")
+          # Convert to Farenheit. 
+          lr_2_temp = str(round(((float(lr_2_state[0]) * 9) / 5) + 32))
+          br_temp = str(round(((float(br_state[0]) * 9) / 5) + 32))
 
-        # Operational server status
-        statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.homeStatus["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
-        # Action states status
-        statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
-        self.executeTextThread(statusString)
-        time.sleep(10) # Enough time to allow the speech prompt to complete. 
+          # Operational server status
+          statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.homeStatus["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
+          # Action states status
+          statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
+          self.executeTextThread(statusString)
+          time.sleep(10) # Enough time to allow the speech prompt to complete. 
+          return True
+      elif("time" in command or "clock" in command):
+        currentTime = time.strftime("%H%M", time.localtime())
+        timeString = "It is currently " + currentTime + "."
+        self.executeTextThread(timeString)
+        time.sleep(2) # Enough time to allow the speech prompt to complete. 
         return True
-    elif("time" in command or "clock" in command):
-      currentTime = time.strftime("%H%M", time.localtime())
-      timeString = "It is currently " + currentTime + "."
-      self.executeTextThread(timeString)
-      time.sleep(2) # Enough time to allow the speech prompt to complete. 
-      return True
-    elif("date" in command or "day" in command or "month" in command or "today" in command):
-      dateToday = date.today()
-      dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
-      self.executeTextThread(dateString)
-      time.sleep(3) # Enough time to allow the speech prompt to complete. 
-      return True
-    elif("question" in command):
-      # Allow user to interact with QuestAI. For the speech to text
-      # to run, we need to stop our engine. 
-      self.engine.stop()
-
-      # If we asked for advanced output or "8 ball", our output should be
-      # different.
-      output_type = 0
-      if("advanced" in command): output_type = 1
-      elif("eight ball" in command or "8-ball" in command or "8 ball" in command): output_type = 2
-
-      # Initialize if it's not running. Only do this once and keep it up
-      # afterwards because the quest_ai_parser takes a while to get running. 
-      if(self.quest_ai_parser is None):
-        self.executeTextThread("Initializing Quest AI... please wait.")
-        self.quest_ai_parser = QuestAiParsing()
-      self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.actionStates is not None)
-      return True
-    else:
-      if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        queries.append(self.generateQuery(command, 1, 50, 1, 0))
-      if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        queries.append(self.generateQuery(command, 2, 50, 1, 0))
-      if("speaker" in command or "soundbar" in command or ("sound" in command and "bar" in command)):
-        queries.append(self.generateQuery(command, 2, 250, 12, 10))
-      if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        queries.append(self.generateQuery(command, 2, 251, 12, 10))
-      if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        queries.append(self.generateQuery(command, 2, 350, 22, 20))
-      if("bathroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
-        queries.append(self.generateQuery(command, 3, 350, 22, 20))
-      if("bathroom" in command and ("fan" in command or "vent")):
-        queries.append(self.generateQuery(command, 3, 351, 22, 20))
-      if("bathroom" in command and ("led" in command or "night" in command)):
-        queries.append(self.generateQuery(command, 3, 50, 1, 0))
-      if("printer" in command):
-        queries.append(self.generateQuery(command, 2, 252, 12, 10))
-      if("bedroom" in command and ("night" in command or "red led" in command or "red leds" in command)):
-        queries.append(self.generateQuery(command, 1, 1000, 108, 100))
-      if("living" in command and ("night" in command or "red led" in command or "red leds" in command)):
-        queries.append(self.generateQuery(command, 2, 1000, 108, 100))
-      if("bedroom" in command and ("led" in command or "party" in command or "rgb" in command)):
-        queries.append(self.generateQuery(command, 1, 1000, 107, 100))
-      if("living" in command and ("led" in command or "party" in command or "rgb" in command)):
-        queries.append(self.generateQuery(command, 2, 1000, 107, 100))
+      elif("date" in command or "day" in command or "month" in command or "today" in command):
+        dateToday = date.today()
+        dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
+        self.executeTextThread(dateString)
+        time.sleep(3) # Enough time to allow the speech prompt to complete. 
+        return True
+      elif("question" in command):
+        # If we asked for advanced output or "8 ball", our output should be
+        # different.
+        output_type = 0
+        if("advanced" in command or "detailed" in command): output_type = 1
+        elif("eight ball" in command or "8-ball" in command or "8 ball" in command): output_type = 2
+        # Initialize if it's not running. Only do this once and keep it up
+        # afterwards because the quest_ai_parser takes a while to get running. 
+        if(self.quest_ai_parser is None):
+          self.executeTextThread("Initializing Quest AI... please wait.")
+          self.quest_ai_parser = QuestAiParsing(recognizer = self.r2, engine = self.engine, pause_threshold = self.pauseThreshold)
+        self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.actionStates is not None)
+        return True
+      elif("calculator" in command or "calculate" in command):
+        # Get the first number and then the second number in the query. Ignore
+        # all others if there are any. Fail if there are not enough numbers.
+        # Fail if there is not a specifying operator. 
+        first_term = None
+        second_term = None
+        operator = None # Term used in final message as well. 
+        negative_term = False
+        for word in command:
+          # Test as an operator.
+          if operator is None:
+            if word == "add" or "plus":
+              operator = "plus"
+              continue
+            elif word == "subtract" or word == "minus":
+              operator = "minus"
+              continue
+            elif word == "multiply" or word == "times":
+              operator = "times"
+              continue
+            elif word == "divide" or word == "divided":
+              operator = "divided by"
+              continue
+          # Test as a number or a "negative" term.
+          if first_term is None or second_term is None:
+            if word == "negative":
+              negative_term = True
+            else:
+              # Parse as a number. 
+              possible_term = self.text2int(word)
+              if possible_term != 0:
+                if negative_term is True:
+                  possible_term = -possible_term
+                  negative_term = False
+                if first_term is None:
+                  first_term = possible_term
+                else:
+                  second_term = possible_term
+                
+        # We've now theoretically gotten everything.
+        if first_term is not None and second_term is not None and operator is not None:
+          solution = None
+          if operator == "plus":
+            solution = first_term + second_term
+          elif operator == "minus":
+            solution = first_term - second_term
+          elif operator == "times":
+            solution = first_term * second_term
+          else:
+            solution = first_term / second_term
+          self.executeTextThread(str(first_term) + " " + operator + " " + str(second_term) + " equals " + str(solution) + ".")
+          time.sleep(3) # Enough time to allow the speech prompt to complete. 
+      else:
+        if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
+          queries.append(self.generateQuery(command, 1, 50, 1, 0))
+        if("living" in command and ("light" in command or "lights" in command or "lamp" in command)):
+          queries.append(self.generateQuery(command, 2, 50, 1, 0))
+        if("speaker" in command or "soundbar" in command or ("sound" in command and "bar" in command)):
+          queries.append(self.generateQuery(command, 2, 250, 12, 10))
+        if("ceiling" in command and ("light" in command or "lights" in command or "lamp" in command)):
+          queries.append(self.generateQuery(command, 2, 251, 12, 10))
+        if("kitchen" in command and ("light" in command or "lights" in command or "lamp" in command)):
+          queries.append(self.generateQuery(command, 2, 350, 22, 20))
+        if("bathroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
+          queries.append(self.generateQuery(command, 3, 350, 22, 20))
+        if("bathroom" in command and ("fan" in command or "vent")):
+          queries.append(self.generateQuery(command, 3, 351, 22, 20))
+        if("bathroom" in command and ("led" in command or "night" in command)):
+          queries.append(self.generateQuery(command, 3, 50, 1, 0))
+        if("printer" in command):
+          queries.append(self.generateQuery(command, 2, 252, 12, 10))
+        if("bedroom" in command and ("night" in command or "red led" in command or "red leds" in command)):
+          queries.append(self.generateQuery(command, 1, 1000, 108, 100))
+        if("living" in command and ("night" in command or "red led" in command or "red leds" in command)):
+          queries.append(self.generateQuery(command, 2, 1000, 108, 100))
+        if("bedroom" in command and ("led" in command or "party" in command or "rgb" in command)):
+          queries.append(self.generateQuery(command, 1, 1000, 107, 100))
+        if("living" in command and ("led" in command or "party" in command or "rgb" in command)):
+          queries.append(self.generateQuery(command, 2, 1000, 107, 100))
 
     if len(queries) > 0:
       # We have received a valid command. Query the server. 
@@ -496,19 +549,24 @@ class CommandParser:
       return False
 
   # Given the possible command string, roomId, actionId, and 
-  # a binary set of states, return a query. 
+  # a binary set of states, return a query. If the command 
+  # contains the keyword "virtual", a virtual module toggle
+  # will be created instead of physical. 
   def generateQuery(self, command, roomId, actionId, onState, offState):
+    endpoint = "/moduleToggle/"
+    if "virtual" in command:
+      endpoint = "/moduleVirtualToggle/"
     if("off" in command or "deactivate" in command):
-      return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
+      return self.webServerIpAddress + endpoint +str(roomId)+"/"+str(actionId)+"/" + str(offState)
     elif("on" in command or "activate" in command or "initialize" in command):
-      return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+      return self.webServerIpAddress + endpoint +str(roomId)+"/"+str(actionId)+"/" + str(onState)
     else:
       #No on or off specified. Check queried information. 
       if(self.actionStates is not None):
         if(self.actionStates[str(roomId)][str(actionId)] == int(onState)):
-          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(offState)
+          return self.webServerIpAddress + endpoint +str(roomId)+"/"+str(actionId)+"/" + str(offState)
         else:
-          return self.webServerIpAddress + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(onState)
+          return self.webServerIpAddress + endpoint+str(roomId)+"/"+str(actionId)+"/" + str(onState)
 
   # Helper function I got off stack overflow - really sweet code!
   # Slightly modified to allow non-number characters. 

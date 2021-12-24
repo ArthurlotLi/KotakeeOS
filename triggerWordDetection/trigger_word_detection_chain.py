@@ -124,8 +124,8 @@ if __name__ == "__main__":
   # Note that the only required field is the iternum - defaults will
   # be used for other fields if not specified. 
   chain_dict = {
-    "13540" : {
-      "iternum" : "13540",
+    "13560" : {
+      "iternum" : "13560",
       "model_learning_rate" : 0.0002,
       "model_epochs" : 2500,
       "dataset_size" : 9000,

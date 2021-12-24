@@ -53,6 +53,13 @@ class TriggerWordDetection:
   n_freq = 101 # Number of frequencies input to the model at each time step of the spectrogram
   Ty = 1375 # The number of time steps in the output of our model
 
+  # Configuration of attempts. Windows may sometimes have hiccups
+  # and not properly allocate enough RAM for our python program. 
+  data_generation_x_attempts = 10 # For attempting to allocate numpy array for X. 
+  data_generation_y_attempts = 2 # For attempting to allocate numpy array for y.
+  data_writing_x_attempts = 10 # For attempting to write X to file.
+  data_writing_y_attempts = 2 # For attempting to write y to file.
+
   # File sources
   raw_data_folder = "./raw_data"
   raw_data_dev_folder = "./raw_data_dev"
@@ -218,31 +225,80 @@ class TriggerWordDetection:
           array_y.append(np.transpose(y, (1, 0))) # We want to go from (1, 1375) to (1375, 1)
         else:
           print("[WARNING] Generated x and y of incorrect shapes! Discarding...")
-      # A nice little learning moment here for numpy arrays. You can use
-      # array() to create a new dimension, while concatenate() and vstack()
-      # work on existing dimensions. 
-      print("[INFO] Combining all generated x arrays...")
-      final_x = np.array(array_x)
+
+      # Addressing how Windows sometimes fails to allocate enough RAM.
+      generation_x_attempts = 0
+      generation_y_attempts = 0
+      writing_x_attempts = 0
+      writing_y_attempts = 0
+      writing_x_success = False
+      writing_y_success = False
+
+      # Attempt to combine X until maximum attempts reached. 
+      while final_x is None:
+        if generation_x_attempts >= self.data_generation_x_attempts:
+          print("[ERROR] Maximum X generation attempts reached. Aborting...")
+          return None, None
+        print("[INFO] Combining all generated x arrays...")
+        try:
+          final_x = np.array(array_x)
+        except:
+          print("[WARNING] Error encountered when generating X during attempt " + str(generation_x_attempts) + ".")
+        generation_x_attempts = generation_x_attempts + 1
+
+      # Attempt to combine y until maximum attempts reached. 
       print("[INFO] Combining all generated y arrays...")
-      final_y = np.array(array_y)
+      while final_y is None:
+        if generation_y_attempts >= self.data_generation_y_attempts:
+          print("[ERROR] Maximum y generation attempts reached. Aborting...")
+          return None, None
+        print("[INFO] Combining all generated y arrays...")
+        try:
+          final_y = np.array(array_y)
+        except:
+          print("[WARNING] Error encountered when generating y during attempt " + str(generation_y_attempts) + ".")
+        generation_y_attempts = generation_y_attempts + 1
       
       print("[DEBUG] final_x.shape is:", final_x.shape)  
       print("[DEBUG] final_y.shape is:", final_y.shape)    
 
-      # Save the generated datasets to file. 
-      if(generateDevSetOnly):
-        print("[INFO] Saving dev_X to file...")
-        np.save(self.X_dev_location, final_x)
-        print("[INFO] Saving dev_Y to file...")
-        np.save(self.Y_dev_location, final_y)
+      # Attempt to write X until maximum attempts reached. 
+      while writing_x_success is False:
+        if(writing_x_attempts >= self.data_writing_x_attempts):
+          print("[ERROR] Maximum x writing attempts reached. Aborting...")
+          return None, None
+        try:
+          if(generateDevSetOnly):
+            print("[INFO] Saving dev_X to file...")
+            np.save(self.X_dev_location, final_x)
+          else:
+            print("[INFO] Saving final_x to file...")
+            np.save(self.dataset_output_folder + "/X_"+str(iternum)+".npy", final_x)
+          writing_x_success = True
+        except:
+          print("[WARNING] Error encountered when writing X during attempt " + str(writing_x_attempts) + ".")
+        writing_x_attempts = writing_x_attempts + 1
+        
+      # Attempt to write y until maximum attempts reached. 
+      while writing_y_success is False:
+        if(writing_y_attempts >= self.data_writing_y_attempts):
+          print("[ERROR] Maximum y writing attempts reached. Aborting...")
+          return None, None
+        try:
+          if(generateDevSetOnly):
+            print("[INFO] Saving dev_Y to file...")
+            np.save(self.Y_dev_location, final_y)
+          else:
+            print("[INFO] Saving final_y to file...")
+            np.save(self.dataset_output_folder + "/Y_"+str(iternum)+".npy", final_y)
+          writing_y_success = True
+        except:
+          print("[WARNING] Error encountered when writing y during attempt " + str(writing_y_attempts) + ".")
+        writing_y_attempts = writing_y_attempts + 1
 
+      if(generateDevSetOnly):
         print("[INFO] Successfully saved dev sets.")
       else:
-        print("[INFO] Saving final_x to file...")
-        np.save(self.dataset_output_folder + "/X_"+str(iternum)+".npy", final_x)
-        print("[INFO] Saving final_y to file...")
-        np.save(self.dataset_output_folder + "/Y_"+str(iternum)+".npy", final_y)
-
         print("[INFO] Successfully saved X_"+str(iternum)+".npy and Y_"+str(iternum)+".npy to XY_train folder.")
 
     return final_x, final_y
