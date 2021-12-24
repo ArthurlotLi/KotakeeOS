@@ -334,7 +334,7 @@ class CommandParser:
     commands = [full_command]
     for keyword in self.command_split_keywords:
       for i in range(0, len(commands)):
-        commands[i] = commands[i].split(keyword)
+        commands[i] = (commands[i]).split(keyword)
 
     # Parse command chronologically.
     for command in commands:
