@@ -25,7 +25,7 @@ class CommandParser:
   webServerIpAddress = "http://192.168.0.197:8080"
   cancelWords = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops google query.
   stopServerCommands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
-  command_split = "break"
+  command_splits = ["break", "brake"]
   hotWordReceiptPrompt = "Yes?"
   successfulCommandPrompt = "" # By default, don't say anything and just activate something. 
   cancellationPrompt = "Going back to sleep."
@@ -330,8 +330,13 @@ class CommandParser:
       return True
 
     # Multi-command parsing. Break the command phrase in two
-    # given the keyword "Break". Parse chronologically.
-    commands = full_command.split(self.command_split)
+    # given the array of keywords.
+    commands = [full_command]
+    for keyword in self.command_split:
+      for i in range(0, len(commands)):
+        commands[i] = commands[i].split(keyword)
+
+    # Parse command chronologically.
     for command in commands:
       if("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
         if(self.homeStatus is not None):
