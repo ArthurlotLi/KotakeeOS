@@ -470,16 +470,16 @@ class CommandParser:
         for word in command:
           # Test as an operator.
           if operator is None:
-            if word == "add" or "plus":
+            if word == "add" or word == "plus" or word == "+":
               operator = "plus"
               continue
-            elif word == "subtract" or word == "minus":
+            elif word == "subtract" or word == "minus" or word == "-":
               operator = "minus"
               continue
-            elif word == "multiply" or word == "times":
+            elif word == "multiply" or word == "times" or word == "*" or word == "x":
               operator = "times"
               continue
-            elif word == "divide" or word == "divided":
+            elif word == "divide" or word == "divided" or word == "/":
               operator = "divided by"
               continue
           # Test as a number or a "negative" term.
