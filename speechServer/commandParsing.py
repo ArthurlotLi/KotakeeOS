@@ -525,7 +525,7 @@ class CommandParser:
             solution = first_term * second_term
           else:
             solution = first_term / second_term
-          self.executeTextThread(str(first_term) + " " + operator + " " + str(second_term) + " equals " + str(solution) + ".")
+          self.executeTextThread(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution))
           time.sleep(3) # Enough time to allow the speech prompt to complete. 
           valid_command = True
       else:
