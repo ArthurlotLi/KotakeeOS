@@ -556,18 +556,18 @@ class CommandParser:
         if("living" in command and ("led" in command or "party" in command or "rgb" in command)):
           queries.append(self.generateQuery(command, 2, 1000, 107, 100))
 
-        if len(queries) > 0:
-          # We have received a valid command. Query the server. 
-          for query in queries:
-            print("[DEBUG] Sending query: " + query)
-            response = requests.get(query)
-            if(response.status_code == 200):
-              print("[DEBUG] Request received successfully.")
-            else:
-              print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-          if(confirmationPrompt is not None and confirmationPrompt != ""):
-            self.executeTextThread(confirmationPrompt)
-          valid_command = True
+      if len(queries) > 0:
+        # We have received a valid command. Query the server. 
+        for query in queries:
+          print("[DEBUG] Sending query: " + query)
+          response = requests.get(query)
+          if(response.status_code == 200):
+            print("[DEBUG] Request received successfully.")
+          else:
+            print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+        if(confirmationPrompt is not None and confirmationPrompt != ""):
+          self.executeTextThread(confirmationPrompt)
+        valid_command = True
 
     if valid_command != True:
       print("[DEBUG] No valid command was received.")
