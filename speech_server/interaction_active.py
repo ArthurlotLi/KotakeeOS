@@ -7,17 +7,22 @@
 # Expects interaction_active.json specifying directories of 
 # primary module classes. 
 
+from module_active import ModuleActive
+
 import time
 from datetime import date
+import json
 
 class InteractionActive:
   # Flag to shut down the entire speech server. 
   stop_server = False
 
+  interaction_active_json_location = "./interaction_active.json"
+
   # Constants that may be configured.
   cancel_words = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops query.
   stop_server_commands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
-  stop_server_prompt = "Shutting down Kotakee AI."
+  stop_server_prompt = "" # By default, don't say anything and just let the hotword chime indicate shutdown. 
   command_split_keywords = ["break", "brake"]
   successful_command_prompt = "" # By default, don't say anything and just activate something. 
 
@@ -25,10 +30,48 @@ class InteractionActive:
   speech_listen = None
   web_server_status = None
 
+  # List of ModuleActive objects. 
+  module_active_list = [] 
+
+  # Initialize all active modules implemented as specified in the 
+  # "interaction_active.json" support document. 
   def __init__(self, speech_speak, speech_listen, web_server_status):
+    interaction_active_json = None
+    interaction_active_active_modules = None
+
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
     self.web_server_status = web_server_status
+
+    # Attempt to load the list of all active modules. 
+    try:
+      interaction_active_json_file = open(self.interaction_active_json_location)
+      interaction_active_json = json.load(interaction_active_json_file)
+    except:
+      print("[ERROR] Interaction Active was unable to load json from: '" + str(self.interaction_active_json_location) + "'.")
+      return
+    
+    # We expect a list of class names in an entry "active_modules".
+    try:
+      interaction_active_active_modules = interaction_active_json["active_modules"]
+    except:
+      print("[ERROR] Interaction Active was unable to parse active_modules json.")
+      return
+    
+    # For each module in the list, load it and keep it in our list. 
+    for class_location in interaction_active_active_modules:
+      new_module = ModuleActive(
+        class_location=class_location, 
+        speech_speak=speech_speak, 
+        speech_listen=speech_listen, 
+        web_server_status=web_server_status)
+      
+      if new_module.valid_module is True:
+        self.module_active_list.append(new_module)
+      else:
+        print("[WARNING] Interaction Active failed to load a module from '" + str(class_location) + "'.")
+    
+    print("[DEBUG] Initialized Interaction Active with " + str(len(self.module_active_list)) + " valid modules.")
 
   # Key method executing level one user interactions. 
   def listen_for_command(self):
