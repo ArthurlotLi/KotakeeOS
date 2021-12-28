@@ -20,6 +20,7 @@ class SpeechListen:
   chime_location = None
   r2 = None
   speech_speak = None
+  web_server_status = None
 
   # Configuration parameters
   default_pause_threshold = 1.0
@@ -27,16 +28,17 @@ class SpeechListen:
   default_response_timeout = 5
   default_response_phrase_timeout = 20
 
-  def __init__(self, speech_speak, chime_location):
+  def __init__(self, speech_speak, chime_location, web_server_status):
     self.speech_speak = speech_speak
     self.chime_location = chime_location
     self.r2 = sr.Recognizer()
+    self.web_server_status = web_server_status
 
   # Attempt to listen for valid text using Google speech recogntiion.
   # Returns valid text if recieved and None if not recieved. 
   # May provide a verbal prompt every loop. Can be specified with a
   # sleep duration (how long to wait before starting to listen)
-  def listen_response(self, prompt = None, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None):
+  def listen_response(self, prompt = None, indicate_led = True, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None):
     user_response_text = None
 
     # Use defaults if not specified by the caller. 
@@ -55,7 +57,8 @@ class SpeechListen:
       self.r2.adjust_for_ambient_noise(source2, duration=0.7)
 
       # Indicate that you are currently active. 
-      # TODO: self.querySpeechServerLED(1, 2, 51)
+      if indicate_led is True:
+        self.web_server_status.query_speech_server_led(1, 2, 51)
 
       # Try for as many attempts as allowed. 
       for i in range(max_response_attempts): 
@@ -88,8 +91,9 @@ class SpeechListen:
         except sr.WaitTimeoutError:
           print("[WARNING] Speech Listen limeout occured.")
 
-      # Indicate that you are no longer active. 
-      # TODO: self.querySpeechServerLED(0, 2, 51)
+      # Indicate that you are currently active. 
+      if indicate_led is True:
+        self.web_server_status.query_speech_server_led(0, 2, 51)
   
     return user_response_text
 

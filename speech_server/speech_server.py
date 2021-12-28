@@ -10,6 +10,7 @@
 # web_server_status.py for all interactions with the KotakeeOS home
 # automation web server. 
 
+from speech_server.web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
 from speech_listen import SpeechListen
 from hotword_trigger_word import HotwordTriggerWord
@@ -21,6 +22,7 @@ class SpeechServer:
   # Configurable Constants
   trigger_word_models_path = '../triggerWordDetection/models'
   speech_listen_chime_location = "./assets/testChime.wav"
+  web_server_ip_address = "http://192.168.0.197:8080"
 
   trigger_word_iternum = None
   speech_speak = None
@@ -70,8 +72,8 @@ class SpeechServer:
   # occurs.
   def initialize_components_full(self):
     if self.initialize_speech_speak() is False: return False
-    if self.initialize_speech_listen() is False: return False
     if self.initialize_web_server_status() is False: return False
+    if self.initialize_speech_listen() is False: return False
     if self.initialize_passive_interaction() is False: return False
     if self.initialize_active_interaction() is False: return False
     if self.initialize_hotword_trigger_word() is False: return False
@@ -80,8 +82,8 @@ class SpeechServer:
   # Only initialize components relevant to active interactions. 
   def initialize_components_query(self):
     if self.initialize_speech_speak() is False: return False
-    if self.initialize_speech_listen() is False: return False
     if self.initialize_web_server_status() is False: return False
+    if self.initialize_speech_listen() is False: return False
     if self.initialize_active_interaction() is False: return False
     return True
 
@@ -92,20 +94,23 @@ class SpeechServer:
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
     return True
+
+  # Initialize Web Server Status handler
+  def initialize_web_server_status(self):
+    self.web_server_status = WebServerStatus(ip_address=self.web_server_ip_address)
+    if self.web_server_status is None: 
+      print("[ERROR] Failed to initialize Web Server Status handler.") 
+      return False
+    return True
   
   # Initialize Listen handler
   def initialize_speech_listen(self):
     if self.speech_speak is None: 
       return None
-    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location)
+    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, web_server_status=self.web_server_status)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
-    return True
-
-  # Initialize Web Server Status handler
-  def initialize_web_server_status(self):
-    # TODO
     return True
 
   # Initialize Passive Interaction handler

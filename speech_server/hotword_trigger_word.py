@@ -75,7 +75,7 @@ class HotwordTriggerWord:
         preds = self.detect_triggerword_spectrum(spectrum)
         new_trigger = self.has_new_triggerword(preds, self.chunk_duration, self.feed_duration)
         if new_trigger:
-          #print('1')
+          print('1')
           # Plunges code into server logic loop. 
           print("[INFO] Trigger Word recognized!")
           # Stop the stream momentarily. 
@@ -95,10 +95,10 @@ class HotwordTriggerWord:
   def callback(self, in_data, frame_count, time_info, status):
     data0 = np.frombuffer(in_data, dtype='int16')
     if np.abs(data0).mean() < self.silence_threshold:
-      #print('-', end='')
+      print('-', end='')
       return (in_data, pyaudio.paContinue)
-    #else:
-      #print('.', end='')
+    else:
+      print('.', end='')
     self.data = np.append(self.data,data0)    
     if len(self.data) > self.feed_samples:
       self.data = self.data[-self.feed_samples:]
