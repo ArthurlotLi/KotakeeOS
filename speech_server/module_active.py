@@ -74,10 +74,10 @@ class ModuleActive:
       return
 
     # Attempt to load the class. 
-    try:
-      self.module_class = self.load_class(self.module_location, self.class_name)
-    except:
-      print("[ERROR] Unable to load class: '" + str(self.class_location) + "'.")
+    self.module_class = self.load_class(self.module_location, self.class_name)
+
+    if self.module_class is None:
+      print("[ERROR] Was unable to load class: '" + str(self.class_location) + "'.")
       return
 
     module_json_file_location = self.module_location + "/" + self.module_active_json_filename
@@ -160,8 +160,21 @@ class ModuleActive:
       
   # Dynamic class import 
   def load_class(self,  module_name, class_name):
+    module = None
+    imported_class = None
+
     # Fetch the module first.
-    module = __import__(module_name)
+    try:
+      module = __import__(module_name)
+    except:
+      print("[ERROR] Failed to import module " + module_name + ".")
+      return None
 
     # Return the class. 
-    return getattr(module, class_name)
+    try:
+      imported_class = getattr(module, class_name)
+    except:
+      print("[ERROR] Failed to import class_name " + class_name + ".")
+      return None
+
+    return imported_class
