@@ -20,10 +20,10 @@ class SpeechListen:
   chime_location = None
   startup_location = None
   shutdown_location = None
-  chime_state_on = None
-  chime_state_off = None
-  chime_room_id = None
-  chime_action_id = None
+  led_state_on = None
+  led_state_off = None
+  led_room_id = None
+  led_action_id = None
 
   r2 = None
   speech_speak = None
@@ -36,7 +36,7 @@ class SpeechListen:
   default_response_phrase_timeout = 5
   default_ambient_noise_duration = 1.0
 
-  def __init__(self, speech_speak, web_server_status, chime_location, startup_location, shutdown_location, chime_state_on, chime_state_off, chime_room_id, chime_action_id):
+  def __init__(self, speech_speak, web_server_status, chime_location, startup_location, shutdown_location, led_state_on, led_state_off, led_room_id, led_action_id):
     self.speech_speak = speech_speak
     self.chime_location = chime_location
     self.startup_location = startup_location
@@ -44,10 +44,10 @@ class SpeechListen:
     self.r2 = sr.Recognizer()
     self.web_server_status = web_server_status
 
-    self.chime_state_on = chime_state_on
-    self.chime_state_off = chime_state_off
-    self.chime_room_id = chime_room_id
-    self.chime_action_id = chime_action_id
+    self.led_state_on = led_state_on
+    self.led_state_off = led_state_off
+    self.led_room_id = led_room_id
+    self.led_action_id = led_action_id
 
   # Attempt to listen for valid text using Google speech recogntiion.
   # Returns valid text if recieved and None if not recieved. 
@@ -75,7 +75,7 @@ class SpeechListen:
 
       # Indicate that you are currently active. 
       if indicate_led is True:
-        self.web_server_status.query_speech_server_led(1, 2, 51)
+        self.web_server_status.query_speech_server_led(self.led_state_on, self.led_room_id, self.led_action_id)
 
       # Try for as many attempts as allowed. 
       for i in range(max_response_attempts): 
@@ -110,7 +110,7 @@ class SpeechListen:
 
       # Indicate that you are currently active. 
       if indicate_led is True:
-        self.web_server_status.query_speech_server_led(0, 2, 51)
+        self.web_server_status.query_speech_server_led(self.led_state_off, self.led_room_id, self.led_action_id)
   
     return user_response_text
 

@@ -30,10 +30,10 @@ class SpeechServer:
   speech_listen_chime_location = "./assets/hotword.wav"
   speech_listen_startup_location = "./assets/startup.wav"
   speech_listen_shutdown_location = "./assets/shutdown.wav"
-  speech_listen_chime_state_on = 1
-  speech_listen_chime_state_off = 0
-  speech_listen_chime_room_id = 2
-  speech_listen_chime_action_id = 51
+  speech_listen_led_state_on = 1
+  speech_listen_led_state_off = 0
+  speech_listen_led_room_id = 2
+  speech_listen_led_action_id = 51
   web_server_ip_address = "http://192.168.0.197:8080"
 
   # Required upon initialization. 
@@ -134,10 +134,10 @@ class SpeechServer:
       chime_location=self.speech_listen_chime_location, 
       startup_location=self.speech_listen_startup_location, 
       shutdown_location=self.speech_listen_shutdown_location, 
-      chime_state_on=self.speech_listen_chime_state_on,
-      chime_state_off=self.speech_listen_chime_state_off,
-      chime_room_id=self.speech_listen_chime_room_id,
-      chime_action_id=self.speech_listen_chime_action_id)
+      led_state_on=self.speech_listen_led_state_on,
+      led_state_off=self.speech_listen_led_state_off,
+      led_room_id=self.speech_listen_led_room_id,
+      led_action_id=self.speech_listen_led_action_id)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
