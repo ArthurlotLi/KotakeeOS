@@ -33,10 +33,12 @@ class HotwordTriggerWord:
   model = None # Loaded Neural Network
   iternum = None # iternum for model
   interaction_active = None
+  speech_listen = None
 
-  def __init__(self, model_path, interaction_active):
+  def __init__(self, model_path, interaction_active, speech_listen):
     self.models_path = model_path
     self.interaction_active = interaction_active
+    self.speech_listen = speech_listen
 
   # Must be called. Returns False if failure occurs, otherwise returns True.
   def load_model(self, iternum):
@@ -65,6 +67,8 @@ class HotwordTriggerWord:
     stream = self.get_audio_input_stream(self.callback)
     stream.start_stream()
     print("[INFO] Now listening for Trigger Word with model iteration " + str(self.iternum) + ".")
+    # Audio cue for the user upon startup. 
+    self.speech_listen.execute_startup() 
     try:
       # Primary listening loop. Application should spend most of it's
       # lifetime in here. 

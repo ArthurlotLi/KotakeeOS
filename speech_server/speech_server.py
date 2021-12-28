@@ -21,7 +21,8 @@ import argparse
 class SpeechServer:
   # Configurable Constants
   trigger_word_models_path = '../triggerWordDetection/models'
-  speech_listen_chime_location = "./assets/testChime.wav"
+  speech_listen_chime_location = "./assets/hotword.wav"
+  speech_listen_startup_location = "./assets/startup.wav"
   web_server_ip_address = "http://192.168.0.197:8080"
 
   trigger_word_iternum = None
@@ -109,7 +110,7 @@ class SpeechServer:
   def initialize_speech_listen(self):
     if self.speech_speak is None: 
       return None
-    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, web_server_status=self.web_server_status)
+    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, startup_location=self.speech_listen_startup_location, web_server_status=self.web_server_status)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
@@ -130,7 +131,7 @@ class SpeechServer:
 
   # Initialize Hotword + Active Interaction handler)
   def initialize_hotword_trigger_word(self):
-    self.hotword_trigger_word = HotwordTriggerWord(model_path = self.trigger_word_models_path, interaction_active=self.interaction_active)
+    self.hotword_trigger_word = HotwordTriggerWord(model_path = self.trigger_word_models_path, interaction_active=self.interaction_active, speech_listen=self.speech_listen)
     if self.hotword_trigger_word.load_model(self.trigger_word_iternum) is False:
       print("[ERROR] Failed to initialize Hotword handler.")
       return False

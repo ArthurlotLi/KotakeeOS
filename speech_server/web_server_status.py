@@ -94,7 +94,6 @@ class WebServerStatus:
 
   # Creates, formats, and executes a simple POST query.
   def generate_and_execute_post_query(self, data_to_send):
-      # Send a post message from here. 
     query = self.web_server_ip_address + "/moduleInputModify"
     print("[DEBUG] Sending query: " + query + " with body:")
     print(data_to_send)

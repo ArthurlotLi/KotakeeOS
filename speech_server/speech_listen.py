@@ -18,6 +18,7 @@ class SpeechListen:
   online_functionality = True 
 
   chime_location = None
+  startup_location = None
   r2 = None
   speech_speak = None
   web_server_status = None
@@ -29,9 +30,10 @@ class SpeechListen:
   default_response_phrase_timeout = 5
   default_ambient_noise_duration = 1.0
 
-  def __init__(self, speech_speak, chime_location, web_server_status):
+  def __init__(self, speech_speak, chime_location, startup_location, web_server_status):
     self.speech_speak = speech_speak
     self.chime_location = chime_location
+    self.startup_location = startup_location
     self.r2 = sr.Recognizer()
     self.web_server_status = web_server_status
 
@@ -67,7 +69,7 @@ class SpeechListen:
       for i in range(max_response_attempts): 
         try:
           if execute_chime is True:
-            self.executeChime()
+            self.execute_chime()
           elif prompt is not None:
             # Prompt the user each loop attempt if specified. 
             self.speech_speak.execute_text_thread(prompt)
@@ -100,11 +102,17 @@ class SpeechListen:
   
     return user_response_text
 
+  def execute_startup(self):
+    self.execute_sound(self.startup_location)
+
+  def execute_chime(self):
+    self.execute_sound(self.chime_location)
+
   # Let out a chime to indicate that you're listening. This code
   # is not mine, but it works like a charm!
-  def executeChime(self):
+  def execute_sound(self, location):
     chunk = 1024
-    f = wave.open(self.chime_location, "rb")
+    f = wave.open(location, "rb")
     p = pyaudio.PyAudio()
     stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
                 channels = f.getnchannels(),  

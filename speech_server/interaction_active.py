@@ -175,8 +175,8 @@ class InteractionActive:
         # reads it out digit by digit. 
         separated_time_string = ""
         for character in currentTime:
-          separated_time_string = separated_time_string + character + ". "
-        timeString = "It is currently " + separated_time_string
+          separated_time_string = separated_time_string + character + ", "
+        timeString = "It is currently " + separated_time_string + "."
         self.speech_speak.speak_text(timeString)
         valid_command = True
       elif("date" in command or "day" in command or "month" in command or "today" in command):
