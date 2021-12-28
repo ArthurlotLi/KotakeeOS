@@ -7,6 +7,7 @@
 # Expects interaction_active.json specifying directories of 
 # primary module classes. 
 
+from os import sep
 import time
 from datetime import date
 
@@ -54,8 +55,7 @@ class InteractionActive:
     valid_command = False
 
     if any(x in full_command for x in self.stop_server_commands):
-      self.speech_speak.execute_text_thread(self.stop_server_prompt)
-      time.sleep(2) # Enough time to allow the speech prompt to complete. 
+      self.speech_speak.speak_text(self.stop_server_prompt)
       self.stop_server = True
       return True
 
@@ -77,7 +77,7 @@ class InteractionActive:
       if("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
         if(self.web_server_status.home_status is not None):
           weatherString = "It is currently " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.web_server_status.home_status["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.web_server_status.home_status["weatherData"]["main"]["humidity"]) + " percent."
-          self.speech_speak.execute_text_thread(weatherString)
+          self.speech_speak.speak_text(weatherString)
           valid_command = True
       elif("everything" in command or "all modules" in command):
         if(self.web_server_status.action_states is not None):
@@ -109,7 +109,7 @@ class InteractionActive:
               }
               self.web_server_status.generate_and_execute_post_query(data_to_send)
 
-              self.speech_speak.execute_text_thread("Setting thermostat to " + str(newTemp) + ".")
+              self.speech_speak.speak_text("Setting thermostat to " + str(newTemp) + ".")
               valid_command = True
       elif("temperature" in command):
         # Handle temperatures. Expects a state like "27.70_42.20".
@@ -121,7 +121,7 @@ class InteractionActive:
 
         # Operational server status
         statusString = "The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
-        self.speech_speak.execute_text_thread(statusString)
+        self.speech_speak.speak_text(statusString)
         valid_command = True
       elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
         if(self.web_server_status.home_status is not None and self.web_server_status.home_status["moduleInputDisabled"] is not None):
@@ -167,17 +167,22 @@ class InteractionActive:
           statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.web_server_status.home_status["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
           # Action states status
           statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
-          self.speech_speak.execute_text_thread(statusString)
+          self.speech_speak.speak_text(statusString)
           valid_command = True
       elif("time" in command or "clock" in command):
         currentTime = time.strftime("%H%M", time.localtime())
-        timeString = "It is currently " + currentTime + "."
-        self.speech_speak.execute_text_thread(timeString)
+        # Separate the time with spaces so the text synthesizer reads it out
+        # digit by digit. 
+        separated_time_string = ""
+        for character in currentTime:
+          separated_time_string = separated_time_string + character + " "
+        timeString = "It is currently " + separated_time_string + "."
+        self.speech_speak.speak_text(timeString)
         valid_command = True
       elif("date" in command or "day" in command or "month" in command or "today" in command):
         dateToday = date.today()
         dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
-        self.speech_speak.execute_text_thread(dateString)
+        self.speech_speak.speak_text(dateString)
         valid_command = True
         """
       elif("question" in command):
@@ -189,7 +194,7 @@ class InteractionActive:
         # Initialize if it's not running. Only do this once and keep it up
         # afterwards because the quest_ai_parser takes a while to get running. 
         if(self.quest_ai_parser is None):
-          self.speech_speak.execute_text_thread("Initializing Quest AI... please wait.")
+          self.speech_speak.speak_text("Initializing Quest AI... please wait.")
           self.quest_ai_parser = QuestAiParsing(recognizer = self.r2, engine = self.engine, pause_threshold = self.pauseThreshold)
         self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.web_server_status.action_states is not None)
         valid_command = True
@@ -244,7 +249,7 @@ class InteractionActive:
             solution = first_term * second_term
           else:
             solution = first_term / second_term
-          self.speech_speak.execute_text_thread(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
+          self.speech_speak.speak_text(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
           valid_command = True
       else:
         if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
@@ -280,7 +285,7 @@ class InteractionActive:
           self.web_server_status.execute_get_query(query)
 
         if(confirmation_prompt is not None and confirmation_prompt != ""):
-          self.speech_speak.execute_text_thread(confirmation_prompt)
+          self.speech_speak.speak_text(confirmation_prompt)
         valid_command = True
 
     if valid_command != True:

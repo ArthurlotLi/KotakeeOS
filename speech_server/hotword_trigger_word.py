@@ -13,8 +13,6 @@ from tensorflow.keras.models import load_model
 import pyaudio
 from queue import Queue
 
-from interaction_active import InteractionActive
-
 class HotwordTriggerWord:
   models_path = None
 
