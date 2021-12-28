@@ -19,20 +19,13 @@ class SpeechSpeak:
   # is disposed off. 
   def execute_text_thread(self, output_text):
     print("[DEBUG] Starting thread for text output: '"+output_text+"'")
-    text_thread = threading.Thread(target=self.speak_text_thread_function, args=(output_text,), daemon=True).start()
-
-  # Specifically designed function to override any existing usage
-  # of the engine to say something. 
-  def speak_text_thread_function(self, output_text):
-    print("[DEBUG] Attempting to output text: '"+output_text+"'")
-    if self.engine._inLoop:
-      self.engine.endLoop()
-    self.engine.say(output_text)
-    self.engine.runAndWait()
+    text_thread = threading.Thread(target=self.speak_text, args=(output_text,), daemon=True).start()
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
   def speak_text(self, output_text):
-    print("[DEBUG] Executing text output: '"+output_text+"'")
+    print("[DEBUG] Attempting to output text: '"+output_text+"'")
     self.engine.say(output_text)
     self.engine.runAndWait()
+    if self.engine._inLoop:
+      self.engine.endLoop()
