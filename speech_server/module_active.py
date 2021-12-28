@@ -42,6 +42,7 @@ class ModuleActive:
   class_location = None
   class_name = None
   module_location = None
+  module_folder_location = None
 
   # Central class. We expect this class to have standard methods 
   # allowing us to interface with interaction_active from here.
@@ -70,6 +71,7 @@ class ModuleActive:
       split_class_path = self.class_location.rsplit(".", 1)
       self.module_location = split_class_path[0] 
       self.class_name = split_class_path[1]
+      self.module_folder_location = self.module_location.rsplit("/", 1)[0]
     except:
       print("[ERROR] module_active was provided an invalid class string: '" + str(self.class_location) + "'.")
       return
@@ -81,7 +83,7 @@ class ModuleActive:
       print("[ERROR] Was unable to load class: '" + str(self.class_location) + "'.")
       return
 
-    module_json_file_location = self.module_location + "/" + self.module_active_json_filename
+    module_json_file_location = self.module_folder_location + "/" + self.module_active_json_filename
     #module_json_file_location = module_json_file_location.replace(".","/")
     try:
       module_json_file = open(module_json_file_location)
