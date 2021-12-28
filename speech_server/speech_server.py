@@ -10,7 +10,7 @@
 # web_server_status.py for all interactions with the KotakeeOS home
 # automation web server. 
 
-from speech_server.web_server_status import WebServerStatus
+from web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
 from speech_listen import SpeechListen
 from hotword_trigger_word import HotwordTriggerWord
