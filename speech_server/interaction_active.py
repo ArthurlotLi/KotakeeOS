@@ -8,6 +8,9 @@
 # primary module classes. 
 
 class InteractionActive:
+  # Flag to shut down the entire speech server. 
+  stop_server = False
+
   # Constants that may be configured.
   cancel_words = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops query.
   stop_server_commands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
