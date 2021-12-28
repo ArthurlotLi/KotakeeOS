@@ -52,7 +52,7 @@ class ModuleActive:
   # valid flag as false so the corrupted module is not used. 
   #
   # Expects input parameter class_location as a local path, for example,
-  # "home_automation.home_automation.HomeAutomation"
+  # "./home_automation/home_automation/HomeAutomation"
   # (folder/filename/ClassName). This specified class should be
   # the one designed to interface with interaction_active. 
   #
@@ -61,13 +61,7 @@ class ModuleActive:
   def __init__(self, class_location, speech_speak, speech_listen, web_server_status):
     module_json = None
 
-    # Attempt to load the class. 
     self.class_location = class_location
-    try:
-      self.module_class = self.load_class(self.class_location)
-    except:
-      print("[ERROR] Unable to load class: '" + str(self.class_location) + "'.")
-      return
 
     # Convert into a file path. Drop the class in the path to 
     # get the folder. Load the module_active.json file.
@@ -78,8 +72,16 @@ class ModuleActive:
     except:
       print("[ERROR] module_active was provided an invalid class string: '" + str(self.class_location) + "'.")
       return
+
+    # Attempt to load the class. 
+    try:
+      self.module_class = self.load_class(self.module_location, self.class_name)
+    except:
+      print("[ERROR] Unable to load class: '" + str(self.class_location) + "'.")
+      return
+
     module_json_file_location = self.module_location + "/" + self.module_active_json_filename
-    module_json_file_location = module_json_file_location.replace(".","/")
+    #module_json_file_location = module_json_file_location.replace(".","/")
     try:
       module_json_file = open(module_json_file_location)
       module_json = json.load(module_json_file)
@@ -155,13 +157,11 @@ class ModuleActive:
 
     self.valid_module = True
     print("[DEBUG] Successfully loaded class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
-
-  # Dynamic class loading. From stack overflow:
-  # https://stackoverflow.com/questions/547829/how-to-dynamically-load-a-python-class 
-  def load_class(name):
-    components = name.split('.')
-    mod = __import__(components[0])
-    for comp in components[1:]:
-        mod = getattr(mod, comp)
-    return mod
       
+  # Dynamic class import 
+  def load_class(self,  module_name, class_name):
+    # Fetch the module first.
+    module = __import__(module_name)
+
+    # Return the class. 
+    return getattr(module, class_name)
