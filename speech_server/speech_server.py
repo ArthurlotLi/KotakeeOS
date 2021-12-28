@@ -120,7 +120,7 @@ class SpeechServer:
 
   # Initialize Active Interaction handler
   def initialize_active_interaction(self):
-    self.interaction_active = InteractionActive(speech_speak = self.speech_speak, speech_listen = self.speech_listen)
+    self.interaction_active = InteractionActive(speech_speak = self.speech_speak, speech_listen = self.speech_listen, web_server_status = self.web_server_status)
     if self.interaction_active is None:
       print("[ERROR] Failed to initialize Active Interaction handler.")
       return False

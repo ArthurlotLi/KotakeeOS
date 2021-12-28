@@ -84,9 +84,21 @@ class WebServerStatus:
       print("[WARNING] query_speech_server_input unable to connect to server.")
 
   # Executes a simple GET query and expects the status code to be 200. 
-  def execute_simple_query(query):
+  def execute_get_query(query):
     print("[DEBUG] Sending query: " + query)
     response = requests.get(query)
+    if(response.status_code == 200):
+      print("[DEBUG] Request received successfully.")
+    else:
+      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+
+  # Creates, formats, and executes a simple POST query.
+  def generate_and_execute_post_query(self, data_to_send):
+      # Send a post message from here. 
+    query = self.web_server_ip_address + "/moduleInputModify"
+    print("[DEBUG] Sending query: " + query + " with body:")
+    print(data_to_send)
+    response = requests.post(query, data=json.dumps(data_to_send, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
     if(response.status_code == 200):
       print("[DEBUG] Request received successfully.")
     else:
