@@ -247,7 +247,6 @@ class TriggerWordDetection:
         generation_x_attempts = generation_x_attempts + 1
 
       # Attempt to combine y until maximum attempts reached. 
-      print("[INFO] Combining all generated y arrays...")
       while final_y is None:
         if generation_y_attempts >= self.data_generation_y_attempts:
           print("[ERROR] Maximum y generation attempts reached. Aborting...")
