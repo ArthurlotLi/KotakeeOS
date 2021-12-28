@@ -18,7 +18,7 @@ class InteractionActive:
   # Constants that may be configured.
   cancel_words = ["stop", "cancel", "go away", "quit", "no thanks", "sleep"] # stops query.
   stop_server_commands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
-  stop_server_prompt = "Understood. Shutting down."
+  stop_server_prompt = "Shutting down Kotakee AI."
   command_split_keywords = ["break", "brake"]
   successful_command_prompt = "" # By default, don't say anything and just activate something. 
 
