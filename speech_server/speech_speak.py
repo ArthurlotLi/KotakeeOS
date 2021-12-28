@@ -6,7 +6,7 @@
 # speech_server interactions.
 
 import pyttsx3
-import threading
+#import threading
 
 class SpeechSpeak:
   engine = None
@@ -14,6 +14,9 @@ class SpeechSpeak:
   def __init__(self):
     self.engine = pyttsx3.init()
 
+  # Disable multithreading for speech - it's one or the other, it
+  # seems. 
+  """
   # Non-blocking text to speech. Do be warned this might interefere 
   # with the speech recognition and may cut off if the calling class
   # is disposed off. 
@@ -29,6 +32,7 @@ class SpeechSpeak:
       self.engine.endLoop()
     self.engine.say(output_text)
     self.engine.runAndWait()
+  """
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
