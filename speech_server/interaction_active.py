@@ -40,12 +40,13 @@ class InteractionActive:
 
     user_command = self.speech_listen.listen_response(execute_chime=True, indicate_led=True)
 
-    # Abort if any key cancel words are present in registered text. 
-    if any(x in user_command for x in self.cancel_words):
-      print("[DEBUG] User requested cancellation. Stopping command parsing...")
-      return
+    if user_command is not None and user_command != "":
+      # Abort if any key cancel words are present in registered text. 
+      if any(x in user_command for x in self.cancel_words):
+        print("[DEBUG] User requested cancellation. Stopping command parsing...")
+        return
 
-    self.parse_command(user_command)
+      self.parse_command(user_command)
 
   # Given a command, trickle down the list of active modules and test
   # to see if any of them activate. 

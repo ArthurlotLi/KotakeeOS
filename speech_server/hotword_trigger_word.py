@@ -35,7 +35,7 @@ class HotwordTriggerWord:
   interaction_active = None
   speech_listen = None
 
-  def __init__(self, model_path, interaction_active, speech_listen):
+  def __init__(self, interaction_active, speech_listen, model_path):
     self.models_path = model_path
     self.interaction_active = interaction_active
     self.speech_listen = speech_listen

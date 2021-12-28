@@ -20,6 +20,11 @@ class SpeechListen:
   chime_location = None
   startup_location = None
   shutdown_location = None
+  chime_state_on = None
+  chime_state_off = None
+  chime_room_id = None
+  chime_action_id = None
+
   r2 = None
   speech_speak = None
   web_server_status = None
@@ -31,13 +36,18 @@ class SpeechListen:
   default_response_phrase_timeout = 5
   default_ambient_noise_duration = 1.0
 
-  def __init__(self, speech_speak, chime_location, startup_location, shutdown_location, web_server_status):
+  def __init__(self, speech_speak, web_server_status, chime_location, startup_location, shutdown_location, chime_state_on, chime_state_off, chime_room_id, chime_action_id):
     self.speech_speak = speech_speak
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
     self.r2 = sr.Recognizer()
     self.web_server_status = web_server_status
+
+    self.chime_state_on = chime_state_on
+    self.chime_state_off = chime_state_off
+    self.chime_room_id = chime_room_id
+    self.chime_action_id = chime_action_id
 
   # Attempt to listen for valid text using Google speech recogntiion.
   # Returns valid text if recieved and None if not recieved. 

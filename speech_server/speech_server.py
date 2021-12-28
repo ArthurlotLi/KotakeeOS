@@ -9,6 +9,12 @@
 # all children classes as well within its content. Also utilizes 
 # web_server_status.py for all interactions with the KotakeeOS home
 # automation web server. 
+#
+# Usage: (full)
+# python speech_server.py 13602
+#
+# Alt Usage: (query)
+# python speech_server.py -1 
 
 from web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
@@ -19,14 +25,18 @@ from interaction_active import InteractionActive
 import argparse
 
 class SpeechServer:
-  # Configurable Constants
+  # Configurable constants passed down to components. 
   trigger_word_models_path = '../triggerWordDetection/models'
   speech_listen_chime_location = "./assets/hotword.wav"
   speech_listen_startup_location = "./assets/startup.wav"
   speech_listen_shutdown_location = "./assets/shutdown.wav"
+  speech_listen_chime_state_on = 1
+  speech_listen_chime_state_off = 0
+  speech_listen_chime_room_id = 2
+  speech_listen_chime_action_id = 51
   web_server_ip_address = "http://192.168.0.197:8080"
 
-  # Required upon init
+  # Required upon initialization. 
   trigger_word_iternum = None
   
   # Class variables - should only be one instance of each throughout
@@ -53,7 +63,6 @@ class SpeechServer:
     if self.initialize_components_full() is False:
       print("[ERROR] Initialization failed. Unable to execute speech server correctly. Exiting...")
       return
-
     self.speech_speak.speak_text("Kotakee AI is online: Model iteration " + str(self.trigger_word_iternum) + ".")
     
     # Initialization succeeded. Execute runtime functions. 
@@ -70,7 +79,8 @@ class SpeechServer:
       return
     
     # Initialization succeeded. Execute runtime functions. 
-    # TODO
+    self.interaction_active.listen_for_command()
+    print("[INFO] Exiting KotakeeOS Speech Server.")
 
   #
   # Initialization logic
@@ -97,7 +107,7 @@ class SpeechServer:
     if self.initialize_active_interaction() is False: return False
     return True
 
-  # Initialize Speak handler
+  # Initialize Speak handler.
   def initialize_speech_speak(self):
     self.speech_speak = SpeechSpeak()
     if self.speech_speak is None: 
@@ -105,7 +115,7 @@ class SpeechServer:
       return False
     return True
 
-  # Initialize Web Server Status handler
+  # Initialize Web Server Status handler. 
   def initialize_web_server_status(self):
     self.web_server_status = WebServerStatus(ip_address=self.web_server_ip_address)
     if self.web_server_status is None: 
@@ -113,32 +123,50 @@ class SpeechServer:
       return False
     return True
   
-  # Initialize Listen handler
+  # Initialize Listen handler. Requires Speak and Web Server Status
+  # components. 
   def initialize_speech_listen(self):
     if self.speech_speak is None: 
       return None
-    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, startup_location=self.speech_listen_startup_location, shutdown_location=self.speech_listen_shutdown_location, web_server_status=self.web_server_status)
+    self.speech_listen = SpeechListen(
+      speech_speak=self.speech_speak, 
+      web_server_status=self.web_server_status,
+      chime_location=self.speech_listen_chime_location, 
+      startup_location=self.speech_listen_startup_location, 
+      shutdown_location=self.speech_listen_shutdown_location, 
+      chime_state_on=self.speech_listen_chime_state_on,
+      chime_state_off=self.speech_listen_chime_state_off,
+      chime_room_id=self.speech_listen_chime_room_id,
+      chime_action_id=self.speech_listen_chime_action_id)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
     return True
 
-  # Initialize Passive Interaction handler
+  # Initialize Passive Interaction handler.
   def initialize_passive_interaction(self):
     # TODO
     return True
 
-  # Initialize Active Interaction handler
+  # Initialize Active Interaction handler. Requires Speak, Listen, 
+  # and Web Server Status components. 
   def initialize_active_interaction(self):
-    self.interaction_active = InteractionActive(speech_speak = self.speech_speak, speech_listen = self.speech_listen, web_server_status = self.web_server_status)
+    self.interaction_active = InteractionActive(
+      speech_speak = self.speech_speak, 
+      speech_listen = self.speech_listen, 
+      web_server_status = self.web_server_status)
     if self.interaction_active is None:
       print("[ERROR] Failed to initialize Active Interaction handler.")
       return False
     return True
 
-  # Initialize Hotword + Active Interaction handler)
+  # Initialize Hotword handler. Requires Active Interaction and Listen 
+  # component. 
   def initialize_hotword_trigger_word(self):
-    self.hotword_trigger_word = HotwordTriggerWord(model_path = self.trigger_word_models_path, interaction_active=self.interaction_active, speech_listen=self.speech_listen)
+    self.hotword_trigger_word = HotwordTriggerWord(
+      interaction_active=self.interaction_active, 
+      speech_listen=self.speech_listen,
+      model_path = self.trigger_word_models_path, )
     if self.hotword_trigger_word.load_model(self.trigger_word_iternum) is False:
       print("[ERROR] Failed to initialize Hotword handler.")
       return False
@@ -156,4 +184,9 @@ if __name__ == "__main__":
   trigger_word_iternum = int(args.iternum)
 
   speech_server = SpeechServer(trigger_word_iternum)
-  speech_server.run_server_full()
+
+  # If a negative number is passed, execute as a direct query. 
+  if (trigger_word_iternum < 0):
+    speech_server.run_server_query()
+  else:
+    speech_server.run_server_full()
