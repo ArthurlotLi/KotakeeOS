@@ -84,7 +84,7 @@ class WebServerStatus:
       print("[WARNING] query_speech_server_input unable to connect to server.")
 
   # Executes a simple GET query and expects the status code to be 200. 
-  def execute_get_query(query):
+  def execute_get_query(self, query):
     print("[DEBUG] Sending query: " + query)
     response = requests.get(query)
     if(response.status_code == 200):
