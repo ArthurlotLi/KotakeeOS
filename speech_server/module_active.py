@@ -49,19 +49,29 @@ class ModuleActive:
   module_class = None
   module_class_instance = None
 
+  # Static components - we will only populate these if we need to
+  # initialize the class only when it is being used for the first
+  # time (or after a while, potentially)
+  speech_speak = None
+  speech_listen = None
+  web_server_status = None
+
   # Expects json from module_active.json in the subject directory.
   # If the json is malformatted, fails gracefully and keeps 
   # valid flag as false so the corrupted module is not used. 
   #
   # Expects input parameter class_location as a local path, for example,
-  # "./home_automation/home_automation/HomeAutomation"
-  # (folder/filename/ClassName). This specified class should be
+  # "./home_automation/home_automation.HomeAutomation"
+  # (folder/filename.ClassName). This specified class should be
   # the one designed to interface with interaction_active. 
   #
   # Also expects the 3 static handlers for speak, listen, and web
   # server status. If they are not necessary, they will not be used. 
   def __init__(self, class_location, speech_speak, speech_listen, web_server_status):
     module_json = None
+    self.speech_speak = speech_speak
+    self.speech_listen = speech_listen
+    self.web_server_status = web_server_status
 
     self.class_location = class_location
 
@@ -107,61 +117,17 @@ class ModuleActive:
       print("[ERROR] Unacceptable module_json present in class location '" + str(self.class_location) + "'.")
       return
 
-    # Initialize the class. Provide arguments necessary according
-    # to the json file. Unfortunately rather clumsy, but for the 
-    # sake of all possibilities we'll handle all 8 cases of the 3
-    # binary conditions. 
-    try:
-      if(self.require_speech_speak is True and
-         self.require_speech_listen is True and
-         self.require_web_server_status is True):
-         self.module_class_instance = self.module_class(
-          speech_speak=speech_speak, 
-          speech_listen=speech_listen,
-          web_server_status=web_server_status)
-      elif(self.require_speech_speak is False and
-           self.require_speech_listen is True and
-           self.require_web_server_status is True):
-         self.module_class_instance = self.module_class(
-          speech_listen=speech_listen, 
-          web_server_status=web_server_status)
-      elif(self.require_speech_speak is True and
-           self.require_speech_listen is False and
-           self.require_web_server_status is True):
-         self.module_class_instance = self.module_class(
-          speech_speak=speech_speak, 
-          web_server_status=web_server_status)
-      elif(self.require_speech_speak is True and
-           self.require_speech_listen is True and
-           self.require_web_server_status is False):
-         self.module_class_instance = self.module_class(
-          speech_speak=speech_speak, 
-          speech_listen=speech_listen)
-      elif(self.require_speech_speak is False and
-           self.require_speech_listen is False and
-           self.require_web_server_status is True):
-         self.module_class_instance = self.module_class(
-          web_server_status=web_server_status)
-      elif(self.require_speech_speak is True and
-           self.require_speech_listen is False and
-           self.require_web_server_status is False):
-         self.module_class_instance = self.module_class(
-          speech_speak=speech_speak)
-      elif(self.require_speech_speak is False and
-           self.require_speech_listen is True and
-           self.require_web_server_status is False):
-         self.module_class_instance = self.module_class(
-          speech_listen=speech_listen)
-      else:
-         self.module_class_instance = self.module_class()
-    except:
-      print("[ERROR] Unable to load class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
-      return
+    # Initialize the class immediately if required.
+    if self.init_on_startup is True:
+      if self.initialize_class() is False:
+        return # Failure. Return. 
 
     self.valid_module = True
     print("[DEBUG] Successfully loaded class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
       
-  # Dynamic class import. Changes sys.path to navigate directories. 
+  # Dynamic class import. Changes sys.path to navigate directories
+  # if necessary. 
+  #
   # Expects module_name Ex) ./home_automation/home_automation
   # and class_name Ex) HomeAutomation
   def load_class(self,  module_name, class_name):
@@ -194,3 +160,59 @@ class ModuleActive:
       return None
 
     return imported_class
+  
+  # Initialize the class. Provide arguments necessary according
+  # to the json file. Unfortunately rather clumsy, but for the 
+  # sake of all possibilities we'll handle all 8 cases of the 3
+  # binary conditions. 
+  def initialize_class(self):
+    try:
+      if(self.require_speech_speak is True and
+         self.require_speech_listen is True and
+         self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          speech_listen=self.speech_listen,
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is True and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_listen=self.speech_listen, 
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is False and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is True and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          speech_listen=self.speech_listen)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is False and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is False and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is True and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_listen=self.speech_listen)
+      else:
+         self.module_class_instance = self.module_class()
+    except:
+      print("[ERROR] Unable to load class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
+      self.valid_module = False
+      return False
+    
+    return True
+    
