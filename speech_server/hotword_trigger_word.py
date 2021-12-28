@@ -58,6 +58,7 @@ class HotwordTriggerWord:
 
   # Listens for a single command and executes acceptable ones accordingly. 
   def listen_hotword(self):
+    print("[INFO] Initializing Hotword Detection...")
     if self.model is None:
       print("[ERROR] No Trigger Word Detection model loaded!")
       return
