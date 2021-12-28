@@ -26,7 +26,11 @@ class SpeechServer:
   speech_listen_shutdown_location = "./assets/shutdown.wav"
   web_server_ip_address = "http://192.168.0.197:8080"
 
+  # Required upon init
   trigger_word_iternum = None
+  
+  # Class variables - should only be one instance of each throughout
+  # entire server architecture.
   speech_speak = None
   speech_listen = None
   web_server_status = None
@@ -84,7 +88,8 @@ class SpeechServer:
     if self.initialize_hotword_trigger_word() is False: return False
     return True
 
-  # Only initialize components relevant to active interactions. 
+  # Only initialize components relevant to active interactions. Do
+  # not initialize passive_interaction or hotword_trigger_word.
   def initialize_components_query(self):
     if self.initialize_speech_speak() is False: return False
     if self.initialize_web_server_status() is False: return False

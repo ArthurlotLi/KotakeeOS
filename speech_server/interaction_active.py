@@ -7,7 +7,6 @@
 # Expects interaction_active.json specifying directories of 
 # primary module classes. 
 
-from os import sep
 import time
 from datetime import date
 
