@@ -92,6 +92,8 @@ class HotwordTriggerWord:
       self.active_loop = False
     stream.stop_stream()
     stream.close()
+    # Execute a shutdown chime. 
+    self.speech_listen.execute_shutdown()
     return
 
   # Audio parsing callback. 

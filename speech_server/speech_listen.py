@@ -19,6 +19,7 @@ class SpeechListen:
 
   chime_location = None
   startup_location = None
+  shutdown_location = None
   r2 = None
   speech_speak = None
   web_server_status = None
@@ -30,10 +31,11 @@ class SpeechListen:
   default_response_phrase_timeout = 5
   default_ambient_noise_duration = 1.0
 
-  def __init__(self, speech_speak, chime_location, startup_location, web_server_status):
+  def __init__(self, speech_speak, chime_location, startup_location, shutdown_location, web_server_status):
     self.speech_speak = speech_speak
     self.chime_location = chime_location
     self.startup_location = startup_location
+    self.shutdown_location = shutdown_location
     self.r2 = sr.Recognizer()
     self.web_server_status = web_server_status
 
@@ -104,6 +106,9 @@ class SpeechListen:
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)
+
+  def execute_shutdown(self):
+    self.execute_sound(self.shutdown_location)
 
   def execute_chime(self):
     self.execute_sound(self.chime_location)

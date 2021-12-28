@@ -23,6 +23,7 @@ class SpeechServer:
   trigger_word_models_path = '../triggerWordDetection/models'
   speech_listen_chime_location = "./assets/hotword.wav"
   speech_listen_startup_location = "./assets/startup.wav"
+  speech_listen_shutdown_location = "./assets/shutdown.wav"
   web_server_ip_address = "http://192.168.0.197:8080"
 
   trigger_word_iternum = None
@@ -53,6 +54,7 @@ class SpeechServer:
     
     # Initialization succeeded. Execute runtime functions. 
     self.hotword_trigger_word.listen_hotword()
+    print("[INFO] Exiting KotakeeOS Speech Server. Goodnight.")
 
   # Handle the case in which the Speech Server is only handling a
   # single active query from a user (likely by button press on the 
@@ -110,7 +112,7 @@ class SpeechServer:
   def initialize_speech_listen(self):
     if self.speech_speak is None: 
       return None
-    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, startup_location=self.speech_listen_startup_location, web_server_status=self.web_server_status)
+    self.speech_listen = SpeechListen(speech_speak=self.speech_speak, chime_location=self.speech_listen_chime_location, startup_location=self.speech_listen_startup_location, shutdown_location=self.speech_listen_shutdown_location, web_server_status=self.web_server_status)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
