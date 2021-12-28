@@ -26,7 +26,8 @@ class SpeechListen:
   default_pause_threshold = 1.0
   default_max_response_attempts = 1
   default_response_timeout = 5
-  default_response_phrase_timeout = 3
+  default_response_phrase_timeout = 5
+  default_ambient_noise_duration = 0.7
 
   def __init__(self, speech_speak, chime_location, web_server_status):
     self.speech_speak = speech_speak
@@ -38,7 +39,7 @@ class SpeechListen:
   # Returns valid text if recieved and None if not recieved. 
   # May provide a verbal prompt every loop. Can be specified with a
   # sleep duration (how long to wait before starting to listen)
-  def listen_response(self, prompt = None, indicate_led = True, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None):
+  def listen_response(self, prompt = None, indicate_led = True, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None, ambient_noise_duration = None):
     user_response_text = None
 
     # Use defaults if not specified by the caller. 
@@ -50,11 +51,13 @@ class SpeechListen:
       response_timeout = self.default_response_timeout
     if response_phrase_timeout is None:
       response_phrase_timeout = self.default_response_phrase_timeout
+    if ambient_noise_duration is None:
+      ambient_noise_duration = self.default_ambient_noise_duration
 
     self.r2.pause_threshold = pause_threshold
 
     with sr.Microphone() as source2:
-      self.r2.adjust_for_ambient_noise(source2, duration=0.7)
+      self.r2.adjust_for_ambient_noise(source2, duration=ambient_noise_duration)
 
       # Indicate that you are currently active. 
       if indicate_led is True:

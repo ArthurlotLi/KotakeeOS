@@ -78,7 +78,6 @@ class InteractionActive:
         if(self.web_server_status.home_status is not None):
           weatherString = "It is currently " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.web_server_status.home_status["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.web_server_status.home_status["weatherData"]["main"]["humidity"]) + " percent."
           self.speech_speak.execute_text_thread(weatherString)
-          time.sleep(9) # Enough time to allow the speech prompt to complete. 
           valid_command = True
       elif("everything" in command or "all modules" in command):
         if(self.web_server_status.action_states is not None):
@@ -123,7 +122,6 @@ class InteractionActive:
         # Operational server status
         statusString = "The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
         self.speech_speak.execute_text_thread(statusString)
-        time.sleep(4) # Enough time to allow the speech prompt to complete. 
         valid_command = True
       elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
         if(self.web_server_status.home_status is not None and self.web_server_status.home_status["moduleInputDisabled"] is not None):
@@ -170,19 +168,16 @@ class InteractionActive:
           # Action states status
           statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
           self.speech_speak.execute_text_thread(statusString)
-          time.sleep(12) # Enough time to allow the speech prompt to complete. 
           valid_command = True
       elif("time" in command or "clock" in command):
         currentTime = time.strftime("%H%M", time.localtime())
         timeString = "It is currently " + currentTime + "."
         self.speech_speak.execute_text_thread(timeString)
-        time.sleep(2) # Enough time to allow the speech prompt to complete. 
         valid_command = True
       elif("date" in command or "day" in command or "month" in command or "today" in command):
         dateToday = date.today()
         dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
         self.speech_speak.execute_text_thread(dateString)
-        time.sleep(3) # Enough time to allow the speech prompt to complete. 
         valid_command = True
         """
       elif("question" in command):
@@ -249,8 +244,7 @@ class InteractionActive:
             solution = first_term * second_term
           else:
             solution = first_term / second_term
-          self.speech_speak.execute_text_thread(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution))
-          time.sleep(3) # Enough time to allow the speech prompt to complete. 
+          self.speech_speak.execute_text_thread(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
           valid_command = True
       else:
         if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
