@@ -37,6 +37,7 @@ class SpeechSpeak:
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
   def speak_text(self, output_text):
-    print("[DEBUG] Executing output text: '"+output_text+"'")
-    self.engine.say(output_text)
-    self.engine.runAndWait()
+    if(output_text is not None and output_text != ""):
+      print("[DEBUG] Executing output text: '"+output_text+"'")
+      self.engine.say(output_text)
+      self.engine.runAndWait()

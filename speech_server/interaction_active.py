@@ -91,6 +91,7 @@ class InteractionActive:
 
     # Shutdown parsing. If any keyword is present, simply stop. 
     if any(x in full_command for x in self.stop_server_commands):
+      print("[INFO] Shutdown query recieved. Stopping server.")
       self.speech_speak.speak_text(self.stop_server_prompt)
       self.stop_server = True
       return True
