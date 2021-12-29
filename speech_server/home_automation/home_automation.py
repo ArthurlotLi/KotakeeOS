@@ -14,7 +14,7 @@ class HomeAutomation:
     self.speech_speak = speech_speak
     self.web_server_status = web_server_status
 
-  # Standard routine. 
+  # Level 1 standard routine. 
   def parse_command(self, command):
     confirmation_prompt = self.successful_command_prompt
     valid_command = False
@@ -115,21 +115,6 @@ class HomeAutomation:
         statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
         self.speech_speak.speak_text(statusString)
         valid_command = True
-      """
-    elif("question" in command):
-      # If we asked for advanced output or "8 ball", our output should be
-      # different.
-      output_type = 0
-      if("advanced" in command or "detailed" in command): output_type = 1
-      elif("eight ball" in command or "8-ball" in command or "8 ball" in command): output_type = 2
-      # Initialize if it's not running. Only do this once and keep it up
-      # afterwards because the quest_ai_parser takes a while to get running. 
-      if(self.quest_ai_parser is None):
-        self.speech_speak.speak_text("Initializing Quest AI... please wait.")
-        self.quest_ai_parser = QuestAiParsing(recognizer = self.r2, engine = self.engine, pause_threshold = self.pauseThreshold)
-      self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.web_server_status.action_states is not None)
-      valid_command = True
-      """
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.web_server_status.generate_query(command, 1, 50, 1, 0))

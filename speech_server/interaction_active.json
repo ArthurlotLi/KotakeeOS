@@ -1,6 +1,7 @@
 {
   "active_modules" : [
     "./simple_utilities/simple_utilities.SimpleUtilities",
-    "./home_automation/home_automation.HomeAutomation"
+    "./home_automation/home_automation.HomeAutomation",
+    "./quest_ai/quest_ai_parsing.QuestAiParsing"
   ]
 }

@@ -10,3 +10,5 @@
 /speechServer/__pycache__
 /satelliteServer/node_modules
 /speech_server/old_code
+/speech_server/__pycache__
+/speech_server/quest_ai/quest_ai_dependencies/roberta-large_fine-tuned

@@ -16,7 +16,7 @@ class SimpleUtilities:
     self.speech_speak = speech_speak
     self.web_server_status = web_server_status
 
-  # Standard routine. 
+  # Level 1 standard routine.
   def parse_command(self, command):
     valid_command = False
 
