@@ -233,6 +233,14 @@ class ModuleActive:
     if self.valid_module is False:
       return False
 
+    # Prohibit execution of modules that have connection requirements
+    if self.require_online is True and self.web_server_status.online_status is False:
+      print("[DEBUG] Skipping active module " + str(self.class_name) + " due to online requirement.")
+      return False
+    if self.require_web_server is True and self.web_server_status.web_server_status is False:
+      print("[DEBUG] Skipping active module " + str(self.class_name) + " due to web server requirement.")
+      return False
+
     if self.init_on_startup is False and self.module_class_instance is None:
       # Initialize upon first usage. Execute message if present. This
       # is useful for confirming to the user the command has registered

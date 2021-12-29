@@ -3,7 +3,7 @@
 
   "require_online" : "False",
   "require_web_server" : "False",
-  "dispose_timeout" : "-1",
+  "dispose_timeout" : "120",
   "init_on_startup" : "False",
   "init_runtime_message" : "Initializing QuestAI, please wait.",
 

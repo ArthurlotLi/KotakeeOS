@@ -22,20 +22,15 @@
 import random
 import torch
 import numpy as np
-import pandas as pd
-from tqdm import tqdm
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AdamW
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import tensorflow as tf
 import tensorflow_hub as hub
-from codecs import decode, encode
+from codecs import decode
 import math
-from sklearn import preprocessing
 import pickle
 import jsonlines
 from scipy import spatial
 import spacy.cli
-import pytextrank
 import spacy
 import pickle
 

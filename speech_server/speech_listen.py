@@ -75,7 +75,7 @@ class SpeechListen:
 
       # Indicate that you are currently active. 
       if indicate_led is True:
-        self.web_server_status.query_speech_server_led(self.led_state_on, self.led_room_id, self.led_action_id)
+        self.web_server_status.query_speech_server_module_toggle(self.led_state_on, self.led_room_id, self.led_action_id)
 
       # Try for as many attempts as allowed. 
       for i in range(max_response_attempts): 
@@ -86,7 +86,7 @@ class SpeechListen:
             # Prompt the user each loop attempt if specified. 
             self.speech_speak.speak_text(prompt)
 
-          print("[DEBUG] Speech Listen now awaiting user response...")
+          print("[INFO] Speech Listen now awaiting user response...")
           start = time.time()
           audio2 = self.r2.listen(source2, timeout=response_timeout,phrase_time_limit=response_phrase_timeout)
           if self.online_functionality is not None:
@@ -98,7 +98,7 @@ class SpeechListen:
           # String cleanup
           user_response_text = user_response_text.lower()
           end = time.time()
-          print("[DEBUG] Recognized response audio: '" + user_response_text + "' in " + str(end-start) + " ")
+          print("[INFO] Recognized response audio: '" + user_response_text + "' in " + str(end-start) + " ")
           # All done, let's return the text. 
           break
         except sr.RequestError as e:
@@ -110,7 +110,7 @@ class SpeechListen:
 
       # Indicate that you are currently active. 
       if indicate_led is True:
-        self.web_server_status.query_speech_server_led(self.led_state_off, self.led_room_id, self.led_action_id)
+        self.web_server_status.query_speech_server_module_toggle(self.led_state_off, self.led_room_id, self.led_action_id)
   
     return user_response_text
 

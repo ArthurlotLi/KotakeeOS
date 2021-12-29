@@ -53,7 +53,7 @@ class HomeAutomation:
               "roomId": 2,
               "newModuleInput": newHomeStatus
             }
-            self.web_server_status.generate_and_execute_post_query(data_to_send)
+            self.web_server_status.query_speech_server_module_input_modify(data_to_send)
 
             self.speech_speak.speak_text("Setting thermostat to " + str(newTemp) + ".")
             valid_command = True

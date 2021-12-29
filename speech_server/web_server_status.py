@@ -17,13 +17,22 @@ class WebServerStatus:
   action_states_last_update = 0
   home_status_last_update = 0
 
+  # Tells other components if we believe we are connected to the 
+  # internet and/or local web server. Latter is consistently
+  # updated with each routine/unique interaction with the web
+  # server. Former is checked on startup (for now, TODO)
+  online_status = False
+  web_server_status = False
+
   def __init__(self, ip_address):
     self.web_server_ip_address = ip_address
 
-  # Non-blocking query to fill status objects.
+  # Non-blocking query to fill status objects as well as to 
+  # check internet connectivity. 
   def execute_query_server_thread(self):
     query_action_states_thread = threading.Thread(target=self.query_action_states, daemon=True).start()
     query_home_status_thread = threading.Thread(target=self.query_home_status, daemon=True).start()
+    test_wide_internet_thread = threading.Thread(target=self.test_wide_internet, daemon=True).start()
 
   # Queries server for states of all modules. 
   def query_action_states(self):
@@ -38,8 +47,10 @@ class WebServerStatus:
         #print(str(action_states))
       elif(response.status_code != 204):
         print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+      self.web_server_status = True
     except:
       print("[WARNING] query_action_states unable to connect to server.")
+      self.web_server_status = False
 
   # Queries server for misc non-module information
   def query_home_status(self):
@@ -54,54 +65,71 @@ class WebServerStatus:
         #print(str(home_status))
       elif(response.status_code != 204):
         print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+      self.web_server_status = True
     except:
       print("[WARNING] query_home_status unable to connect to server.")
+      self.web_server_status = False
 
-  # Experimental - queries server to turn speech server signal light on/off. 
-  def query_speech_server_led(self, toState, roomId, actionId):
-    query = self.web_server_ip_address + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
-    print("[DEBUG] Querying server: " + query)
+  # Function to check true wide internet connectivity. 
+  def test_wide_internet(self):
+    connection_status = False
     try:
-      response = requests.get(query)
-      if(response.status_code == 200):
-        print("[DEBUG] query_speech_server_led request received successfully.")
-      elif(response.status_code != 204):
-        print("[WARNING] Server rejected query_speech_server_led request with status code " + str(response.status_code) + ".")
+      requests.head('http://www.google.com/', timeout=1)
+      connection_status = True
     except:
-      print("[WARNING] query_speech_server_led unable to connect to server.")
+      pass
+    self.online_status = connection_status
+    return connection_status
 
-  # Experimental - queries server providing input. 
+  # Creates a thread that queries server to turn speech server signal 
+  # light on/off. 
+  def query_speech_server_module_toggle(self, toState, roomId, actionId):
+    query = self.web_server_ip_address + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
+    print("[DEBUG] Executing Module Toggle query: " + query)
+    request_thread = threading.Thread(target=self.execute_get_query, args=(query,), daemon=True).start()
+
+  # Creates a thread that queries server providing input. 
   def query_speech_server_input(self, toState, roomId, actionId):
     query = self.web_server_ip_address + "/moduleInput/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
-    print("[DEBUG] Querying server: " + query)
-    try:
-      response = requests.get(query)
-      if(response.status_code == 200):
-        print("[DEBUG] query_speech_server_input request received successfully.")
-      elif(response.status_code != 204):
-        print("[WARNING] Server rejected query_speech_server_input request with status code " + str(response.status_code) + ".")
-    except:
-      print("[WARNING] query_speech_server_input unable to connect to server.")
+    print("[DEBUG] Executing Module Input query: " + query)
+    request_thread = threading.Thread(target=self.execute_get_query, args=(query,), daemon=True).start()
+
+  # Formats, and creates a thread to query the server with a simple 
+  # POST query.
+  def query_speech_server_module_input_modify(self, data_to_send):
+    query = self.web_server_ip_address + "/moduleInputModify"
+    print("[DEBUG] Executing Module Input Modify query: " + query + " with body:")
+    print(data_to_send)
+    request_thread = threading.Thread(target=self.execute_post_query, args=(query,data_to_send), daemon=True).start()
 
   # Executes a simple GET query and expects the status code to be 200. 
   def execute_get_query(self, query):
     print("[DEBUG] Sending query: " + query)
-    response = requests.get(query)
-    if(response.status_code == 200):
-      print("[DEBUG] Request received successfully.")
-    else:
-      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
-
-  # Creates, formats, and executes a simple POST query.
-  def generate_and_execute_post_query(self, data_to_send):
-    query = self.web_server_ip_address + "/moduleInputModify"
+    try:
+      response = requests.get(query)
+      if(response.status_code == 200):
+        print("[DEBUG] Request received successfully.")
+      else:
+        print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+      self.web_server_status = True
+    except:
+      print("[WARNING] execute_get_query unable to connect to server.")
+      self.web_server_status = False
+  
+  # Executes a simple POST query and expects the status code to be 200. 
+  def execute_post_query(self, query, data_to_send):
     print("[DEBUG] Sending query: " + query + " with body:")
     print(data_to_send)
-    response = requests.post(query, data=json.dumps(data_to_send, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
-    if(response.status_code == 200):
-      print("[DEBUG] Request received successfully.")
-    else:
-      print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+    try:
+      response = requests.post(query, data=json.dumps(data_to_send, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
+      if(response.status_code == 200):
+        print("[DEBUG] Request received successfully.")
+      else:
+        print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
+      self.web_server_status = True
+    except:
+      print("[WARNING] execute_get_query unable to connect to server.")
+      self.web_server_status = False
 
   # Given the possible command string, roomId, actionId, and 
   # a binary set of states, return a query. 
