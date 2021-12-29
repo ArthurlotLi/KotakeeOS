@@ -18,6 +18,7 @@ class QuestAiParsing:
 
   level_2_prompt = "What would you like to know?"
   level_2_confirmation = "Let's see..."
+  cancelWords = ["stop", "nevermind", "never mind", "cancel"] # input string should be exactly these. 
 
   speech_speak = None
   speech_listen = None
