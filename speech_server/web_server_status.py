@@ -85,26 +85,22 @@ class WebServerStatus:
   # light on/off. 
   def query_speech_server_module_toggle(self, toState, roomId, actionId):
     query = self.web_server_ip_address + "/moduleToggle/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
-    print("[DEBUG] Executing Module Toggle query: " + query)
     request_thread = threading.Thread(target=self.execute_get_query, args=(query,), daemon=True).start()
 
   # Creates a thread that queries server providing input. 
   def query_speech_server_input(self, toState, roomId, actionId):
     query = self.web_server_ip_address + "/moduleInput/"+str(roomId)+"/"+str(actionId)+"/" + str(toState)
-    print("[DEBUG] Executing Module Input query: " + query)
     request_thread = threading.Thread(target=self.execute_get_query, args=(query,), daemon=True).start()
 
   # Formats, and creates a thread to query the server with a simple 
   # POST query.
   def query_speech_server_module_input_modify(self, data_to_send):
     query = self.web_server_ip_address + "/moduleInputModify"
-    print("[DEBUG] Executing Module Input Modify query: " + query + " with body:")
-    print(data_to_send)
     request_thread = threading.Thread(target=self.execute_post_query, args=(query,data_to_send), daemon=True).start()
 
   # Executes a simple GET query and expects the status code to be 200. 
   def execute_get_query(self, query):
-    print("[DEBUG] Sending query: " + query)
+    print("[DEBUG] Executing GET query: " + query)
     try:
       response = requests.get(query)
       if(response.status_code == 200):
@@ -118,7 +114,7 @@ class WebServerStatus:
   
   # Executes a simple POST query and expects the status code to be 200. 
   def execute_post_query(self, query, data_to_send):
-    print("[DEBUG] Sending query: " + query + " with body:")
+    print("[DEBUG] Executing POST query: " + query + " with body:")
     print(data_to_send)
     try:
       response = requests.post(query, data=json.dumps(data_to_send, indent = 4), headers = {'Content-Type': 'application/json'}, timeout=5)
