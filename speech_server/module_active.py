@@ -245,10 +245,11 @@ class ModuleActive:
 
     try:
       action_triggered = self.module_class_instance.parse_command(command)
-    except:
+    except Exception as e:
       # Upon any exception, something went wrong with the class
       # initialization. Perhaps the method is missing from the class? 
-      print("[ERROR] Exception parsing command with active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Disabling module.")
+      print("[ERROR] Exception parsing command with active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Disabling module. Exception:")
+      print(e)
       self.valid_module = False
 
     return action_triggered

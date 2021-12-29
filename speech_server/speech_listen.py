@@ -84,7 +84,7 @@ class SpeechListen:
             self.execute_chime()
           elif prompt is not None:
             # Prompt the user each loop attempt if specified. 
-            self.speech_speak.execute_text_thread(prompt)
+            self.speech_speak.speak_text(prompt)
 
           print("[DEBUG] Speech Listen now awaiting user response...")
           start = time.time()
