@@ -87,7 +87,7 @@ class InteractionActive:
   # Given a command, trickle down the list of active modules and test
   # to see if any of them activate. 
   def parse_command(self, full_command):
-    valid_command = False
+    valid_commands = False
 
     # Shutdown parsing. If any keyword is present, simply stop. 
     if any(x in full_command for x in self.stop_server_commands):
@@ -113,9 +113,9 @@ class InteractionActive:
     # and return as a successful command. 
     for command in commands:
       for module in self.module_active_list:
-        if valid_command is False:
-          valid_command = module.parse_command(command)
-          if valid_command is True: print("[DEBUG] Command jurisdiction claimed by module " + str(module.class_name) + ". Interaction complete.")
+        valid_command = module.parse_command(command)
+        if valid_command is True: print("[DEBUG] Command jurisdiction claimed by module " + str(module.class_name) + ". Interaction complete.")
+        break
 
     if valid_command != True:
       print("[DEBUG] No valid command was recognized from the spoken text.")
