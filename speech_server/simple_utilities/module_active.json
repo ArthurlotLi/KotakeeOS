@@ -1,8 +1,8 @@
 {
-  "class_name" : "HomeAutomation",
+  "class_name" : "SimpleUtilities",
 
   "require_online" : "False",
-  "require_web_server" : "True",
+  "require_web_server" : "False",
   "dispose_timeout" : "-1",
   "init_on_startup" : "True",
   "init_runtime_message" : "",

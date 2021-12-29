@@ -4,9 +4,6 @@
 # All interactions related to the manipulation or querying of the
 # KotakeeOS home automation web server. 
 
-import time
-from datetime import date
-
 class HomeAutomation:
   successful_command_prompt = "" # By default, don't say anything and just activate something. 
 
@@ -118,21 +115,6 @@ class HomeAutomation:
         statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
         self.speech_speak.speak_text(statusString)
         valid_command = True
-    elif("time" in command or "clock" in command):
-      currentTime = time.strftime("%H%M", time.localtime())
-      # Separate the time with spaces + periods so the text synthesizer 
-      # reads it out digit by digit. 
-      separated_time_string = ""
-      for character in currentTime:
-        separated_time_string = separated_time_string + character + ", "
-      timeString = "It is currently " + separated_time_string + "."
-      self.speech_speak.speak_text(timeString)
-      valid_command = True
-    elif("date" in command or "day" in command or "month" in command or "today" in command):
-      dateToday = date.today()
-      dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
-      self.speech_speak.speak_text(dateString)
-      valid_command = True
       """
     elif("question" in command):
       # If we asked for advanced output or "8 ball", our output should be
@@ -148,58 +130,6 @@ class HomeAutomation:
       self.quest_ai_parser.standard_query(output_type = output_type, online_functionality=self.web_server_status.action_states is not None)
       valid_command = True
       """
-    elif("calculator" in command or "calculate" in command):
-      # Get the first number and then the second number in the query. Ignore
-      # all others if there are any. Fail if there are not enough numbers.
-      # Fail if there is not a specifying operator. 
-      first_term = None
-      second_term = None
-      operator = None # Term used in final message as well. 
-      negative_term = False
-      for word in command.split():
-        # Test as an operator.
-        if operator is None:
-          if word == "add" or word == "plus" or word == "+":
-            operator = "plus"
-            continue
-          elif word == "subtract" or word == "minus" or word == "-":
-            operator = "minus"
-            continue
-          elif word == "multiply" or word == "times" or word == "*" or word == "x":
-            operator = "times"
-            continue
-          elif word == "divide" or word == "divided" or word == "/":
-            operator = "divided by"
-            continue
-        # Test as a number or a "negative" term.
-        if first_term is None or second_term is None:
-          if word == "negative":
-            negative_term = True
-          else:
-            # Parse as a number. 
-            possible_term = self.text2int(word)
-            if possible_term != 0:
-              if negative_term is True:
-                possible_term = -possible_term
-                negative_term = False
-              if first_term is None:
-                first_term = possible_term
-              else:
-                second_term = possible_term
-              
-      # We've now theoretically gotten everything.
-      if first_term is not None and second_term is not None and operator is not None:
-        solution = None
-        if operator == "plus":
-          solution = first_term + second_term
-        elif operator == "minus":
-          solution = first_term - second_term
-        elif operator == "times":
-          solution = first_term * second_term
-        else:
-          solution = first_term / second_term
-        self.speech_speak.speak_text(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
-        valid_command = True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
         queries.append(self.web_server_status.generate_query(command, 1, 50, 1, 0))
