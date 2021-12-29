@@ -14,9 +14,6 @@ import wave
 import pyaudio
 
 class SpeechListen:
-  # Dictates whether we use Google or Pocket Sphinx (former is online).
-  online_functionality = True 
-
   chime_location = None
   startup_location = None
   shutdown_location = None
@@ -86,10 +83,14 @@ class SpeechListen:
             # Prompt the user each loop attempt if specified. 
             self.speech_speak.speak_text(prompt)
 
-          print("[INFO] Speech Listen now awaiting user response...")
+          use_google = self.web_server_status.online_status is True
+
+          if use_google is True: print("[INFO] Speech Listen (Online: Google) now awaiting user response...")
+          else: print("[INFO] Speech Listen (Offline: Pocket Sphinx) now awaiting user response...")
+
           start = time.time()
           audio2 = self.r2.listen(source2, timeout=response_timeout,phrase_time_limit=response_phrase_timeout)
-          if self.online_functionality is not None:
+          if use_google is True:
             # Use Google's API to recognize the audio.
             user_response_text = self.r2.recognize_google(audio2)
           else:
