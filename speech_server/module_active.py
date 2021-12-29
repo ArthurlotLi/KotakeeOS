@@ -211,8 +211,9 @@ class ModuleActive:
           speech_listen=self.speech_listen)
       else:
          self.module_class_instance = self.module_class()
-    except:
-      print("[ERROR] Unable to load class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
+    except Exception as e:
+      print("[ERROR] Unable to load class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Exception:")
+      print(e)
       self.valid_module = False
       return False
     
