@@ -43,7 +43,8 @@ import time
 
 class QuestAi:
 
-  dependencies_location = "./quest_ai_dependencies/"
+  # Path should expect to run from the speech_server directory. 
+  dependencies_location = "./quest_ai/quest_ai_dependencies/"
 
   nlp = None
   answers = None
