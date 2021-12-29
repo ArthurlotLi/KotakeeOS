@@ -1,6 +1,6 @@
 {
   "active_modules" : [
-    "./simple_utilities/simple_utilities.SimpleUtilites",
+    "./simple_utilities/simple_utilities.SimpleUtilities",
     "./home_automation/home_automation.HomeAutomation"
   ]
 }
