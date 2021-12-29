@@ -33,6 +33,7 @@ class ModuleActive:
   require_web_server = None
   dispose_timeout = None
   init_on_startup = None
+  init_runtime_triggers = None
   init_runtime_message = None
 
   require_speech_speak = None
@@ -111,6 +112,7 @@ class ModuleActive:
       self.dispose_timeout = int(module_json["dispose_timeout"])
       self.init_on_startup = module_json["init_on_startup"] == 'True'
       self.init_runtime_message = module_json["init_runtime_message"]
+      self.init_runtime_triggers = module_json["init_runtime_triggers"]
 
       self.require_speech_speak = module_json["require_speech_speak"] == 'True'
       self.require_speech_listen = module_json["require_speech_listen"] == 'True'
@@ -241,7 +243,8 @@ class ModuleActive:
       print("[DEBUG] Skipping active module " + str(self.class_name) + " due to web server requirement.")
       return False
 
-    if self.init_on_startup is False and self.module_class_instance is None:
+    # If the user says any of the keywords triggering initialization
+    if self.init_on_startup is False and self.module_class_instance is None and any(x in command for x in self.init_runtime_triggers):
       # Initialize upon first usage. Execute message if present. This
       # is useful for confirming to the user the command has registered
       # and to let them know for long wait periods.  
@@ -250,6 +253,10 @@ class ModuleActive:
         self.speech_speak.speak_text(self.init_runtime_message)
       if self.initialize_class() is False:
         return False
+
+    # Initialization must occur before we try and parse things. 
+    if self.module_class_instance is None:
+      return False
 
     try:
       action_triggered = self.module_class_instance.parse_command(command)
