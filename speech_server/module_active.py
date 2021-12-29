@@ -33,6 +33,7 @@ class ModuleActive:
   require_web_server = None
   dispose_timeout = None
   init_on_startup = None
+  init_runtime_message = None
 
   require_speech_speak = None
   require_speech_listen = None
@@ -109,6 +110,7 @@ class ModuleActive:
       self.require_web_server = module_json["require_web_server"] == 'True'
       self.dispose_timeout = int(module_json["dispose_timeout"])
       self.init_on_startup = module_json["init_on_startup"] == 'True'
+      self.init_runtime_message = module_json["init_runtime_message"]
 
       self.require_speech_speak = module_json["require_speech_speak"] == 'True'
       self.require_speech_listen = module_json["require_speech_listen"] == 'True'
@@ -215,4 +217,37 @@ class ModuleActive:
       return False
     
     return True
-    
+
+  # Routine to be called for every active module when a user initiates
+  # active interaction level 1. A command will be passed through all
+  # modules until (if) one triggers. An input command should be handled
+  # by a similarily labled function within the module class. 
+  #
+  # Return True if we have registered ownership of the command 
+  # jurisdiction, halting further parsing. Return False otherwise. 
+  def parse_command(self, command):
+    action_triggered = False
+
+    # Simply do not activate if we have been disabled.
+    if self.valid_module is False:
+      return False
+
+    if self.init_on_startup is False and self.module_class_instance is None:
+      # Initialize upon first usage. Execute message if present. This
+      # is useful for confirming to the user the command has registered
+      # and to let them know for long wait periods.  
+      print("[DEBUG] Runtime initializing active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
+      if self.init_runtime_message != "":
+        self.speech_speak.speak_text(self.init_runtime_message)
+      if self.initialize_class() is False:
+        return False
+
+    try:
+      action_triggered = self.module_class_instance.parse_command(command)
+    except:
+      # Upon any exception, something went wrong with the class
+      # initialization. Perhaps the method is missing from the class? 
+      print("[ERROR] Exception parsing command with active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Disabling module.")
+      self.valid_module = False
+
+    return action_triggered
