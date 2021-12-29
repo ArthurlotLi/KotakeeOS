@@ -8,7 +8,7 @@
 import time
 from datetime import date
 
-class SimpleUtilites:
+class SimpleUtilities:
   speech_speak = None
   web_server_status = None
 
