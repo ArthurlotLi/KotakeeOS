@@ -168,56 +168,54 @@ class ModuleActive:
   # sake of all possibilities we'll handle all 8 cases of the 3
   # binary conditions. 
   def initialize_class(self):
-    #try:
-    if(self.require_speech_speak is True and
-        self.require_speech_listen is True and
-        self.require_web_server_status is True):
-        self.module_class_instance = self.module_class(
-        speech_speak=self.speech_speak, 
-        speech_listen=self.speech_listen,
-        web_server_status=self.web_server_status)
-    elif(self.require_speech_speak is False and
-          self.require_speech_listen is True and
-          self.require_web_server_status is True):
-        self.module_class_instance = self.module_class(
-        speech_listen=self.speech_listen, 
-        web_server_status=self.web_server_status)
-    elif(self.require_speech_speak is True and
-          self.require_speech_listen is False and
-          self.require_web_server_status is True):
-        self.module_class_instance = self.module_class(
-        speech_speak=self.speech_speak, 
-        web_server_status=self.web_server_status)
-    elif(self.require_speech_speak is True and
-          self.require_speech_listen is True and
-          self.require_web_server_status is False):
-        self.module_class_instance = self.module_class(
-        speech_speak=self.speech_speak, 
-        speech_listen=self.speech_listen)
-    elif(self.require_speech_speak is False and
-          self.require_speech_listen is False and
-          self.require_web_server_status is True):
-        self.module_class_instance = self.module_class(
-        web_server_status=self.web_server_status)
-    elif(self.require_speech_speak is True and
-          self.require_speech_listen is False and
-          self.require_web_server_status is False):
-        self.module_class_instance = self.module_class(
-        speech_speak=self.speech_speak)
-    elif(self.require_speech_speak is False and
-          self.require_speech_listen is True and
-          self.require_web_server_status is False):
-        self.module_class_instance = self.module_class(
-        speech_listen=self.speech_listen)
-    else:
-        self.module_class_instance = self.module_class()
-    """
+    try:
+      if(self.require_speech_speak is True and
+         self.require_speech_listen is True and
+         self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          speech_listen=self.speech_listen,
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is True and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_listen=self.speech_listen, 
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is False and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is True and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak, 
+          speech_listen=self.speech_listen)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is False and
+           self.require_web_server_status is True):
+         self.module_class_instance = self.module_class(
+          web_server_status=self.web_server_status)
+      elif(self.require_speech_speak is True and
+           self.require_speech_listen is False and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_speak=self.speech_speak)
+      elif(self.require_speech_speak is False and
+           self.require_speech_listen is True and
+           self.require_web_server_status is False):
+         self.module_class_instance = self.module_class(
+          speech_listen=self.speech_listen)
+      else:
+         self.module_class_instance = self.module_class()
     except Exception as e:
       print("[ERROR] Unable to load class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Exception:")
       print(e)
       self.valid_module = False
       return False
-    """
     
     return True
 
