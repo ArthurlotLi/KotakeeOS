@@ -114,8 +114,9 @@ class InteractionActive:
     for command in commands:
       for module in self.module_active_list:
         valid_command = module.parse_command(command)
-        if valid_command is True: print("[DEBUG] Command jurisdiction claimed by module " + str(module.class_name) + ". Interaction complete.")
-        break
+        if valid_command is True: 
+          print("[DEBUG] Command jurisdiction claimed by module " + str(module.class_name) + ". Interaction complete.")
+          break
 
     if valid_command != True:
       print("[DEBUG] No valid command was recognized from the spoken text.")
