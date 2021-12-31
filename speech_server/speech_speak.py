@@ -57,6 +57,7 @@ class SpeechSpeak:
   # Kicks off the thread. 
   def initialize_speak_thrd(self):
     print("[DEBUG] Starting Speak Thread.")
+    self.speak_thrd_instance = threading.Thread(target=self.speak_thrd, daemon=True).start()
 
   # Primary function that allows other classes to append new events
   # for the thread to process in due time. Importantly, this method
