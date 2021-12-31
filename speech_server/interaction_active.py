@@ -26,21 +26,21 @@ class InteractionActive:
   speech_speak = None
   speech_listen = None
   web_server_status = None
-  passive_interaction = None
+  interaction_passive = None
 
   # List of ModuleActive objects. 
   module_active_list = [] 
 
   # Initialize all active modules implemented as specified in the 
   # "interaction_active.json" support document. 
-  def __init__(self, speech_speak, speech_listen, web_server_status, passive_interaction):
+  def __init__(self, speech_speak, speech_listen, web_server_status, interaction_passive):
     interaction_active_json = None
     interaction_active_active_modules = None
 
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
     self.web_server_status = web_server_status
-    self.passive_interaction = passive_interaction
+    self.interaction_passive = interaction_passive
 
     # Attempt to load the list of all active modules. 
     try:
@@ -64,7 +64,7 @@ class InteractionActive:
         speech_speak=speech_speak, 
         speech_listen=speech_listen, 
         web_server_status=web_server_status,
-        passive_interaction = passive_interaction)
+        interaction_passive = interaction_passive)
       
       if new_module.valid_module is True:
         self.module_active_list.append(new_module)

@@ -12,7 +12,7 @@ class SimpleUtilities:
   speech_speak = None
   web_server_status = None
 
-  def __init__(self, speech_speak, web_server_status):
+  def __init__(self, speech_speak, web_server_status, passive_interaction):
     self.speech_speak = speech_speak
     self.web_server_status = web_server_status
 

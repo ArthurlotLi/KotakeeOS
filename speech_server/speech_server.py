@@ -164,7 +164,7 @@ class SpeechServer:
       speech_speak = self.speech_speak, 
       speech_listen = self.speech_listen, 
       web_server_status = self.web_server_status,
-      passive_interaction = self.interaction_passive)
+      interaction_passive = self.interaction_passive)
     if self.interaction_active is None:
       print("[ERROR] Failed to initialize Active Interaction handler.")
       return False

@@ -39,7 +39,7 @@ class ModuleActive:
   require_speech_speak = None
   require_speech_listen = None
   require_web_server_status = None
-  require_passive_interaction = None
+  require_interaction_passive = None
 
   # Variants derived from the class_location string provided on init. 
   class_location = None
@@ -58,7 +58,7 @@ class ModuleActive:
   speech_speak = None
   speech_listen = None
   web_server_status = None
-  passive_interaction = None
+  interaction_passive = None
 
   # Expects json from module_active.json in the subject directory.
   # If the json is malformatted, fails gracefully and keeps 
@@ -71,12 +71,12 @@ class ModuleActive:
   #
   # Also expects the 3 static handlers for speak, listen, and web
   # server status. If they are not necessary, they will not be used. 
-  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, passive_interaction):
+  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, interaction_passive):
     module_json = None
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
     self.web_server_status = web_server_status
-    self.passive_interaction = passive_interaction
+    self.interaction_passive = interaction_passive
 
     self.class_location = class_location
 
@@ -120,7 +120,7 @@ class ModuleActive:
       self.require_speech_speak = module_json["require_speech_speak"] == 'True'
       self.require_speech_listen = module_json["require_speech_listen"] == 'True'
       self.require_web_server_status = module_json["require_web_server_status"] == 'True'
-      self.require_passive_interaction = module_json["require_passive_interaction"] == 'True'
+      self.require_interaction_passive = module_json["require_interaction_passive"] == 'True'
     except:
       print("[ERROR] Unacceptable module_json present in class location '" + str(self.class_location) + "'.")
       return
@@ -178,17 +178,17 @@ class ModuleActive:
       if(self.require_speech_speak is True and
          self.require_speech_listen is True and
          self.require_web_server_status is True and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           speech_listen=self.speech_listen,
           web_server_status=self.web_server_status,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is True and
          self.require_speech_listen is True and
          self.require_web_server_status is True and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           speech_listen=self.speech_listen,
@@ -197,16 +197,16 @@ class ModuleActive:
       elif(self.require_speech_speak is True and
          self.require_speech_listen is True and
          self.require_web_server_status is False and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           speech_listen=self.speech_listen,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is True and
          self.require_speech_listen is True and
          self.require_web_server_status is False and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           speech_listen=self.speech_listen,
@@ -214,16 +214,16 @@ class ModuleActive:
       elif(self.require_speech_speak is True and
          self.require_speech_listen is False and
          self.require_web_server_status is True and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           web_server_status=self.web_server_status,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is True and
          self.require_speech_listen is False and
          self.require_web_server_status is True and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
           web_server_status=self.web_server_status,
@@ -231,31 +231,31 @@ class ModuleActive:
       elif(self.require_speech_speak is True and
          self.require_speech_listen is False and
          self.require_web_server_status is False and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is True and
          self.require_speech_listen is False and
          self.require_web_server_status is False and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_speak=self.speech_speak, 
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is True and
          self.require_web_server_status is True and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_listen=self.speech_listen,
           web_server_status=self.web_server_status,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is True and
          self.require_web_server_status is True and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_listen=self.speech_listen,
           web_server_status=self.web_server_status,
@@ -263,39 +263,39 @@ class ModuleActive:
       elif(self.require_speech_speak is False and
          self.require_speech_listen is True and
          self.require_web_server_status is False and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           speech_listen=self.speech_listen,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is True and
          self.require_web_server_status is False and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           speech_listen=self.speech_listen,
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is False and
          self.require_web_server_status is True and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
           web_server_status=self.web_server_status,
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is False and
          self.require_web_server_status is True and
-         self.require_passive_interaction is False):
+         self.require_interaction_passive is False):
          self.module_class_instance = self.module_class(
           web_server_status=self.web_server_status,
         )
       elif(self.require_speech_speak is False and
          self.require_speech_listen is False and
          self.require_web_server_status is False and
-         self.require_passive_interaction is True):
+         self.require_interaction_passive is True):
          self.module_class_instance = self.module_class(
-          passive_interaction=self.passive_interaction,
+          interaction_passive=self.interaction_passive,
         )
       else:
          self.module_class_instance = self.module_class()
