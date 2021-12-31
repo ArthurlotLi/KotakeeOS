@@ -80,7 +80,7 @@ class HotwordTriggerWord:
         # another thread. Check every second to see if they've
         # finished. When it's finished, restart the stream. 
         stream_stopped = False
-        while self.speech_listen_active is True:
+        while self.speech_listen.speech_listen_active is True:
           if stream_stopped is False: 
             # Only output one message. 
             print("[DEBUG] Trigger Word Parsing halted: Speech Listen called from another thread.")
