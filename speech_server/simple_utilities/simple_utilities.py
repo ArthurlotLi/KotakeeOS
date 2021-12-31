@@ -51,7 +51,7 @@ class SimpleUtilities:
             class_location = self.timer_class_location,
             first_event = first_event_time)
 
-          self.speech_speak.speak_text("Timer set for " + str(duration) + " " + str(units) + ".")
+          self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Timer set for " + str(duration) + " " + str(units) + ".")
 
     elif("time" in command):
       currentTime = time.strftime("%H%M", time.localtime())
@@ -61,13 +61,13 @@ class SimpleUtilities:
       for character in currentTime:
         separated_time_string = separated_time_string + character + ", "
       timeString = "It is currently " + separated_time_string + "."
-      self.speech_speak.speak_text(timeString)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=timeString)
       valid_command = True
 
     elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()
       dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
-      self.speech_speak.speak_text(dateString)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=dateString)
       valid_command = True
 
     elif("calculator" in command or "calculate" in command):
@@ -120,7 +120,7 @@ class SimpleUtilities:
           solution = first_term * second_term
         else:
           solution = first_term / second_term
-        self.speech_speak.speak_text(str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=str(first_term) + " " + operator + " " + str(second_term) + " equals {:.2f}.".format(solution)) 
         valid_command = True
     
     return valid_command

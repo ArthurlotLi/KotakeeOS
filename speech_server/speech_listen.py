@@ -87,10 +87,10 @@ class SpeechListen:
       for i in range(max_response_attempts): 
         try:
           if execute_chime is True:
-            self.speech_speak.execute_chime()
+            self.speech_speak.background_speak_event(event_type="execute_chime")
           elif prompt is not None:
             # Prompt the user each loop attempt if specified. 
-            self.speech_speak.speak_text(prompt)
+            self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=prompt)
 
           use_google = self.web_server_status.online_status is True
 

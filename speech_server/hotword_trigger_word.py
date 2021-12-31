@@ -71,7 +71,7 @@ class HotwordTriggerWord:
     stream.start_stream()
     print("[INFO] Now listening for Trigger Word with model iteration " + str(self.iternum) + ".")
     # Audio cue for the user upon startup. 
-    self.speech_speak.execute_startup() 
+    self.speech_speak.background_speak_event(event_type="execute_startup")
     try:
       # Primary listening loop. Application should spend most of it's
       # lifetime in here. 
@@ -113,8 +113,9 @@ class HotwordTriggerWord:
       self.active_loop = False
     stream.stop_stream()
     stream.close()
-    # Execute a shutdown chime. 
-    self.speech_speak.execute_shutdown()
+    # Execute a shutdown chime. Blocking, so we can make sure it
+    # finishes before we shutdown fully. 
+    self.speech_speak.blocking_speak_event(event_type="execute_shutdown")
     return
 
   # Audio parsing callback. 

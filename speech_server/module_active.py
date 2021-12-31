@@ -336,7 +336,7 @@ class ModuleActive:
       # and to let them know for long wait periods.  
       print("[DEBUG] Runtime initializing active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")
       if self.init_runtime_message != "":
-        self.speech_speak.speak_text(self.init_runtime_message)
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=self.init_runtime_message)
       if self.initialize_class() is False:
         return False
 

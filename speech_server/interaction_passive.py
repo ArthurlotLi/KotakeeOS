@@ -32,7 +32,7 @@ class InteractionPassive:
   # active processing loop in hotword_trigger_word. Spawns
   # new threads to fufill passive modules when their event
   # time requirements are met. 
-  passive_thrd = None
+  passive_thrd_instance = None
   passive_thrd_stop = False
   passive_thrd_ticks_since_start = 0
 
@@ -109,7 +109,7 @@ class InteractionPassive:
   # Kicks off the thread.
   def begin_passive_thrd(self):
     print("[DEBUG] Starting Passive Thread.")
-    self.passive_thrd = threading.Thread(target=self.passive_thrd, args=(self.passive_thrd_tick,), daemon=True).start()
+    self.passive_thrd_instance = threading.Thread(target=self.passive_thrd, args=(self.passive_thrd_tick,), daemon=True).start()
 
   # The passive thread. Loops every 'tick' seconds and checks
   # if any events need to occur. If any do need to be occur, the 
@@ -118,6 +118,9 @@ class InteractionPassive:
   def passive_thrd(self, passive_thread_tick):
     while self.passive_thrd_stop is False:
 
+      # Clear the executed modules once done. 
+      indices_to_drop = []
+
       for i in range(0, len(self.passive_module_events)):
         time_req = self.passive_module_events[i]
         if self.passive_thrd_ticks_since_start >= time_req:
@@ -125,10 +128,13 @@ class InteractionPassive:
           # passing in the module object in the like-indexed module
           # list. 
           self.activate_module_passive(self.passive_module_list[i])
-          # Remove it from the list.
-          # TODO: Support recurrent events. 
-          del self.passive_module_list[i]
-          del self.passive_module_events[i]
+          indices_to_drop.append(i)
+      
+      for index in indices_to_drop:
+        # Remove it from the list.
+        # TODO: Support recurrent events. 
+        del self.passive_module_list[index]
+        del self.passive_module_events[index]
 
       time.sleep(passive_thread_tick)
       self.passive_thrd_ticks_since_start = self.passive_thrd_ticks_since_start + 1

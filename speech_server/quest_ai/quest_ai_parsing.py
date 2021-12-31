@@ -66,12 +66,12 @@ class QuestAiParsing:
 
     if user_response in self.cancelWords:
       print("[DEBUG] User requested cancellation. Stopping QuestAI...")
-      self.speech_speak.speak_text("Stopping Quest AI...")
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Stopping Quest AI...")
       return
 
     # We now have a question. Pass it to the model class - we
     # expect a boolean back + confidence. 
-    self.speech_speak.speak_text(self.level_2_confirmation) # Because the response will likely take some time. 
+    self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=self.level_2_confirmation) # Because the response will likely take some time. 
     ai_response, ai_yes_amount, ai_confidence, ai_source, ai_8_ball = self.questAi.generate_response(user_response)
     print("[DEBUG] QuestAI Standard Query returned response: " + str(ai_response) + ".")
 
@@ -83,7 +83,7 @@ class QuestAiParsing:
         response_text = "I believe so."
       else:
         response_text = "I don't think so."
-      self.speech_speak.speak_text(response_text)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=response_text)
 
     # 1 = Advanced response. 
     elif(output_type == 1):
@@ -94,11 +94,11 @@ class QuestAiParsing:
         response_text = "I don't think so, with " + str(round((1-ai_yes_amount)*100, 2)) + " percent certainty."
 
       response_text = response_text + " I am " + str(round(ai_confidence*100, 2)) + " percent confident. My source: " + str(ai_source) + "."
-      self.speech_speak.speak_text(response_text)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=response_text)
 
     # 2 = Magic 8 ball response. 
     else:
-      self.speech_speak.speak_text(ai_8_ball)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=ai_8_ball)
     
     # TODO In the future, we should add a mechanism to prompt for 
     # whether we did good in that prediction (so we can append 

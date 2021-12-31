@@ -23,7 +23,7 @@ class HomeAutomation:
     if("weather" in command or "like outside" in command or "how hot" in command or "how cold" in command):
       if(self.web_server_status.home_status is not None):
         weatherString = "It is currently " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp"])) + " degrees Fahrenheit, " +str(self.web_server_status.home_status["weatherData"]["weather"][0]["description"]) + ", with a maximum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_max"])) + " and a minimum of " + str(int(self.web_server_status.home_status["weatherData"]["main"]["temp_min"])) + ". Humidity is " +  str(self.web_server_status.home_status["weatherData"]["main"]["humidity"]) + " percent."
-        self.speech_speak.speak_text(weatherString)
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=weatherString)
         valid_command = True
     elif("everything" in command or "all modules" in command):
       if(self.web_server_status.action_states is not None):
@@ -55,7 +55,7 @@ class HomeAutomation:
             }
             self.web_server_status.query_speech_server_module_input_modify(data_to_send)
 
-            self.speech_speak.speak_text("Setting thermostat to " + str(newTemp) + ".")
+            self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Setting thermostat to " + str(newTemp) + ".")
             valid_command = True
     elif("temperature" in command):
       # Handle temperatures. Expects a state like "27.70_42.20".
@@ -67,7 +67,7 @@ class HomeAutomation:
 
       # Operational server status
       statusString = "The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
-      self.speech_speak.speak_text(statusString)
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=statusString)
       valid_command = True
     elif(("auto" in command or "input" in command or "automatic" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
       if(self.web_server_status.home_status is not None and self.web_server_status.home_status["moduleInputDisabled"] is not None):
@@ -113,7 +113,7 @@ class HomeAutomation:
         statusString = "KotakeeOS is currently " + serverDisabled + " with automatic actions " + moduleInputDisabled + ". There are " + str(self.web_server_status.home_status["modulesCount"]) + " connected modules. The thermostat is currently set to " + str(onHeat - 1) + " degrees."
         # Action states status
         statusString = statusString + " The Living Room is currently " + lr_2_temp + " degrees. The Bedroom is currently " + br_temp + " degrees."
-        self.speech_speak.speak_text(statusString)
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=statusString)
         valid_command = True
     else:
       if("bedroom" in command and ("light" in command or "lights" in command or "lamp" in command)):
@@ -149,7 +149,7 @@ class HomeAutomation:
         self.web_server_status.execute_get_query(query)
 
       if(confirmation_prompt is not None and confirmation_prompt != ""):
-        self.speech_speak.speak_text(confirmation_prompt)
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=confirmation_prompt)
       valid_command = True
 
     return valid_command

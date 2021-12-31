@@ -3,15 +3,37 @@
 #
 # Implements verbal output to the user utilizing pyttsx3 module for 
 # speech synthesis. A single static class should be utilized for all 
-# speech_server interactions.
+# speech_server interactions. 
+#
+# Manages a single thread with a queue, handling the edge case of 
+# multiple threads requesting to speak or output sounds at the same 
+# time. 
+#
+# All interactions should occur via the speak thread - none of the
+# other methods in this class should be called directly to avoid
+# threading issues with pyaudio and to handle race conditions properly.
 
 import pyttsx3
-#import threading
+import threading
 import wave
 import pyaudio
+import time
 
 class SpeechSpeak:
   engine = None
+
+  # Primary thread that executes all output. Any requests that 
+  # come in must come in via the speech_speak_events thread and
+  # will be processed first-come-first-served.
+  speak_thrd_instance = None
+
+  # Like-indexed lists that act as a joint queue for incoming
+  # speak events. event_types provides the event type, while 
+  # event_contents is optional depending on the type. 
+  speak_thrd_event_types = []
+  speak_thrd_event_contents = []
+  speak_thrd_tick = 0.25 # How many seconds the thread sleeps for. 
+  speak_thrd_stop = False
 
   chime_location = None
   startup_location = None
@@ -26,25 +48,78 @@ class SpeechSpeak:
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
 
-  # Disable multithreading for speech - it's one or the other, it
-  # seems. 
-  """
-  # Non-blocking text to speech. Do be warned this might interefere 
-  # with the speech recognition and may cut off if the calling class
-  # is disposed off. 
-  def execute_text_thread(self, output_text):
-    print("[DEBUG] Starting thread for text output: '"+output_text+"'")
-    text_thread = threading.Thread(target=self.speak_text_threaded, args=(output_text,), daemon=True).start()
+    # Get the show on the road!
+    self.initialize_speak_thrd()
 
-  # Convert text to speech using pyttsx3 engine, designed to support
-  # threading. 
-  def speak_text_threaded(self, output_text):
-    print("[DEBUG] Executing output text: '"+output_text+"'")
-    if self.engine._inLoop:
-      self.engine.endLoop()
-    self.engine.say(output_text)
-    self.engine.runAndWait()
-  """
+  # Kicks off the thread. 
+  def initialize_speak_thrd(self):
+    print("[DEBUG] Starting Speak Thread.")
+    self.speak_thrd_instance = threading.Thread(target=self.speak_thrd, daemon=True).start()
+
+  # Primary function that allows other classes to append new events
+  # for the thread to process in due time. Importantly, this method
+  # BLOCKS their respective processing until it has been completed. 
+  # An alternate method is available for non-blocking processing
+  # called background_speak_event.
+  def blocking_speak_event(self, event_type, event_content=None):
+    print("[DEBUG] Creating new blocking speak event of type '" + event_type + "'.")
+    self.speak_thrd_event_types.append(event_type)
+    self.speak_thrd_event_contents.append(event_content)
+
+    # Wait for the thread to execute all events. 
+    while len(self.speak_thrd_event_types) > 0:
+      time.sleep(0.1) # Check every 100ms until we're finished.
+
+    print("[DEBUG] Speak event queue clean. Blocking operation complete.") 
+
+  # Non-blocking processing. Kick it off and let it run - useful for
+  # operations like playing sounds that don't have any immediate
+  # follow-ups. 
+  def background_speak_event(self, event_type, event_content=None):
+    print("[DEBUG] Creating new background speak event of type '" + event_type + "'.")
+    self.speak_thrd_event_types.append(event_type)
+    self.speak_thrd_event_contents.append(event_content)
+
+  # The Speak thread. Loops every 'tick' seconds and checks if any 
+  # events needs to occur. 
+  def speak_thrd(self):
+    while self.speak_thrd_stop is False:
+
+      # Clear the executed events once done. We don't just clear the
+      # entire array at the end in the edge case that a new event 
+      # comes in during the for loop. (More likely if executing
+      # long strings of text.)
+      indices_to_drop = []
+
+      # Handle everything in the queue. 
+      for i in range(0, len(self.speak_thrd_event_types)):
+        event_type = self.speak_thrd_event_types[i]
+        event_content = self.speak_thrd_event_contents[i]
+        self.handle_speak_event(event_type = event_type, event_content = event_content)
+        indices_to_drop.append(i)
+
+      # Clear the queue once completed. 
+      for index in indices_to_drop:
+        del self.speak_thrd_event_types[index]
+        del self.speak_thrd_event_contents[index]
+      
+      time.sleep(self.speak_thrd_tick)
+
+  # Given an event type (string) and event_content (can be None),
+  # execute the action. 
+  def handle_speak_event(self, event_type, event_content):
+    if event_type == "speak_text":
+      self.speak_text(event_content)
+    elif event_type == "execute_startup":
+      self.execute_startup()
+    elif event_type == "execute_shutdown":
+      self.execute_shutdown()
+    elif event_type == "execute_chime":
+      self.execute_chime()
+    elif event_type == "execute_timer":
+      self.execute_timer()
+    else:
+      print("[ERROR] Speak thrd recieved an unknown event type '" + str(event_type)+ "'!")
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
