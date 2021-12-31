@@ -49,7 +49,7 @@ class SpeechSpeak:
     self.timer_location = timer_location
 
     # Initialize the thread that'll handle pyttsx3 in it's own vaccuum. 
-    self.tts_thread = TTSThread()
+    self.tts_thread = Voice(event="completed")
 
     # Get the show on the road!
     self.initialize_speak_thrd()
@@ -86,6 +86,8 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
+    self.tts_thread.completed.set()
+
     while self.speak_thrd_stop is False:
 
       # Clear the executed events once done. We don't just clear the
@@ -108,6 +110,9 @@ class SpeechSpeak:
         del self.speak_thrd_event_contents[indices_to_drop[i]]
       
       time.sleep(self.speak_thrd_tick)
+
+    # All done. Terminate the child thread. 
+    self.tts_thread.terminate()
 
   # Given an event type (string) and event_content (can be None),
   # execute the action. 
@@ -133,8 +138,8 @@ class SpeechSpeak:
       
       self.tts_thread.say(output_text)
 
-      # Block the thread until the text has completed. 
-      while self.tts_thread.speaking:
+      # Block this thread until the text has completed. 
+      while self.tts_thread.completed.is_set() is False:
         time.sleep(0.1) 
       print("[DEBUG] Speak Text output text execution complete. ")
 
@@ -176,10 +181,14 @@ class SpeechSpeak:
 # Awesome source (Saved me a LOT more headaches):
 # https://stackoverflow.com/questions/58673116/pyttsx3-callbacks-not-triggering-when-using-threading
 class TTSThread(threading.Thread):
-  speaking = False
-
-  def __init__(self):
+  def __init__(self, event=None):
     super().__init__()
+
+    self.completed = None
+
+    if event:
+      setattr(self, event, threading.Event())
+
     self._cancel = threading.Event()
     self.engine = None
 
@@ -198,7 +207,6 @@ class TTSThread(threading.Thread):
     return engine
   
   def say(self, text, stop=None):
-    self.speaking = True
     if self._is_alive.is_set():
       self._cancel.clear()
 
@@ -228,14 +236,14 @@ class TTSThread(threading.Thread):
     self.engine.endLoop()
 
   def _on_completed(self, name, completed):
-    print("DEBUGUGUEUGEGUE")
+    print("DEBUG1")
     if completed:
-      self.speaking = False
       self.engine.endLoop()
       self.on_finished_utterance(name, completed)
 
   def on_finished_utterance(self, name, completed):
-    pass
+    #time.sleep(0.5)
+    self.completed.set()
 
   def terminate(self):
     self._is_alive.clear()
@@ -252,3 +260,7 @@ class TTSThread(threading.Thread):
           with self._text_lock:
             engine.say(*self._text.pop(0))
           engine.startLoop()
+
+class Voice(TTSThread):
+  def __init__(self,event=None):
+    super().__init__(event)
