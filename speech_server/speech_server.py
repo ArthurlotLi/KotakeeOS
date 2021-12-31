@@ -28,9 +28,10 @@ import argparse
 class SpeechServer:
   # Configurable constants passed down to components. 
   trigger_word_models_path = '../triggerWordDetection/models'
-  speech_listen_chime_location = "./assets/hotword.wav"
-  speech_listen_startup_location = "./assets/startup.wav"
-  speech_listen_shutdown_location = "./assets/shutdown.wav"
+  speech_speak_chime_location = "./assets/hotword.wav"
+  speech_speak_startup_location = "./assets/startup.wav"
+  speech_speak_shutdown_location = "./assets/shutdown.wav"
+  speech_speak_timer_location = "./assets/timer.wav"
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
   speech_listen_led_room_id = 2
@@ -111,7 +112,11 @@ class SpeechServer:
 
   # Initialize Speak handler.
   def initialize_speech_speak(self):
-    self.speech_speak = SpeechSpeak()
+    self.speech_speak = SpeechSpeak(
+      chime_location=self.speech_speak_chime_location, 
+      startup_location=self.speech_speak_startup_location, 
+      shutdown_location=self.speech_speak_shutdown_location,
+      timer_location=self.speech_speak_timer_location)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
@@ -133,9 +138,6 @@ class SpeechServer:
     self.speech_listen = SpeechListen(
       speech_speak=self.speech_speak, 
       web_server_status=self.web_server_status,
-      chime_location=self.speech_listen_chime_location, 
-      startup_location=self.speech_listen_startup_location, 
-      shutdown_location=self.speech_listen_shutdown_location, 
       led_state_on=self.speech_listen_led_state_on,
       led_state_off=self.speech_listen_led_state_off,
       led_room_id=self.speech_listen_led_room_id,
@@ -176,7 +178,8 @@ class SpeechServer:
     self.hotword_trigger_word = HotwordTriggerWord(
       interaction_active=self.interaction_active, 
       speech_listen=self.speech_listen,
-      model_path = self.trigger_word_models_path, )
+      model_path = self.trigger_word_models_path, 
+      speech_speak=self.speech_speak)
     if self.hotword_trigger_word.load_model(self.trigger_word_iternum) is False:
       print("[ERROR] Failed to initialize Hotword handler.")
       return False

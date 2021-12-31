@@ -9,12 +9,21 @@ import time
 from datetime import date
 
 class SimpleUtilities:
-  speech_speak = None
-  web_server_status = None
+  # Paths relative to where interaction_active is. 
+  timer_class_location = "./simple_utilities/timer_utility/timer_utility.TimerUtility"
 
-  def __init__(self, speech_speak, web_server_status, passive_interaction):
+  speech_speak = None
+  speech_listen = None
+  web_server_status = None
+  interaction_passive = None
+
+  user_confirmation_words = ["sure", "yep", "go ahead", "okay", "yeah", "affirm", "that's it", "ok", "yes", "go for it"]
+
+  def __init__(self, speech_speak, speech_listen, web_server_status, interaction_passive):
     self.speech_speak = speech_speak
+    self.speech_listen = speech_listen
     self.web_server_status = web_server_status
+    self.interaction_passive = interaction_passive
 
   # Level 1 standard routine.
   def parse_command(self, command):
@@ -30,11 +39,36 @@ class SimpleUtilities:
       timeString = "It is currently " + separated_time_string + "."
       self.speech_speak.speak_text(timeString)
       valid_command = True
+
+    elif("timer" in command):
+      valid_command = True
+
+      duration, units = self.parse_duration_from_command(command)
+      if duration is not None and units is not None:
+        # Level 2 subroutine for confirming the parsed information. 
+        user_prompt = "Set timer for " + str(duration) + " " + str(units) + "?"
+        user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
+
+        if any(x in user_response for x in self.user_confirmation_words):
+          # Timer module will add the TimerUtility passive module to the 
+          # passive_thrd routine with a first_event time equivalent to the
+          # specified time. 
+          current_time = time.time() # Seconds in UTC.
+          first_event_time = current_time + duration # Append seconds. 
+
+          # Create a new passive module given the path to this folder.
+          self.interaction_passive.create_module_passive(
+            class_location = self.timer_class_location,
+            first_event = first_event_time)
+
+          self.speech_speak.speak_text("Timer set for " + str(duration) + " " + str(units) + ".")
+
     elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()
       dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
       self.speech_speak.speak_text(dateString)
       valid_command = True
+
     elif("calculator" in command or "calculate" in command):
       # Get the first number and then the second number in the query. Ignore
       # all others if there are any. Fail if there are not enough numbers.
@@ -89,6 +123,29 @@ class SimpleUtilities:
         valid_command = True
     
     return valid_command
+
+  # Given a command, parse a duration in seconds. This can be a rather
+  # painful non-trivial task. Return a tuple of 
+  # (duration in seconds, units string). Returns a none tuple otherwise.
+  def parse_duration_from_command(self, command):
+    units = "seconds"
+    duration = self.text2int(command)
+    if duration is not None and int(duration) > 0:
+      # TODO: For now we only support a single denomination
+      # Ex) 50 minutes, 120 minutes, 1 hour, etc. We don't
+      # yet support multiple, Ex) 1 minute, 20 seconds. 
+      if "minutes" in command:
+        units = "minutes"
+        duration = duration * 60
+      elif "hours" in command:
+        units = "hours"
+        duration = duration * 3600
+      # Otherwise we assume the units are seconds. 
+
+      return duration, units
+
+    return None, None
+
     
   # Helper function I got off stack overflow - really sweet code!
   # Slightly modified to allow non-number characters. 

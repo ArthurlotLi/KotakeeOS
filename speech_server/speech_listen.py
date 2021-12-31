@@ -10,13 +10,8 @@
 
 import speech_recognition as sr
 import time
-import wave
-import pyaudio
 
 class SpeechListen:
-  chime_location = None
-  startup_location = None
-  shutdown_location = None
   led_state_on = None
   led_state_off = None
   led_room_id = None
@@ -37,11 +32,8 @@ class SpeechListen:
   default_response_phrase_timeout = 5
   default_ambient_noise_duration = 1.0
 
-  def __init__(self, speech_speak, web_server_status, chime_location, startup_location, shutdown_location, led_state_on, led_state_off, led_room_id, led_action_id):
+  def __init__(self, speech_speak, web_server_status, led_state_on, led_state_off, led_room_id, led_action_id):
     self.speech_speak = speech_speak
-    self.chime_location = chime_location
-    self.startup_location = startup_location
-    self.shutdown_location = shutdown_location
     self.r2 = sr.Recognizer()
     self.web_server_status = web_server_status
 
@@ -95,7 +87,7 @@ class SpeechListen:
       for i in range(max_response_attempts): 
         try:
           if execute_chime is True:
-            self.execute_chime()
+            self.speech_speak.execute_chime()
           elif prompt is not None:
             # Prompt the user each loop attempt if specified. 
             self.speech_speak.speak_text(prompt)
@@ -134,32 +126,3 @@ class SpeechListen:
     self.speech_listen_active = False
 
     return user_response_text
-
-  def execute_startup(self):
-    self.execute_sound(self.startup_location)
-
-  def execute_shutdown(self):
-    self.execute_sound(self.shutdown_location)
-
-  def execute_chime(self):
-    self.execute_sound(self.chime_location)
-
-  # Let out a chime to indicate that you're listening. This code
-  # is not mine, but it works like a charm!
-  def execute_sound(self, location):
-    chunk = 1024
-    f = wave.open(location, "rb")
-    p = pyaudio.PyAudio()
-    stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
-                channels = f.getnchannels(),  
-                rate = f.getframerate(),  
-                output = True) 
-    data = f.readframes(chunk)
-    while data:  
-      stream.write(data)  
-      data = f.readframes(chunk)
-    stream.stop_stream()  
-    stream.close()  
-
-    #close PyAudio  
-    p.terminate()

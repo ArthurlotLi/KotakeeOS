@@ -35,10 +35,12 @@ class HotwordTriggerWord:
   iternum = None # iternum for model
   interaction_active = None
   speech_listen = None
+  speech_speak = None
 
-  def __init__(self, interaction_active, speech_listen, model_path):
+  def __init__(self, interaction_active, speech_speak, speech_listen, model_path):
     self.models_path = model_path
     self.interaction_active = interaction_active
+    self.speech_speak = speech_speak
     self.speech_listen = speech_listen
 
   # Must be called. Returns False if failure occurs, otherwise returns True.
@@ -69,7 +71,7 @@ class HotwordTriggerWord:
     stream.start_stream()
     print("[INFO] Now listening for Trigger Word with model iteration " + str(self.iternum) + ".")
     # Audio cue for the user upon startup. 
-    self.speech_listen.execute_startup() 
+    self.speech_speak.execute_startup() 
     try:
       # Primary listening loop. Application should spend most of it's
       # lifetime in here. 
@@ -112,7 +114,7 @@ class HotwordTriggerWord:
     stream.stop_stream()
     stream.close()
     # Execute a shutdown chime. 
-    self.speech_listen.execute_shutdown()
+    self.speech_speak.execute_shutdown()
     return
 
   # Audio parsing callback. 

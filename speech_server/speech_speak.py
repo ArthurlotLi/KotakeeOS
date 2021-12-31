@@ -7,12 +7,24 @@
 
 import pyttsx3
 #import threading
+import wave
+import pyaudio
 
 class SpeechSpeak:
   engine = None
 
-  def __init__(self):
+  chime_location = None
+  startup_location = None
+  shutdown_location = None
+  timer_location = None
+
+  def __init__(self, chime_location, startup_location, shutdown_location, timer_location):
     self.engine = pyttsx3.init()
+
+    self.chime_location = chime_location
+    self.startup_location = startup_location
+    self.shutdown_location = shutdown_location
+    self.timer_location = timer_location
 
   # Disable multithreading for speech - it's one or the other, it
   # seems. 
@@ -41,3 +53,35 @@ class SpeechSpeak:
       print("[DEBUG] Executing output text: '"+output_text+"'")
       self.engine.say(output_text)
       self.engine.runAndWait()
+  
+  def execute_startup(self):
+    self.execute_sound(self.startup_location)
+
+  def execute_shutdown(self):
+    self.execute_sound(self.shutdown_location)
+
+  def execute_chime(self):
+    self.execute_sound(self.chime_location)
+
+  def execute_timer(self):
+    self.execute_sound(self.timer_location)
+
+  # Let out a chime to indicate that you're listening. Source:
+  # stack overflow
+  def execute_sound(self, location):
+    chunk = 1024
+    f = wave.open(location, "rb")
+    p = pyaudio.PyAudio()
+    stream = p.open(format = p.get_format_from_width(f.getsampwidth()),  
+                channels = f.getnchannels(),  
+                rate = f.getframerate(),  
+                output = True) 
+    data = f.readframes(chunk)
+    while data:  
+      stream.write(data)  
+      data = f.readframes(chunk)
+    stream.stop_stream()  
+    stream.close()  
+
+    #close PyAudio  
+    p.terminate()
