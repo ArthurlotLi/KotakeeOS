@@ -21,6 +21,7 @@ from speech_speak import SpeechSpeak
 from speech_listen import SpeechListen
 from hotword_trigger_word import HotwordTriggerWord
 from interaction_active import InteractionActive
+from interaction_passive import InteractionPassive
 
 import argparse
 
@@ -143,9 +144,16 @@ class SpeechServer:
       return False
     return True
 
-  # Initialize Passive Interaction handler.
+  # Initialize Passive Interaction handler. Requires Speak, Listen,
+  # and Web Server Status components.
   def initialize_passive_interaction(self):
-    # TODO
+    self.interaction_passive = InteractionPassive(
+      speech_speak=self.speech_speak,
+      speech_listen=self.speech_listen,
+      web_server_status=self.web_server_status)
+    if self.interaction_passive is None:
+      print("[ERROR] Failed to initialize Passive Interaction handler.")
+      return False
     return True
 
   # Initialize Active Interaction handler. Requires Speak, Listen, 

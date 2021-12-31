@@ -26,6 +26,10 @@ class SpeechListen:
   speech_speak = None
   web_server_status = None
 
+  # A flag for hotword_trigger_word to halt operations in the case
+  # that a separate thread is using the microphone. 
+  speech_listen_active = False
+
   # Configuration parameters
   default_pause_threshold = 1.0
   default_max_response_attempts = 1
@@ -50,8 +54,21 @@ class SpeechListen:
   # Returns valid text if recieved and None if not recieved. 
   # May provide a verbal prompt every loop. Can be specified with a
   # sleep duration (how long to wait before starting to listen)
-  def listen_response(self, prompt = None, indicate_led = True, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None, ambient_noise_duration = None):
+  #
+  # Can also take in a delay before attempting to take control of
+  # the microphone - useful for other threads that need to wait for
+  # hotword_tirgger_word to release the mic stream. Delay is in 
+  # seconds (float).
+  def listen_response(self, prompt = None, indicate_led = True, execute_chime = False, pause_threshold = None, max_response_attempts = None, response_timeout = None, response_phrase_timeout = None, ambient_noise_duration = None, start_delay = None):
     user_response_text = None
+
+    # Inidicate that we're active. Tells the hotword parsing to 
+    # stop listening if we're being called from a separate thread. 
+    self.speech_listen_active = True
+
+    if start_delay is not None:
+      print("[DEBUG] Speech Listen pausing for " + str(start_delay) + " seconds.")
+      time.sleep(start_delay)
 
     # Use defaults if not specified by the caller. 
     if pause_threshold is None:
@@ -113,6 +130,9 @@ class SpeechListen:
       if indicate_led is True:
         self.web_server_status.query_speech_server_module_toggle(self.led_state_off, self.led_room_id, self.led_action_id)
   
+    # All done. Disable the flag and let the hotword parsing continue.
+    self.speech_listen_active = False
+
     return user_response_text
 
   def execute_startup(self):

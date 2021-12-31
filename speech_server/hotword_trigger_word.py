@@ -12,6 +12,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import pyaudio
 from queue import Queue
+import time
 
 class HotwordTriggerWord:
   models_path = None
@@ -73,6 +74,24 @@ class HotwordTriggerWord:
       # Primary listening loop. Application should spend most of it's
       # lifetime in here. 
       while self.active_loop and self.interaction_active.stop_server is False:
+        # Halt indefinitely if the speech_listen is triggered by
+        # another thread. Check every second to see if they've
+        # finished. When it's finished, restart the stream. 
+        stream_stopped = False
+        while self.speech_listen_active is True:
+          if stream_stopped is False: 
+            # Only output one message. 
+            print("[DEBUG] Trigger Word Parsing halted: Speech Listen called from another thread.")
+          stream.stop_stream()
+          stream.close()
+          stream_stopped = True
+          time.sleep(1)
+        if stream_stopped is True:
+          # Once the command loop finishes. resume.
+          stream = self.get_audio_input_stream(self.callback)
+          stream.start_stream()
+          print("[DEBUG] Trigger Word Parsing resumed: Speech Listen in different thread terminated.")
+
         data = self.q.get()
         spectrum = self.get_spectrogram(data)
         preds = self.detect_triggerword_spectrum(spectrum)
