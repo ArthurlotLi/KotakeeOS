@@ -12,8 +12,15 @@
 # All interactions should occur via the speak thread - none of the
 # other methods in this class should be called directly to avoid
 # threading issues with pyaudio and to handle race conditions properly.
+#
+# Utilizes multiprocessing to execute pyttsx3 interactions. Required
+# in order to iteratively execute text output without blocking and 
+# also without initializing the engine needlessly (which has 
+# significant overhead). In this respect, the overhead for socket
+# interactions with the subprocess is preferred. 
 
 from subprocess import run
+from multiprocessing.connection import Client, Listener
 import threading
 import wave
 import pyaudio
@@ -22,12 +29,14 @@ import time
 class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
   subprocess_location = "speech_speak_pyttsx3.py"
+  subprocess_address = "localhost"
+  subprocess_port = 36054 # Randomly selected. 
+  subprocess_key = "speech_speak"
 
   # Addressing the command line call to execute the subprocess.
   # Try using python3 first, and if that fails, remember and use
   # python instead.
   use_python3 = True
-  use_python3_attempted = False
 
   # Primary thread that executes all output. Any requests that 
   # come in must come in via the speech_speak_events thread and
@@ -53,8 +62,32 @@ class SpeechSpeak:
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
 
+    if self.initialize_subprocess() is False:
+      print("[ERROR] Failed to initialize subprocess. Speech Server initialization failed.")  
+      return
+
     # Get the show on the road!
     self.initialize_speak_thrd()
+
+  # Initializes the subprocess.
+  def initialize_subprocess(self):
+    # Try two times - meant to accomodate an initial attempt to use
+    # python3. 
+    for i in range(0,2):
+      try:
+        if self.use_python3 is True:
+          run(["python3", self.subprocess_location, ""])
+          print("[DEBUG] Speak Text subprocess spawned successfully.")
+          return True
+        else:
+          run(["python", self.subprocess_location, ""])
+          print("[DEBUG] Speak Text subprocess spawned successfully.")
+          return True
+      except:
+          self.use_python3 = not self.use_python3
+
+    print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
+    return False
 
   # Kicks off the thread. 
   def initialize_speak_thrd(self):
@@ -132,32 +165,17 @@ class SpeechSpeak:
   def speak_text(self, output_text):
     if(output_text is not None and output_text != ""):
       print("[DEBUG] Speak Text executing output text: '"+output_text+"'")
-      
-      # Try two times - meant to accomodate an initial attempt to use
-      # python3. 
-      num_attempts = 1
-      if self.use_python3_attempted is False:
-        num_attempts = 2
-      
-      for i in range(0,num_attempts):
-        try:
-          if self.use_python3 is True:
-            run(["python3", self.subprocess_location, output_text])
-            self.use_python3_attempted = True
-            print("[DEBUG] Speak Text output text execution complete. ")
-            return
-          else:
-            run(["python", self.subprocess_location, output_text])
-            self.use_python3_attempted = True
-            print("[DEBUG] Speak Text output text execution complete. ")
-            return
-        except:
-          if self.use_python3_attempted is False:
-            self.use_python3 = not self.use_python3
-            self.use_python3_attempted = True
-          else:
-            print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
-            return
+
+      # Socket interaction using multiprocessing library. 
+      address = (self.subprocess_address, self.subprocess_port)
+      connection = Client(address, authkey=self.subprocess_key)
+      connection.send(output_text)
+      # Wait for the subprocess to reply with anything. When you
+      # do get that message, continue. 
+      _ = connection.recv()
+      connection.close()
+
+      print("[DEBUG] Speak Text text output complete.")
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)
