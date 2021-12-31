@@ -141,7 +141,7 @@ class SpeechSpeak:
 
       # Block the thread until the text has completed. 
       while self.engine._inLoop:
-        time.sleep(0.1) 
+        pass
       print("[DEBUG] Speak Text output text execution complete. ")
 
   # Callback for pyttsx3. When on_finished_utterance is complete, 
