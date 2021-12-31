@@ -6,7 +6,7 @@
 # to detect when a speech execution has completed. So we're using
 # multiprocessing. 
 
-#import sys
+import sys
 import pyttsx3
 
 class SpeechSpeakPyttsx3:
@@ -20,10 +20,4 @@ class SpeechSpeakPyttsx3:
     self.engine.runAndWait() # Blocks the thread until it completes.
 
 speech_speak_pyttsx3 = SpeechSpeakPyttsx3()
-
-# Obsolete: Calling the process directly with an argument. 
-# Inefficient, as it requires initializing the engine every
-# time. Better to interact with the subprocess as it runs
-# continously in the background.
-
-#speech_speak_pyttsx3.execute_text(str(sys.argv[1])) 
+speech_speak_pyttsx3.execute_text(str(sys.argv[1])) 
