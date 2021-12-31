@@ -33,10 +33,10 @@ class SimpleUtilities:
     if("timer" in command):
       valid_command = True
 
-      duration, units = self.parse_duration_from_command(command)
+      duration, duration_seconds, units = self.parse_duration_from_command(command)
       if duration is not None and units is not None:
         # Level 2 subroutine for confirming the parsed information. 
-        user_prompt = "Set timer for " + str(duration) + " " + str(units) + "?"
+        user_prompt = "Should I set a timer for " + str(duration) + " " + str(units) + "?"
         user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
 
         if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
@@ -44,8 +44,9 @@ class SimpleUtilities:
           # passive_thrd routine with a first_event time equivalent to the
           # specified time. 
           current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
-          first_event_time = current_ticks + (float(duration)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
-
+          first_event_time = current_ticks + (float(duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
+          print("[DEBUG] Setting timer for " + str(duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+ 
           # Create a new passive module given the path to this folder.
           self.interaction_passive.create_module_passive(
             class_location = self.timer_class_location,
@@ -127,7 +128,7 @@ class SimpleUtilities:
 
   # Given a command, parse a duration in seconds. This can be a rather
   # painful non-trivial task. Return a tuple of 
-  # (duration in seconds, units string). Returns a none tuple otherwise.
+  # (duration, duration in seconds, units string). Returns a none tuple otherwise.
   def parse_duration_from_command(self, command):
     units = "seconds"
     duration = self.text2int(command)
@@ -137,13 +138,15 @@ class SimpleUtilities:
       # yet support multiple, Ex) 1 minute, 20 seconds. 
       if "minutes" in command:
         units = "minutes"
-        duration = duration * 60
+        duration_seconds = duration * 60
       elif "hours" in command:
         units = "hours"
-        duration = duration * 3600
-      # Otherwise we assume the units are seconds. 
+        duration_seconds = duration * 3600
+      else:
+        # Otherwise we assume the units are seconds. 
+        duration_seconds = duration
 
-      return duration, units
+      return duration, duration_seconds, units
 
     return None, None
 

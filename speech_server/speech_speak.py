@@ -20,7 +20,7 @@
 # interactions with the subprocess is preferred. 
 
 from subprocess import Popen
-from multiprocessing.connection import Client, Listener
+from multiprocessing.connection import Client
 import threading
 import wave
 import pyaudio
@@ -174,7 +174,7 @@ class SpeechSpeak:
       connection = Client(address, authkey=self.subprocess_key)
       connection.send(output_text)
       # Wait for the subprocess to reply with anything. When you
-      # do get that message, continue. 
+      # do get that message, continue. Contents are ignored. 
       _ = connection.recv()
       connection.close()
 

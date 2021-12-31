@@ -5,6 +5,9 @@
 # pyttsx3 and threads means that it's very difficult (impossible?) 
 # to detect when a speech execution has completed. So we're using
 # multiprocessing. 
+# 
+# Also uses the multiprocessing library to recieve information 
+# from the main program via it's wrapped socket library. 
 
 from multiprocessing.connection import Listener
 import pyttsx3
