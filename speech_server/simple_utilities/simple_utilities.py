@@ -39,7 +39,7 @@ class SimpleUtilities:
         user_prompt = "Set timer for " + str(duration) + " " + str(units) + "?"
         user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
 
-        if any(x in user_response for x in self.user_confirmation_words):
+        if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
           # Timer module will add the TimerUtility passive module to the 
           # passive_thrd routine with a first_event time equivalent to the
           # specified time. 
