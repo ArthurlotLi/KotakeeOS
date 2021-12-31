@@ -20,6 +20,8 @@ import pyaudio
 import time
 
 class SpeechSpeak:
+  engine = None
+
   # Primary thread that executes all output. Any requests that 
   # come in must come in via the speech_speak_events thread and
   # will be processed first-come-first-served.
@@ -39,6 +41,10 @@ class SpeechSpeak:
   timer_location = None
 
   def __init__(self, chime_location, startup_location, shutdown_location, timer_location):
+    # Initialize the engine and set up callbacks.
+    self.engine = pyttsx3.init()
+    self.engine.connect('finished-utterance', self.speech_on_completed)
+
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
@@ -79,10 +85,6 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
-    # The engine is owned by the thread, not the class, eliminating 
-    # issues with pyttsx3 and multithreading. 
-    engine = pyttsx3.init()
-
     while self.speak_thrd_stop is False:
 
       # Clear the executed events once done. We don't just clear the
@@ -95,7 +97,7 @@ class SpeechSpeak:
       for i in range(0, len(self.speak_thrd_event_types)):
         event_type = self.speak_thrd_event_types[i]
         event_content = self.speak_thrd_event_contents[i]
-        self.handle_speak_event(event_type = event_type, event_content = event_content, engine = engine)
+        self.handle_speak_event(event_type = event_type, event_content = event_content)
         indices_to_drop.append(i)
 
       # Clear the queue once completed. Go backwards from the back
@@ -107,11 +109,10 @@ class SpeechSpeak:
       time.sleep(self.speak_thrd_tick)
 
   # Given an event type (string) and event_content (can be None),
-  # execute the action. Also takes the engine from the thread
-  # instance. 
-  def handle_speak_event(self, event_type, event_content, engine):
+  # execute the action. 
+  def handle_speak_event(self, event_type, event_content):
     if event_type == "speak_text":
-      self.speak_text(engine, event_content)
+      self.speak_text(event_content)
     elif event_type == "execute_startup":
       self.execute_startup()
     elif event_type == "execute_shutdown":
@@ -125,15 +126,31 @@ class SpeechSpeak:
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
-  def speak_text(self, engine, output_text):
+  def speak_text(self, output_text):
     if(output_text is not None and output_text != ""):
-      print("[DEBUG] Executing output text: '"+output_text+"'")
-      # Necessary when working with pyttsx in a separate thread from
-      # the main loop. 
-      if engine._inLoop:
-        engine.endLoop()
-      engine.say(output_text)
-      engine.runAndWait()
+      print("[DEBUG] Speak Text executing output text: '"+output_text+"'")
+      # If currently outputting text, hold on. Our callback
+      # speech_on_completed will automatically end the loop once
+      # on_finished_utterance occurs. This should hopefully
+      # never happen given the bottom loop. 
+      #while self.engine._inLoop:
+        #time.sleep(0.1) 
+
+      self.engine.say(output_text)
+      self.engine.runAndWait()
+
+      # Block the thread until the text has completed. 
+      while self.engine._inLoop:
+        time.sleep(0.1) 
+      print("[DEBUG] Speak Text output text execution complete. ")
+
+  # Callback for pyttsx3. When on_finished_utterance is complete, 
+  # set a blocking flag to false so more operations can continue.
+  # A bit of a workaround since pyttsx3 doesn't play well with
+  # blocking threads other than the main thread. 
+  def speech_on_completed(self, name, completed):
+    if completed:
+      self.engine.endLoop()
   
   def execute_startup(self):
     self.execute_sound(self.startup_location)
