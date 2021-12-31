@@ -19,7 +19,7 @@
 # significant overhead). In this respect, the overhead for socket
 # interactions with the subprocess is preferred. 
 
-from subprocess import run
+from subprocess import Popen
 from multiprocessing.connection import Client, Listener
 import threading
 import wave
@@ -32,6 +32,7 @@ class SpeechSpeak:
   subprocess_address = "localhost"
   subprocess_port = 36054 # Randomly selected. 
   subprocess_key = b"speech_speak"
+  subprocess_instance = None
 
   # Addressing the command line call to execute the subprocess.
   # Try using python3 first, and if that fails, remember and use
@@ -72,15 +73,17 @@ class SpeechSpeak:
   # Initializes the subprocess.
   def initialize_subprocess(self):
     # Try two times - meant to accomodate an initial attempt to use
-    # python3. 
+    # python3. Use subprocess Popen as we don't want to block for 
+    # a process we want to keep running. We'll interact with it
+    # using multiprocessing's wrapped sockets. 
     for i in range(0,2):
       try:
         if self.use_python3 is True:
-          run(["python3", self.subprocess_location, ""])
+          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""])
           print("[DEBUG] Speak Text subprocess spawned successfully.")
           return True
         else:
-          run(["python", self.subprocess_location, ""])
+          self.subprocess_instance = Popen(["python", self.subprocess_location, ""])
           print("[DEBUG] Speak Text subprocess spawned successfully.")
           return True
       except:
