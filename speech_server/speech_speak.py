@@ -143,8 +143,12 @@ class SpeechSpeak:
         try:
           if self.use_python3 is True:
             run(["python3", self.subprocess_location, output_text])
+            print("[DEBUG] Speak Text output text execution complete. ")
+            return
           else:
             run(["python", self.subprocess_location, output_text])
+            print("[DEBUG] Speak Text output text execution complete. ")
+            return
         except:
           if self.use_python3_attempted is False:
             self.use_python3 = not self.use_python3
@@ -152,8 +156,6 @@ class SpeechSpeak:
           else:
             print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
             return
-
-      print("[DEBUG] Speak Text output text execution complete. ")
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)
