@@ -98,10 +98,11 @@ class SpeechSpeak:
         self.handle_speak_event(event_type = event_type, event_content = event_content)
         indices_to_drop.append(i)
 
-      # Clear the queue once completed. 
-      for index in indices_to_drop:
-        del self.speak_thrd_event_types[index]
-        del self.speak_thrd_event_contents[index]
+      # Clear the queue once completed. Go backwards from the back
+      # of the to-delete list.
+      for i in range(len(indices_to_drop)-1, -1, -1):
+        del self.speak_thrd_event_types[indices_to_drop[i]]
+        del self.speak_thrd_event_contents[indices_to_drop[i]]
       
       time.sleep(self.speak_thrd_tick)
 

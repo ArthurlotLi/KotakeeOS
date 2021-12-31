@@ -130,11 +130,13 @@ class InteractionPassive:
           self.activate_module_passive(self.passive_module_list[i])
           indices_to_drop.append(i)
       
-      for index in indices_to_drop:
+      # Clear the queue once completed. Go backwards from the back
+      # of the to-delete list.
+      for i in range(len(indices_to_drop)-1, -1, -1):
         # Remove it from the list.
         # TODO: Support recurrent events. 
-        del self.passive_module_list[index]
-        del self.passive_module_events[index]
+        del self.passive_module_list[indices_to_drop[i]]
+        del self.passive_module_events[indices_to_drop[i]]
 
       time.sleep(passive_thread_tick)
       self.passive_thrd_ticks_since_start = self.passive_thrd_ticks_since_start + 1
