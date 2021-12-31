@@ -29,18 +29,8 @@ class SimpleUtilities:
   def parse_command(self, command):
     valid_command = False
 
-    if("time" in command):
-      currentTime = time.strftime("%H%M", time.localtime())
-      # Separate the time with spaces + periods so the text synthesizer 
-      # reads it out digit by digit. 
-      separated_time_string = ""
-      for character in currentTime:
-        separated_time_string = separated_time_string + character + ", "
-      timeString = "It is currently " + separated_time_string + "."
-      self.speech_speak.speak_text(timeString)
-      valid_command = True
-
-    elif("timer" in command):
+    # Check timer first, then time (because timer has time in it)
+    if("timer" in command):
       valid_command = True
 
       duration, units = self.parse_duration_from_command(command)
@@ -62,6 +52,17 @@ class SimpleUtilities:
             first_event = first_event_time)
 
           self.speech_speak.speak_text("Timer set for " + str(duration) + " " + str(units) + ".")
+
+    elif("time" in command):
+      currentTime = time.strftime("%H%M", time.localtime())
+      # Separate the time with spaces + periods so the text synthesizer 
+      # reads it out digit by digit. 
+      separated_time_string = ""
+      for character in currentTime:
+        separated_time_string = separated_time_string + character + ", "
+      timeString = "It is currently " + separated_time_string + "."
+      self.speech_speak.speak_text(timeString)
+      valid_command = True
 
     elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()
