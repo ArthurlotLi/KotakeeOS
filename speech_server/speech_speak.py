@@ -143,10 +143,12 @@ class SpeechSpeak:
         try:
           if self.use_python3 is True:
             run(["python3", self.subprocess_location, output_text])
+            self.use_python3_attempted = True
             print("[DEBUG] Speak Text output text execution complete. ")
             return
           else:
             run(["python", self.subprocess_location, output_text])
+            self.use_python3_attempted = True
             print("[DEBUG] Speak Text output text execution complete. ")
             return
         except:
