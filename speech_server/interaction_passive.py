@@ -125,6 +125,10 @@ class InteractionPassive:
           # passing in the module object in the like-indexed module
           # list. 
           self.activate_module_passive(self.passive_module_list[i])
+          # Remove it from the list.
+          # TODO: Support recurrent events. 
+          del self.passive_module_list[i]
+          del self.passive_module_events[i]
 
       time.sleep(passive_thread_tick)
       self.passive_thrd_ticks_since_start = self.passive_thrd_ticks_since_start + 1
