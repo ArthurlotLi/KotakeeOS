@@ -188,7 +188,7 @@ class TTSThread(threading.Thread):
     self._is_alive.set()
     self.start()
 
-  def _init_engine(self, rate):
+  def _init_engine(self):
     engine = pyttsx3.init()
     engine.connect('finished-utterance', self._on_completed)
     engine.connect('started-word', self._on_cancel)
@@ -237,7 +237,7 @@ class TTSThread(threading.Thread):
     self.join()
 
   def run(self):
-    self.engine = engine = self._init_engine(self.rate)
+    self.engine = engine = self._init_engine()
     while self._is_alive.is_set():
       while self._say.wait(0.1):
         self._say.clear()
