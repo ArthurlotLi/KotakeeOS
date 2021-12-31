@@ -20,8 +20,6 @@ import pyaudio
 import time
 
 class SpeechSpeak:
-  engine = None
-
   # Primary thread that executes all output. Any requests that 
   # come in must come in via the speech_speak_events thread and
   # will be processed first-come-first-served.
@@ -41,8 +39,6 @@ class SpeechSpeak:
   timer_location = None
 
   def __init__(self, chime_location, startup_location, shutdown_location, timer_location):
-    self.engine = pyttsx3.init()
-
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
@@ -83,6 +79,10 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
+    # The engine is owned by the thread, not the class, eliminating 
+    # issues with pyttsx3 and multithreading. 
+    engine = pyttsx3.init()
+
     while self.speak_thrd_stop is False:
 
       # Clear the executed events once done. We don't just clear the
@@ -95,7 +95,7 @@ class SpeechSpeak:
       for i in range(0, len(self.speak_thrd_event_types)):
         event_type = self.speak_thrd_event_types[i]
         event_content = self.speak_thrd_event_contents[i]
-        self.handle_speak_event(event_type = event_type, event_content = event_content)
+        self.handle_speak_event(engine = engine, event_type = event_type, event_content = event_content)
         indices_to_drop.append(i)
 
       # Clear the queue once completed. Go backwards from the back
@@ -108,9 +108,9 @@ class SpeechSpeak:
 
   # Given an event type (string) and event_content (can be None),
   # execute the action. 
-  def handle_speak_event(self, event_type, event_content):
+  def handle_speak_event(self, engine, event_type, event_content):
     if event_type == "speak_text":
-      self.speak_text(event_content)
+      self.speak_text(engine, event_content)
     elif event_type == "execute_startup":
       self.execute_startup()
     elif event_type == "execute_shutdown":
@@ -124,11 +124,11 @@ class SpeechSpeak:
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
-  def speak_text(self, output_text):
+  def speak_text(self, engine, output_text):
     if(output_text is not None and output_text != ""):
       print("[DEBUG] Executing output text: '"+output_text+"'")
-      self.engine.say(output_text)
-      self.engine.runAndWait()
+      engine.say(output_text)
+      engine.runAndWait()
   
   def execute_startup(self):
     self.execute_sound(self.startup_location)
