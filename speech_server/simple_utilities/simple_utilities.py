@@ -43,8 +43,8 @@ class SimpleUtilities:
           # Timer module will add the TimerUtility passive module to the 
           # passive_thrd routine with a first_event time equivalent to the
           # specified time. 
-          current_time = time.time() # Seconds in UTC.
-          first_event_time = current_time + duration # Append seconds. 
+          current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
+          first_event_time = current_ticks + (float(duration)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
 
           # Create a new passive module given the path to this folder.
           self.interaction_passive.create_module_passive(
