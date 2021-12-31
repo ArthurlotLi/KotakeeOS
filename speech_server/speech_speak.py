@@ -134,7 +134,7 @@ class SpeechSpeak:
       self.tts_thread.say(output_text)
 
       # Block the thread until the text has completed. 
-      while self.tts_thread.engine._inLoop:
+      while self.tts_thread.speaking:
         time.sleep(0.1) 
       print("[DEBUG] Speak Text output text execution complete. ")
 
@@ -176,6 +176,8 @@ class SpeechSpeak:
 # Awesome source (Saved me a LOT more headaches):
 # https://stackoverflow.com/questions/58673116/pyttsx3-callbacks-not-triggering-when-using-threading
 class TTSThread(threading.Thread):
+  speaking = False
+
   def __init__(self):
     super().__init__()
     self._cancel = threading.Event()
@@ -196,6 +198,7 @@ class TTSThread(threading.Thread):
     return engine
   
   def say(self, text, stop=None):
+    self.speaking = True
     if self._is_alive.is_set():
       self._cancel.clear()
 
@@ -225,7 +228,9 @@ class TTSThread(threading.Thread):
     self.engine.endLoop()
 
   def _on_completed(self, name, completed):
+    print("DEBUGUGUEUGEGUE")
     if completed:
+      self.speaking = False
       self.engine.endLoop()
       self.on_finished_utterance(name, completed)
 
