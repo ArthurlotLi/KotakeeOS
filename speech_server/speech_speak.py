@@ -95,7 +95,7 @@ class SpeechSpeak:
       for i in range(0, len(self.speak_thrd_event_types)):
         event_type = self.speak_thrd_event_types[i]
         event_content = self.speak_thrd_event_contents[i]
-        self.handle_speak_event(engine = engine, event_type = event_type, event_content = event_content)
+        self.handle_speak_event(event_type = event_type, event_content = event_content, engine = engine)
         indices_to_drop.append(i)
 
       # Clear the queue once completed. Go backwards from the back
@@ -107,8 +107,9 @@ class SpeechSpeak:
       time.sleep(self.speak_thrd_tick)
 
   # Given an event type (string) and event_content (can be None),
-  # execute the action. 
-  def handle_speak_event(self, engine, event_type, event_content):
+  # execute the action. Also takes the engine from the thread
+  # instance. 
+  def handle_speak_event(self, event_type, event_content, engine):
     if event_type == "speak_text":
       self.speak_text(engine, event_content)
     elif event_type == "execute_startup":
@@ -127,6 +128,10 @@ class SpeechSpeak:
   def speak_text(self, engine, output_text):
     if(output_text is not None and output_text != ""):
       print("[DEBUG] Executing output text: '"+output_text+"'")
+      # Necessary when working with pyttsx in a separate thread from
+      # the main loop. 
+      if engine._inLoop:
+        engine.endLoop()
       engine.say(output_text)
       engine.runAndWait()
   
