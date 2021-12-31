@@ -13,21 +13,26 @@
 # other methods in this class should be called directly to avoid
 # threading issues with pyaudio and to handle race conditions properly.
 
-import pyttsx3
+from subprocess import run
 import threading
 import wave
 import pyaudio
 import time
 
 class SpeechSpeak:
+  # We use multiprocessing to output pyttsx3 text.
+  subprocess_location = "speech_speak_pyttsx3.py"
+
+  # Addressing the command line call to execute the subprocess.
+  # Try using python3 first, and if that fails, remember and use
+  # python instead.
+  use_python3 = True
+  use_python3_attempted = False
+
   # Primary thread that executes all output. Any requests that 
   # come in must come in via the speech_speak_events thread and
   # will be processed first-come-first-served.
   speak_thrd_instance = None
-
-  # Thread utilized for executing text output one after the
-  # other. 
-  tts_thread = None
 
   # Like-indexed lists that act as a joint queue for incoming
   # speak events. event_types provides the event type, while 
@@ -47,9 +52,6 @@ class SpeechSpeak:
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
-
-    # Initialize the thread that'll handle pyttsx3 in it's own vaccuum. 
-    self.tts_thread = Voice(event="completed")
 
     # Get the show on the road!
     self.initialize_speak_thrd()
@@ -86,8 +88,6 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
-    self.tts_thread.completed.set()
-
     while self.speak_thrd_stop is False:
 
       # Clear the executed events once done. We don't just clear the
@@ -111,9 +111,6 @@ class SpeechSpeak:
       
       time.sleep(self.speak_thrd_tick)
 
-    # All done. Terminate the child thread. 
-    self.tts_thread.terminate()
-
   # Given an event type (string) and event_content (can be None),
   # execute the action. 
   def handle_speak_event(self, event_type, event_content):
@@ -136,11 +133,26 @@ class SpeechSpeak:
     if(output_text is not None and output_text != ""):
       print("[DEBUG] Speak Text executing output text: '"+output_text+"'")
       
-      self.tts_thread.say(output_text)
+      # Try two times - meant to accomodate an initial attempt to use
+      # python3. 
+      num_attempts = 1
+      if self.use_python3_attempted is False:
+        num_attempts = 2
+      
+      for i in range(0,num_attempts):
+        try:
+          if self.use_python3 is True:
+            run(["python3", self.subprocess_location, output_text])
+          else:
+            run(["python", self.subprocess_location, output_text])
+        except:
+          if self.use_python3_attempted is False:
+            self.use_python3 = not self.use_python3
+            self.use_python3_attempted = True
+          else:
+            print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
+            return
 
-      # Block this thread until the text has completed. 
-      while self.tts_thread.completed.is_set() is False:
-        time.sleep(0.1) 
       print("[DEBUG] Speak Text output text execution complete. ")
 
   def execute_startup(self):
@@ -174,93 +186,3 @@ class SpeechSpeak:
 
     #close PyAudio  
     p.terminate()
-
-# Separate thread for executing pyttsx3 output. This stuff does
-# NOT play well with threads. 
-# 
-# Awesome source (Saved me a LOT more headaches):
-# https://stackoverflow.com/questions/58673116/pyttsx3-callbacks-not-triggering-when-using-threading
-class TTSThread(threading.Thread):
-  def __init__(self, event=None):
-    super().__init__()
-
-    self.completed = None
-
-    if event:
-      setattr(self, event, threading.Event())
-
-    self._cancel = threading.Event()
-    self.engine = None
-
-    self._say = threading.Event()
-    self._text_lock = threading.Lock()
-    self._text = []
-
-    self._is_alive = threading.Event()
-    self._is_alive.set()
-    self.start()
-
-  def _init_engine(self):
-    engine = pyttsx3.init()
-    engine.connect('finished-utterance', self._on_completed)
-    engine.connect('started-word', self._on_cancel)
-    return engine
-  
-  def say(self, text, stop=None):
-    if self._is_alive.is_set():
-      self._cancel.clear()
-
-      if isinstance(text, str):
-        text = [(text, stop)]
-
-      if isinstance(text, (list, tuple)):
-        for t in text:
-          if isinstance(t, str):
-            t = t, None
-
-          with self._text_lock:
-            self._text.append(t)
-
-          self._say.set()
-  
-  def cancel(self):
-    self._cancel.set()
-
-  def _on_cancel(self, name, location, length):
-    if self._cancel.is_set():
-      self.stop()
-
-  def stop(self):        
-    self.engine.stop()
-    time.sleep(0.5)
-    self.engine.endLoop()
-
-  def _on_completed(self, name, completed):
-    print("DEBUG1")
-    if completed:
-      self.engine.endLoop()
-      self.on_finished_utterance(name, completed)
-
-  def on_finished_utterance(self, name, completed):
-    #time.sleep(0.5)
-    self.completed.set()
-
-  def terminate(self):
-    self._is_alive.clear()
-    self._cancel.set()
-    self.join()
-
-  def run(self):
-    self.engine = engine = self._init_engine()
-    while self._is_alive.is_set():
-      while self._say.wait(0.1):
-        self._say.clear()
-
-        while not self._cancel.is_set() and len(self._text):
-          with self._text_lock:
-            engine.say(*self._text.pop(0))
-          engine.startLoop()
-
-class Voice(TTSThread):
-  def __init__(self,event=None):
-    super().__init__(event)
