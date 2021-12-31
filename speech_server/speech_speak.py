@@ -149,6 +149,7 @@ class SpeechSpeak:
   # A bit of a workaround since pyttsx3 doesn't play well with
   # blocking threads other than the main thread. 
   def speech_on_completed(self, name, completed):
+    print("DEBUG YEEEEEEEET")
     if completed:
       self.engine.endLoop()
   
