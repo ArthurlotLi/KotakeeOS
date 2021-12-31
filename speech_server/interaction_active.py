@@ -20,7 +20,7 @@ class InteractionActive:
   # Constants that may be configured.
   cancel_words = ["stop"] # stops query.
   stop_server_commands = ["goodnight", "good night", "freeze all motor functions", "turn yourself off", "shutdown", "deactivate"]
-  stop_server_prompt = "" # By default, don't say anything and just let the hotword chime indicate shutdown. 
+  stop_server_prompt = "Shutting down." # By default, don't say anything and just let the hotword chime indicate shutdown. 
   command_split_keywords = ["break", "brake"]
 
   speech_speak = None

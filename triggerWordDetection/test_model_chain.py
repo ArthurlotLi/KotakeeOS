@@ -8,10 +8,13 @@ from test_model import TestModel
  
 import os
 import multiprocessing
-import time
 import argparse
+import numpy as np
 
 class TestModelChain:
+  X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
+  Y_dev_location = "./XY_dev_kotakee/Y_dev_kotakee.npy"
+  use_gpu = False # Change to True if your test set is huge. 
 
   chain_test_results_location = "./chain_test_results"
   chain_test_results = {}
@@ -25,6 +28,21 @@ class TestModelChain:
     print("[INFO] Initializing Test Model Chain...")
     filename_uid = 0 # for sorting.
 
+    X_dev = None
+    Y_dev = None
+
+    # Load the dev datset once and pass to all workers.  
+    try:
+      print("[INFO] Loading dev dataset X file " + self.X_dev_location + "...")
+      X_dev = np.load(self.X_dev_location)
+      print("[INFO] Loading dev dataset Y file " + self.Y_dev_location + "...")
+      Y_dev = np.load(self.Y_dev_location)
+      print("[DEBUG] X_dev.shape is:", X_dev.shape)  
+      print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
+    except:
+      print("[WARN] Error loading X_dev and/or Y/dev.")
+      return -1
+
     for filename in os.listdir(self.test_model_location):
       if filename.endswith("h5"):
         try:
@@ -37,7 +55,7 @@ class TestModelChain:
           queue.put(ret_dict)
 
           print("[INFO] Executing new process...")
-          p = multiprocessing.Process(target=self.test_model_worker, args=(queue, self.test_model_location + "/" + filename))
+          p = multiprocessing.Process(target=self.test_model_worker, args=(queue, self.test_model_location + "/" + filename, X_dev, Y_dev))
           p.start()
           p.join()
           ret_dict_result = queue.get()
@@ -73,10 +91,11 @@ class TestModelChain:
   # Executed as a separate process so it can be purged as a
   # seperate process, allowing Tensorflow to clear out the
   # memory of the GPU and not freak out when we train another
-  # right after.
-  def test_model_worker(self, queue, model_path):
+  # right after. If the GPU is disabled, this still allows the 
+  # memory to be handled properly. 
+  def test_model_worker(self, queue, model_path, X_dev = None, Y_dev = None):
     test_model = TestModel()
-    acc = test_model.test_model(model_path)
+    acc = test_model.test_model(model_path = model_path, X_dev = X_dev, Y_dev = Y_dev, use_gpu = self.use_gpu)
     ret_dict = queue.get()
     ret_dict["acc"] = acc
     queue.put(ret_dict)

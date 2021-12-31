@@ -20,31 +20,20 @@
 # python3 trigger_word_detection.py -d 0 1 <- -d Specifies not to create a dataset and loads dataset with iter 1. 
 #
 
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
 import os
-from pydub import AudioSegment
-
 import argparse
-
 import numpy as np
-from pydub import AudioSegment
-import random
-import sys
-import io
 import os
-import glob
-import IPython
 from td_utils import * # The file we're using directly from the ref project.
 
 from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.models import Model, load_model, Sequential
-from tensorflow.keras.layers import Dense, Activation, Dropout, Input, Masking, TimeDistributed, LSTM, Conv1D
-from tensorflow.keras.layers import GRU, Bidirectional, BatchNormalization, Reshape
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Activation, Dropout, Input, TimeDistributed, Conv1D
+from tensorflow.keras.layers import GRU, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers import RMSprop
 
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 
 class TriggerWordDetection:
