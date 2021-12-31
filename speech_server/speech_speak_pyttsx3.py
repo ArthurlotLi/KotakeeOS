@@ -20,4 +20,4 @@ class SpeechSpeakPyttsx3:
     self.engine.runAndWait() # Blocks the thread until it completes.
 
 speech_speak_pyttsx3 = SpeechSpeakPyttsx3()
-speech_speak_pyttsx3.say(str(sys.argv[1]))
+speech_speak_pyttsx3.execute_text(str(sys.argv[1]))
