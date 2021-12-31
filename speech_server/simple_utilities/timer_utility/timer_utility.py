@@ -15,6 +15,7 @@ class TimerUtility:
   # by the passive interaction thread. 
   def activate_event(self):
     print("[INFO] Timer event triggered. Executing timer and text.")
-    self.speech_speak.execute_timer()
+    #self.speech_speak.execute_timer()
+    print(self.speech_speak)
     self.speech_speak.speak_text("Timer finished.")
     print("[DEBUG] Timer event complete.")
