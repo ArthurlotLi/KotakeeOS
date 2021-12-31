@@ -12,7 +12,7 @@ import pyttsx3
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
   subprocess_port = 36054 # Randomly selected. 
-  subprocess_key = "speech_speak"
+  subprocess_key = b"speech_speak"
 
   engine = None
   listener = None

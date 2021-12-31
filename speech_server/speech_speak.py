@@ -31,7 +31,7 @@ class SpeechSpeak:
   subprocess_location = "speech_speak_pyttsx3.py"
   subprocess_address = "localhost"
   subprocess_port = 36054 # Randomly selected. 
-  subprocess_key = "speech_speak"
+  subprocess_key = b"speech_speak"
 
   # Addressing the command line call to execute the subprocess.
   # Try using python3 first, and if that fails, remember and use
