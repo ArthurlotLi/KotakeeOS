@@ -100,11 +100,12 @@ class SpeechServer:
     return True
 
   # Only initialize components relevant to active interactions. Do
-  # not initialize passive_interaction or hotword_trigger_word.
+  # not initialize hotword_trigger_word.
   def initialize_components_query(self):
     if self.initialize_speech_speak() is False: return False
     if self.initialize_web_server_status() is False: return False
     if self.initialize_speech_listen() is False: return False
+    if self.initialize_passive_interaction() is False: return False
     if self.initialize_active_interaction() is False: return False
     return True
 
@@ -157,12 +158,13 @@ class SpeechServer:
     return True
 
   # Initialize Active Interaction handler. Requires Speak, Listen, 
-  # and Web Server Status components. 
+  # Web Server Status, and Passive Interaction components. 
   def initialize_active_interaction(self):
     self.interaction_active = InteractionActive(
       speech_speak = self.speech_speak, 
       speech_listen = self.speech_listen, 
-      web_server_status = self.web_server_status)
+      web_server_status = self.web_server_status,
+      passive_interaction = self.interaction_passive)
     if self.interaction_active is None:
       print("[ERROR] Failed to initialize Active Interaction handler.")
       return False
