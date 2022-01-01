@@ -11,6 +11,7 @@ from datetime import date
 class SimpleUtilities:
   # Paths relative to where interaction_active is. 
   timer_class_location = "./simple_utilities/timer_utility/timer_utility.TimerUtility"
+  timer_confirmation_threshold = 1800 # Amount of time required to ask for confirmation of new timer. 
 
   speech_speak = None
   speech_listen = None
@@ -36,10 +37,16 @@ class SimpleUtilities:
       duration, duration_seconds, units = self.parse_duration_from_command(command)
       if duration is not None and units is not None:
         # Level 2 subroutine for confirming the parsed information. 
-        user_prompt = "Confirm set timer for " + str(duration) + " " + str(units) + "?"
-        user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
+        # Only activated if threshold is exceeded (don't sweat it 
+        # for timers that are short.)
+        user_response_requied = False
+        user_response = None
+        if int(duration) > self.timer_confirmation_threshold:
+          user_response_requied = True
+          user_prompt = "Confirm set timer for " + str(duration) + " " + str(units) + "?"
+          user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
 
-        if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
+        if user_response_requied is False or (user_response is not None and any(x in user_response for x in self.user_confirmation_words)):
           # Timer module will add the TimerUtility passive module to the 
           # passive_thrd routine with a first_event time equivalent to the
           # specified time. 
