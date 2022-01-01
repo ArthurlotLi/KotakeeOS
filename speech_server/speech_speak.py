@@ -136,29 +136,33 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
-    while self.speak_thrd_stop is False:
+    try:
+      while self.speak_thrd_stop is False:
 
-      # Clear the executed events once done. We don't just clear the
-      # entire array at the end in the edge case that a new event 
-      # comes in during the for loop. (More likely if executing
-      # long strings of text.)
-      indices_to_drop = []
+        # Clear the executed events once done. We don't just clear the
+        # entire array at the end in the edge case that a new event 
+        # comes in during the for loop. (More likely if executing
+        # long strings of text.)
+        indices_to_drop = []
 
-      # Handle everything in the queue. 
-      for i in range(0, len(self.speak_thrd_event_types)):
-        event_type = self.speak_thrd_event_types[i]
-        event_content = self.speak_thrd_event_contents[i]
-        self.handle_speak_event(event_type = event_type, event_content = event_content)
-        indices_to_drop.append(i)
+        # Handle everything in the queue. 
+        for i in range(0, len(self.speak_thrd_event_types)):
+          event_type = self.speak_thrd_event_types[i]
+          event_content = self.speak_thrd_event_contents[i]
+          self.handle_speak_event(event_type = event_type, event_content = event_content)
+          indices_to_drop.append(i)
 
-      # Clear the queue once completed. Go backwards from the back
-      # of the to-delete list.
-      for i in range(len(indices_to_drop)-1, -1, -1):
-        del self.speak_thrd_event_types[indices_to_drop[i]]
-        del self.speak_thrd_event_contents[indices_to_drop[i]]
+        # Clear the queue once completed. Go backwards from the back
+        # of the to-delete list.
+        for i in range(len(indices_to_drop)-1, -1, -1):
+          del self.speak_thrd_event_types[indices_to_drop[i]]
+          del self.speak_thrd_event_contents[indices_to_drop[i]]
+        
+        time.sleep(self.speak_thrd_tick)
+    except Exception as e:
+      print("[ERROR] Speech Thread ran into an exception! Exception text:")
+      print(e)
       
-      time.sleep(self.speak_thrd_tick)
-    
     # Shutdown has occured. Stop the process.
     self.shutdown_process()
     print("[DEBUG] Speech Thread closed successfully. ")
