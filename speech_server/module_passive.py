@@ -60,6 +60,11 @@ class ModulePassive:
   speech_listen = None
   web_server_status = None
 
+  # Identifier that is assigned to a module on startup. May
+  # be specified for runtime modules. Otherwise, if not
+  # specified, will be the class name. 
+  id = None
+
   # Expects json from module_passive.json in the subject directory.
   # If the json is malformatted, fails gracefully and keeps 
   # valid flag as false so the corrupted module is not used. 
@@ -78,7 +83,7 @@ class ModulePassive:
   # In this case, it is also possible to provide the module with
   # a dictionary additional_data. This is useful for runtime 
   # generated passive modules. 
-  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, first_event = None, additional_data = None):
+  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, first_event = None, additional_data = None, id=None):
     module_json = None
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
@@ -96,6 +101,11 @@ class ModulePassive:
     except:
       print("[ERROR] module_passive was provided an invalid class string: '" + str(self.class_location) + "'.")
       return
+
+    # Assign identifier if it was passed to us. Otherwise it's just
+    # the class name. 
+    if id is None: self.id = self.class_name
+    else: self.id = id
 
     # Attempt to load the class. 
     self.module_class = self.load_class(self.module_location, self.class_name)
