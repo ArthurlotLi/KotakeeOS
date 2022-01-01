@@ -53,8 +53,15 @@ class SimpleUtilities:
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="There are currently no active timers.")
       else:
         # List all timers and ask if they want to clear all timers. 
-        timer_list_prompt = "There are a total of " + str(len(self.timer_ids)) + " active timers. Their durations are: "+ timer_list_prompt + ". Would you like to clear all timers?"      
+        # Singular vs plural.
+        num_timers = len(self.timer_ids)
+        timer_list_prompt = timer_list_prompt + ". Would you like to clear all timers?"  
+        if num_timers == 1:
+          timer_list_prompt = "There a single active timer. " + timer_list_prompt + "It's duration is: "
+        else:  
+          timer_list_prompt = "There are " + str(num_timers) + " active timers. " + timer_list_prompt + "Their durations are: "
         user_response = self.speech_listen.listen_response(prompt=timer_list_prompt, execute_chime = False)
+        
         if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
           # Got confirmation. Delete all timers. 
           for timer_id in self.timer_ids:
