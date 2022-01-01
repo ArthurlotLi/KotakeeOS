@@ -20,7 +20,7 @@
 # interactions with the subprocess is preferred. 
 
 from subprocess import Popen
-from multiprocessing.connection import Client
+from multiprocessing.connection import Client, PIPE
 import threading
 import wave
 import pyaudio
@@ -30,7 +30,7 @@ class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
   subprocess_location = "speech_speak_pyttsx3.py"
   subprocess_address = "localhost"
-  subprocess_port = 24518 # Randomly selected. 
+  subprocess_port = 0 # Randomly selected. 
   subprocess_key = b"speech_speak"
   subprocess_instance = None
   subprocess_shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
@@ -73,6 +73,7 @@ class SpeechSpeak:
 
   # Initializes the subprocess.
   def initialize_subprocess(self):
+    successful_initialization = False
     # Try two times - meant to accomodate an initial attempt to use
     # python3. Use subprocess Popen as we don't want to block for 
     # a process we want to keep running. We'll interact with it
@@ -80,18 +81,34 @@ class SpeechSpeak:
     for i in range(0,2):
       try:
         if self.use_python3 is True:
-          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""])
-          print("[DEBUG] Speak Text subprocess spawned successfully.")
-          return True
+          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE)
         else:
-          self.subprocess_instance = Popen(["python", self.subprocess_location, ""])
-          print("[DEBUG] Speak Text subprocess spawned successfully.")
-          return True
+          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE)
+        successful_initialization = True
       except:
-          self.use_python3 = not self.use_python3
+        self.use_python3 = not self.use_python3
 
-    print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
-    return False
+    if successful_initialization is False:
+      print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
+    else:
+      print("[DEBUG] Speak Text subprocess spawned successfully.")
+      self.wait_for_subprocess_port()
+    return successful_initialization
+
+  # Read the stdout of the subprocess until we get a complete port. 
+  # output should be terminated by / character. Ex) 42312/
+  def wait_for_subprocess_port(self):
+    print("[DEBUG] Waiting for subprocess port number...")
+    complete_output = ""
+    while self.subprocess_port is 0:
+      output = self.subprocess_instance.stdout.readline()
+      if output:
+        complete_output = complete_output + output
+        if "/" in complete_output:
+          print("[DEBUG] Successfully recieved subprocess port number: " + port_string)
+          port_string = complete_output.replace("/", "")
+          self.subprocess_port = int(port_string)
+
   
   def shutdown_process(self):
     print("[DEBUG] Speak Text shutting down existing process.")

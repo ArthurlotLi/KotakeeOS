@@ -15,7 +15,7 @@ import time
 
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
-  subprocess_port = 24518 # Randomly selected. 
+  subprocess_port = 0 # Selected by OS
   subprocess_key = b"speech_speak"
   
   shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
@@ -30,15 +30,17 @@ class SpeechSpeakPyttsx3:
 
     # Maximum attempts to start the process by making any clones 
     # shut down. 
-    for i in range (0, 3):
-      try:
-        self.listener = Listener(address, authkey=self.subprocess_key)
-      except Exception as e:
-        # If an exception occurs, a clone process is lingering. Attempt
-        # to send it a message to shutdown. 
-        print("[WARN] Exception occured when attempting to start Speech Speak subprocess. Exception:")
-        print(e)
-        self.shutdown_clones(address) 
+    #for i in range (0, 3):
+    try:
+      self.listener = Listener(address, authkey=self.subprocess_key)
+      self.subprocess_port = self.listener.address[1]
+      print(str(self.subprocess_port) + "/")
+    except Exception as e:
+      # If an exception occurs, a clone process is lingering. Attempt
+      # to send it a message to shutdown. 
+      print("[WARN] Exception occured when attempting to start Speech Speak subprocess. Exception:")
+      print(e)
+      #self.shutdown_clones(address) 
 
   # Attempts to shutdown any lingering processes caused by a botched
   # shutdown (which should ideally never happen)
@@ -76,8 +78,6 @@ class SpeechSpeakPyttsx3:
 
 # Execution code - listen indefinitely for connections and 
 # execute incoming text. 
-print("[DEBUG] Speech Speak subprocess initialized and running.")
-
 speech_speak_pyttsx3 = SpeechSpeakPyttsx3()
 while speech_speak_pyttsx3.stop_process is False:
   speech_speak_pyttsx3.listen_for_connection()
