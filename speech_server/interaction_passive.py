@@ -116,7 +116,7 @@ class InteractionPassive:
   def get_module_by_id(self, id):
     for i in range(0, len(self.passive_module_events)):
       if id == self.passive_module_ids[i]:
-        return self.passive_module_events[i]
+        return self.passive_module_list[i]
     return None 
 
   # Given an id, clears an event (if it hasn't been executed yet)
@@ -124,7 +124,7 @@ class InteractionPassive:
   def clear_module_by_id(self, id):
     for i in range(0, len(self.passive_module_events)):
       if id == self.passive_module_ids[i]:
-        module_class = self.passive_module_events[i]
+        module_class = self.passive_module_list[i]
         del self.passive_module_list[i]
         del self.passive_module_events[i]
         del self.passive_module_ids[i]
