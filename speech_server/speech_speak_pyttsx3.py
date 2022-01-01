@@ -47,35 +47,8 @@ class SpeechSpeakPyttsx3:
     print("[DEBUG] Speech Speak Subprocess initializing with address: ")
     print(address)
 
-    # Maximum attempts to start the process by making any clones 
-    # shut down. 
-    #for i in range (0, 3):
-    try:
-      self.listener = Listener(address, authkey=self.subprocess_key)
-      print("[DEBUG] Speech Speak Subprocess Listener successfully created.")
-    except Exception as e:
-      # If an exception occurs, a clone process is lingering. Attempt
-      # to send it a message to shutdown. 
-      print("[WARN] Exception occured when attempting to start Speech Speak subprocess. Exception:")
-      print(e)
-      #self.shutdown_clones(address) 
-
-  # Attempts to shutdown any lingering processes caused by a botched
-  # shutdown (which should ideally never happen)
-  def shutdown_clones(self, address):
-    print("[DEBUG] Attempting to connect to existing process...")
-    try:
-      connection = Client(address, authkey=self.subprocess_key)
-      connection.send(self.shutdown_code)
-      connection.close()
-      time.sleep(1) # Give them time to recieve the message and shutdown. 
-      print("[INFO] Existing clone purge request sent successfully.")
-      return True
-    except Exception as e:
-      print("[ERROR] Unable to reach any clones occupying the stated port. Ensure the port is empty on the system. Exception:")
-      print(e)
-    
-    return False
+    self.listener = Listener(address, authkey=self.subprocess_key)
+    print("[DEBUG] Speech Speak Subprocess Listener successfully created.")
 
   def listen_for_connection(self):
     connection = self.listener.accept()

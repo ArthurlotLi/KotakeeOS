@@ -46,11 +46,13 @@ class SimpleUtilities:
           current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
           first_event_time = current_ticks + (float(duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
           print("[DEBUG] Setting timer for " + str(duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+          timer_additional_data = { "timer_duration" : duration, "timer_seconds":duration_seconds, "timer_units": units }
  
           # Create a new passive module given the path to this folder.
           self.interaction_passive.create_module_passive(
             class_location = self.timer_class_location,
-            first_event = first_event_time)
+            first_event = first_event_time,
+            additional_data=timer_additional_data)
 
           self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Timer set for " + str(duration) + " " + str(units) + ".")
 
