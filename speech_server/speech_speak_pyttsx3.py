@@ -13,6 +13,7 @@ from multiprocessing.connection import Listener, Client
 import pyttsx3
 import time
 
+import sys
 import socketserver
 
 class SpeechSpeakPyttsx3:
@@ -36,7 +37,13 @@ class SpeechSpeakPyttsx3:
       self.subprocess_port = s.server_address[1]
 
     address = (self.subprocess_address, self.subprocess_port)
-    print("[DEBUG] Initializing Speech Speak Subprocess with address: ")
+
+    # Output to the pipe that the main process is listening through.
+    print(str(self.subprocess_port) + "/")
+
+    # Now we can output business as usual. 
+    sys.stdout = sys.__stdout__
+    print("[DEBUG] Speech Speak Subprocess initializing with address: ")
     print(address)
 
     # Maximum attempts to start the process by making any clones 
@@ -44,8 +51,7 @@ class SpeechSpeakPyttsx3:
     #for i in range (0, 3):
     try:
       self.listener = Listener(address, authkey=self.subprocess_key)
-      self.subprocess_port = self.listener.address[1]
-      print(str(self.subprocess_port) + "/")
+      print("[DEBUG] Speech Speak Subprocess Listener successfully created.")
     except Exception as e:
       # If an exception occurs, a clone process is lingering. Attempt
       # to send it a message to shutdown. 
