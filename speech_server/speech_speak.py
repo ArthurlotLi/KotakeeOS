@@ -130,8 +130,11 @@ class SpeechSpeak:
     self.speak_thrd_event_types.append(event_type)
     self.speak_thrd_event_contents.append(event_content)
 
+  # Shuts down both the thread and the process. Blocking behavior
+  # ensures that the process is fully shut down before we close. 
   def shutdown_speak_thrd(self):
     self.speak_thrd_stop = True
+    self.shutdown_process()
 
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
@@ -164,7 +167,6 @@ class SpeechSpeak:
       print(e)
       
     # Shutdown has occured. Stop the process.
-    self.shutdown_process()
     print("[DEBUG] Speech Thread closed successfully. ")
 
   # Given an event type (string) and event_content (can be None),
