@@ -19,9 +19,8 @@
 # significant overhead). In this respect, the overhead for socket
 # interactions with the subprocess is preferred. 
 
-from subprocess import Popen
+from subprocess import Popen, PIPE
 from multiprocessing.connection import Client
-from multiprocessing import Pipe
 import threading
 import wave
 import pyaudio
@@ -82,9 +81,9 @@ class SpeechSpeak:
     for i in range(0,2):
       try:
         if self.use_python3 is True:
-          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=Pipe)
+          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE)
         else:
-          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=Pipe)
+          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE)
         successful_initialization = True
       except:
         self.use_python3 = not self.use_python3
