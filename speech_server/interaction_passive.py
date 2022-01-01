@@ -122,7 +122,7 @@ class InteractionPassive:
   # Given an id, clears an event (if it hasn't been executed yet)
   # from the queue. Returns status of deletion (if it was found)
   def clear_module_by_id(self, id):
-    for i in range(0, len(self.passive_module_events)):
+    for i in range(len(self.passive_module_events)-1,-1,-1):
       if id == self.passive_module_ids[i]:
         module_class = self.passive_module_list[i]
         del self.passive_module_list[i]
