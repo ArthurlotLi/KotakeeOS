@@ -15,7 +15,7 @@ import time
 
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
-  subprocess_port = 45016 # Randomly selected. 
+  subprocess_port = 45015 # Randomly selected. 
   subprocess_key = b"speech_speak"
   
   shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
@@ -42,6 +42,7 @@ class SpeechSpeakPyttsx3:
   # Attempts to shutdown any lingering processes caused by a botched
   # shutdown (which should ideally never happen)
   def shutdown_clones(self, address):
+    print("[DEBUG] Attempting to connect to existing process...")
     try:
       connection = Client(address, authkey=self.subprocess_key)
       connection.send(self.shutdown_code)

@@ -30,7 +30,7 @@ class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
   subprocess_location = "speech_speak_pyttsx3.py"
   subprocess_address = "localhost"
-  subprocess_port = 45016 # Randomly selected. 
+  subprocess_port = 45015 # Randomly selected. 
   subprocess_key = b"speech_speak"
   subprocess_instance = None
   subprocess_shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
