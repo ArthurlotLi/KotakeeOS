@@ -69,7 +69,8 @@ class SpeechServer:
     
     # Initialization succeeded. Execute runtime functions. 
     self.hotword_trigger_word.listen_hotword()
-    print("[INFO] Exiting KotakeeOS Speech Server. Goodnight.")
+    self.shutdown_server()
+    print("[INFO] KotakeeOS Speech Server Shutdown. Goodnight.\n")
 
   # Handle the case in which the Speech Server is only handling a
   # single active query from a user (likely by button press on the 
@@ -82,7 +83,12 @@ class SpeechServer:
     
     # Initialization succeeded. Execute runtime functions. 
     self.interaction_active.listen_for_command()
-    print("[INFO] Exiting KotakeeOS Speech Server.")
+    self.shutdown_server()
+    print("[INFO] KotakeeOS Speech Server Shutdown.")
+
+  def shutdown_server(self):
+    if self.speech_speak is not None: 
+      self.speech_speak.shutdown_speak_thrd()
 
   #
   # Initialization logic

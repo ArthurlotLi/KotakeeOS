@@ -30,9 +30,10 @@ class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
   subprocess_location = "speech_speak_pyttsx3.py"
   subprocess_address = "localhost"
-  subprocess_port = 36054 # Randomly selected. 
+  subprocess_port = 45016 # Randomly selected. 
   subprocess_key = b"speech_speak"
   subprocess_instance = None
+  subprocess_shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
 
   # Addressing the command line call to execute the subprocess.
   # Try using python3 first, and if that fails, remember and use
@@ -91,6 +92,14 @@ class SpeechSpeak:
 
     print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
     return False
+  
+  def shutdown_process(self):
+    print("[DEBUG] Speak Text shutting down existing process.")
+    # Socket interaction using multiprocessing library. 
+    address = (self.subprocess_address, self.subprocess_port)
+    connection = Client(address, authkey=self.subprocess_key)
+    connection.send(self.subprocess_shutdown_code)
+    connection.close()
 
   # Kicks off the thread. 
   def initialize_speak_thrd(self):
@@ -121,6 +130,9 @@ class SpeechSpeak:
     self.speak_thrd_event_types.append(event_type)
     self.speak_thrd_event_contents.append(event_content)
 
+  def shutdown_speak_thrd(self):
+    self.speak_thrd_stop = True
+
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
@@ -146,6 +158,10 @@ class SpeechSpeak:
         del self.speak_thrd_event_contents[indices_to_drop[i]]
       
       time.sleep(self.speak_thrd_tick)
+    
+    # Shutdown has occured. Stop the process.
+    self.shutdown_process()
+    print("[DEBUG] Speech Thread closed successfully. ")
 
   # Given an event type (string) and event_content (can be None),
   # execute the action. 

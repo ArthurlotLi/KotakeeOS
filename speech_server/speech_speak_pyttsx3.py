@@ -14,8 +14,11 @@ import pyttsx3
 
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
-  subprocess_port = 36054 # Randomly selected. 
+  subprocess_port = 45016 # Randomly selected. 
   subprocess_key = b"speech_speak"
+  
+  shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
+  stop_process = False
 
   engine = None
   listener = None
@@ -30,6 +33,9 @@ class SpeechSpeakPyttsx3:
     # Connection accepted. Execute the input text before replying
     # with a finished message. 
     input_text = connection.recv()
+    if input_text == self.shutdown_code:
+      self.stop_process = True
+      return
     self.execute_text(input_text)
     connection.send("200") # Contents of the message don't matter. 
     connection.close()
@@ -41,6 +47,10 @@ class SpeechSpeakPyttsx3:
 
 # Execution code - listen indefinitely for connections and 
 # execute incoming text. 
+print("[DEBUG] Speech Speak subprocess initialized and running.")
+
 speech_speak_pyttsx3 = SpeechSpeakPyttsx3()
-while True:
+while speech_speak_pyttsx3.stop_process is False:
   speech_speak_pyttsx3.listen_for_connection()
+
+print("[DEBUG] Speech Speak subprocess shut down successfully.")
