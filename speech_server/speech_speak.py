@@ -100,6 +100,8 @@ class SpeechSpeak:
   def wait_for_subprocess_port(self):
     print("[DEBUG] Waiting for subprocess port number...")
     complete_output = ""
+    while True:
+      pass
     while self.subprocess_port == 0:
       output = self.subprocess_instance.stdout.readline()
       if output:

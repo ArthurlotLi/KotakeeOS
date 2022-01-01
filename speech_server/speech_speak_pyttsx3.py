@@ -36,6 +36,8 @@ class SpeechSpeakPyttsx3:
       self.subprocess_port = s.server_address[1]
 
     address = (self.subprocess_address, self.subprocess_port)
+    print("[DEBUG] Initializing Speech Speak Subprocess with address: ")
+    print(address)
 
     # Maximum attempts to start the process by making any clones 
     # shut down. 
