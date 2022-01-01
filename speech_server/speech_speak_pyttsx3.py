@@ -44,9 +44,9 @@ class SpeechSpeakPyttsx3:
   def shutdown_clones(self, address):
     try:
       connection = Client(address, authkey=self.subprocess_key)
-      connection.send(self.subprocess_shutdown_code)
+      connection.send(self.shutdown_code)
       connection.close()
-      time.sleep(0.5) # Give them time to recieve the message and shutdown. 
+      time.sleep(1) # Give them time to recieve the message and shutdown. 
       print("[INFO] Existing clone purge request sent successfully.")
       return True
     except Exception as e:
