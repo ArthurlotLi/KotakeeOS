@@ -155,7 +155,7 @@ class SimpleUtilities:
         if duration > 1:
           units = "hours"
         else:
-          units = "minute"
+          units = "hour"
         duration_seconds = duration * 3600
       else:
         # Otherwise we assume the units are seconds. 
