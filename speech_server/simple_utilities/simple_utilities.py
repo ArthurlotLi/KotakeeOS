@@ -34,7 +34,10 @@ class SimpleUtilities:
     # Check timer first, then time (because timer has time in it).
     # List timers command lists all timers and then asks the user
     # if they want to clear all timers. 
-    if("list timers" in command):
+    if("list timers" in command or "list all timers" in command 
+    or "all timers" in command or "delete timers" in command 
+    or "clear timers" in command or "clear all timers" in command 
+    or "delete all timers" in command):
       timer_list_prompt = ""
       # List all active timers. Ask the user if they want to delete
       # any afterwards. 
@@ -44,7 +47,7 @@ class SimpleUtilities:
         if timer_module is None:
           del self.timer_ids[i]
         else:
-          timer_list_prompt = timer_list_prompt + " " + timer_module.additional_data["timer_duration"] + " " + timer_module.additional_data["timer_units"] + ", "
+          timer_list_prompt = timer_list_prompt + " " + str(timer_module.additional_data["timer_duration"]) + " " + str(timer_module.additional_data["timer_units"]) + ", "
       
       if timer_list_prompt == "":
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="There are currently no active timers.")
