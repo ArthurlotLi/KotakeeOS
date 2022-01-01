@@ -41,7 +41,7 @@ class SimpleUtilities:
         # for timers that are short.)
         user_response_requied = False
         user_response = None
-        if int(duration) > self.timer_confirmation_threshold:
+        if int(duration_seconds) > self.timer_confirmation_threshold:
           user_response_requied = True
           user_prompt = "Confirm set timer for " + str(duration) + " " + str(units) + "?"
           user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
