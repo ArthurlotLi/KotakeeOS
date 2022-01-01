@@ -36,7 +36,7 @@ class SimpleUtilities:
       duration, duration_seconds, units = self.parse_duration_from_command(command)
       if duration is not None and units is not None:
         # Level 2 subroutine for confirming the parsed information. 
-        user_prompt = "Should I set a timer for " + str(duration) + " " + str(units) + "?"
+        user_prompt = "Confirm set timer for " + str(duration) + " " + str(units) + "?"
         user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
 
         if user_response is not None and any(x in user_response for x in self.user_confirmation_words):

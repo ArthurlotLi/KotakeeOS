@@ -74,7 +74,11 @@ class ModulePassive:
   #
   # Finally, expects first_event in the event (haha) that the module
   # is being defined programatically with a variable first event time. 
-  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, first_event = None):
+  #
+  # In this case, it is also possible to provide the module with
+  # a dictionary additional_data. This is useful for runtime 
+  # generated passive modules. 
+  def __init__(self, class_location, speech_speak, speech_listen, web_server_status, first_event = None, additional_data = None):
     module_json = None
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
@@ -131,6 +135,10 @@ class ModulePassive:
     if self.init_on_startup is True:
       if self.initialize_class() is False:
         return # Failure. Return. 
+
+    # Append additional info if we have it. 
+    if additional_data is not None:
+      self.module_class_instance.provide_additional_data(additional_data)
 
     self.valid_module = True
     print("[DEBUG] Successfully loaded class " + str(self.class_name) + " from '" + str(self.class_location) + "'.")

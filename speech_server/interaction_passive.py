@@ -93,13 +93,14 @@ class InteractionPassive:
   # 
   # If no first_event is specified, expects the
   # first_event to be specified in the moduele_passive.json as well. 
-  def create_module_passive(self, class_location, first_event=None):
+  def create_module_passive(self, class_location, first_event=None, additional_data=None):
     new_module = ModulePassive(
       class_location=class_location, 
       speech_speak=self.speech_speak, 
       speech_listen=self.speech_listen, 
       web_server_status=self.web_server_status,
-      first_event = first_event)
+      first_event = first_event,
+      additional_data = additional_data)
     if new_module.valid_module is True and new_module.first_event is not None:
       self.passive_module_list.append(new_module)
       self.passive_module_events.append(new_module.first_event)
