@@ -108,8 +108,8 @@ class SpeechSpeak:
         print("Read output: " + output)
         complete_output = complete_output + output
         if "/" in complete_output:
-          print("[DEBUG] Successfully recieved subprocess port number: " + port_string)
           port_string = complete_output.replace("/", "")
+          print("[DEBUG] Successfully recieved subprocess port number: " + port_string)
           self.subprocess_port = int(port_string)
           read_full_output = True
 
