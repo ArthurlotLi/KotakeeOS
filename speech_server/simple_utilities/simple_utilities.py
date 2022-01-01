@@ -146,14 +146,23 @@ class SimpleUtilities:
       # Ex) 50 minutes, 120 minutes, 1 hour, etc. We don't
       # yet support multiple, Ex) 1 minute, 20 seconds. 
       if "minutes" in command or "minute" in command:
-        units = "minutes"
+        if duration > 1: 
+          units = "minutes"
+        else:
+          units = "minute"
         duration_seconds = duration * 60
       elif "hours" in command or "hour" in command:
-        units = "hours"
+        if duration > 1:
+          units = "hours"
+        else:
+          units = "minute"
         duration_seconds = duration * 3600
       else:
         # Otherwise we assume the units are seconds. 
         duration_seconds = duration
+        if duration == 1:
+          units = "second" # Not that I'd know why a 1 second timer would be useful. 
+
 
       return duration, duration_seconds, units
 
