@@ -54,6 +54,7 @@ class ModulePassive:
   # allowing us to interface with interaction_passive from here.
   module_class = None
   module_class_instance = None
+  additional_data = None
 
   # Static components.
   speech_speak = None
@@ -89,6 +90,7 @@ class ModulePassive:
     self.speech_listen = speech_listen
     self.web_server_status = web_server_status
 
+    self.additional_data = additional_data
     self.class_location = class_location
 
     # Convert into a file path. Drop the class in the path to 
