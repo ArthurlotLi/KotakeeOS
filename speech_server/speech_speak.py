@@ -102,8 +102,7 @@ class SpeechSpeak:
     read_full_output = False
     complete_output = ""
     while read_full_output is False:
-      output = self.subprocess_instance.stdout.readline()
-      if output:
+      for output in iter(self.subprocess_instance.stdout.readline, ''): 
         print("Read output: " + output)
         complete_output = complete_output + output
         if "/" in complete_output:
