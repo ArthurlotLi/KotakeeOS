@@ -81,9 +81,9 @@ class SpeechSpeak:
     for i in range(0,2):
       try:
         if self.use_python3 is True:
-          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""])#, stdout=PIPE)
+          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE)
         else:
-          self.subprocess_instance = Popen(["python", self.subprocess_location, ""])#, stdout=PIPE)
+          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE)
         successful_initialization = True
       except:
         self.use_python3 = not self.use_python3
@@ -100,10 +100,8 @@ class SpeechSpeak:
   def wait_for_subprocess_port(self):
     print("[DEBUG] Waiting for subprocess port number...")
     complete_output = ""
-    while True:
-      pass
     while self.subprocess_port == 0:
-      output = self.subprocess_instance.stdout.readline()
+      output = self.subprocess_instance.stdout.read()
       if output:
         print("Read output: " + output)
         complete_output = complete_output + output
