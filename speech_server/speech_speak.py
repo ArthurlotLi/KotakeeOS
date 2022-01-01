@@ -79,14 +79,15 @@ class SpeechSpeak:
     # a process we want to keep running. We'll interact with it
     # using multiprocessing's wrapped sockets. 
     for i in range(0,2):
-      try:
-        if self.use_python3 is True:
-          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
-        else:
-          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
-        successful_initialization = True
-      except:
-        self.use_python3 = not self.use_python3
+      if successful_initialization is False:
+        try:
+          if self.use_python3 is True:
+            self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
+          else:
+            self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
+          successful_initialization = True
+        except:
+          self.use_python3 = not self.use_python3
 
     if successful_initialization is False:
       print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
@@ -102,7 +103,8 @@ class SpeechSpeak:
     read_full_output = False
     complete_output = ""
     while read_full_output is False:
-      for output in iter(self.subprocess_instance.stdout.readline, ''): 
+      output = self.subprocess_instance.stdout.readline()
+      if output:
         print("Read output: " + output)
         complete_output = complete_output + output
         if "/" in complete_output:
