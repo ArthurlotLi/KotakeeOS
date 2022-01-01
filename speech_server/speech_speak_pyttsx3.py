@@ -15,7 +15,7 @@ import time
 
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
-  subprocess_port = 35715 # Randomly selected. 
+  subprocess_port = 24518 # Randomly selected. 
   subprocess_key = b"speech_speak"
   
   shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
