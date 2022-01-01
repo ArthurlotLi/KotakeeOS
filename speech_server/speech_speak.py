@@ -81,9 +81,9 @@ class SpeechSpeak:
     for i in range(0,2):
       try:
         if self.use_python3 is True:
-          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE)
+          self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
         else:
-          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE)
+          self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
         successful_initialization = True
       except:
         self.use_python3 = not self.use_python3
@@ -99,9 +99,10 @@ class SpeechSpeak:
   # output should be terminated by / character. Ex) 42312/
   def wait_for_subprocess_port(self):
     print("[DEBUG] Waiting for subprocess port number...")
+    read_full_output = False
     complete_output = ""
-    while self.subprocess_port == 0:
-      output = self.subprocess_instance.stdout.read()
+    while read_full_output is False:
+      output = self.subprocess_instance.stdout.readline()
       if output:
         print("Read output: " + output)
         complete_output = complete_output + output
@@ -109,6 +110,7 @@ class SpeechSpeak:
           print("[DEBUG] Successfully recieved subprocess port number: " + port_string)
           port_string = complete_output.replace("/", "")
           self.subprocess_port = int(port_string)
+          read_full_output = True
 
   
   def shutdown_process(self):

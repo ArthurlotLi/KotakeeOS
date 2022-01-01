@@ -39,7 +39,7 @@ class SpeechSpeakPyttsx3:
     address = (self.subprocess_address, self.subprocess_port)
 
     # Output to the pipe that the main process is listening through.
-    print(str(self.subprocess_port) + "/")
+    print(str(self.subprocess_port) + "/\n\0")
 
     # Now we can output business as usual. 
     sys.stdout = sys.__stdout__
