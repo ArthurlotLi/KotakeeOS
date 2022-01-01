@@ -13,6 +13,8 @@ from multiprocessing.connection import Listener, Client
 import pyttsx3
 import time
 
+import socketserver
+
 class SpeechSpeakPyttsx3:
   subprocess_address = "localhost"
   subprocess_port = 0 # Selected by OS
@@ -26,6 +28,13 @@ class SpeechSpeakPyttsx3:
 
   def __init__(self): 
     self.engine = pyttsx3.init()
+
+    # Find a open port (unfortunately multiprocessing.connection does
+    # not do this for us.) Source:
+    # https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
+    with socketserver.TCPServer((self.subprocess_address, 0), None) as s:
+      self.subprocess_port = s.server_address[1]
+
     address = (self.subprocess_address, self.subprocess_port)
 
     # Maximum attempts to start the process by making any clones 
