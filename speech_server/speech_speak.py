@@ -105,12 +105,11 @@ class SpeechSpeak:
     while read_full_output is False:
       output = self.subprocess_instance.stdout.readline()
       if output:
-        print("Read output: " + output)
         complete_output = complete_output + output
         if "/" in complete_output:
-          port_string = complete_output.replace("/", "")
-          print("[DEBUG] Successfully recieved subprocess port number: " + port_string)
-          self.subprocess_port = int(port_string)
+          port_number = int(complete_output.replace("/", ""))
+          print("[DEBUG] Successfully recieved subprocess port number: " + str(port_number))
+          self.subprocess_port = port_number
           read_full_output = True
 
   
