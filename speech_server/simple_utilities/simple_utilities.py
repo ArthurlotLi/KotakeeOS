@@ -145,10 +145,10 @@ class SimpleUtilities:
       # TODO: For now we only support a single denomination
       # Ex) 50 minutes, 120 minutes, 1 hour, etc. We don't
       # yet support multiple, Ex) 1 minute, 20 seconds. 
-      if "minutes" in command:
+      if "minutes" in command or "minute" in command:
         units = "minutes"
         duration_seconds = duration * 60
-      elif "hours" in command:
+      elif "hours" in command or "hour" in command:
         units = "hours"
         duration_seconds = duration * 3600
       else:
