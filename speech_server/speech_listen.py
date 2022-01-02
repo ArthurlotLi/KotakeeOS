@@ -106,10 +106,6 @@ class SpeechListen:
     with sr.Microphone() as source2:
       self.r2.adjust_for_ambient_noise(source2, duration=ambient_noise_duration)
 
-      # Indicate that you are currently active. 
-      if indicate_led is True:
-        self.web_server_status.query_speech_server_module_toggle(self.led_state_on, self.led_room_id, self.led_action_id)
-
       # Try for as many attempts as allowed. 
       for i in range(max_response_attempts): 
         try:
@@ -118,6 +114,10 @@ class SpeechListen:
             self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=prompt)
           if execute_chime is True:
             self.speech_speak.background_speak_event(event_type="execute_chime")
+
+          # Indicate that you are currently active. 
+          if indicate_led is True:
+            self.web_server_status.query_speech_server_module_toggle(self.led_state_on, self.led_room_id, self.led_action_id)
 
           use_google = self.web_server_status.online_status is True
 
@@ -145,7 +145,7 @@ class SpeechListen:
         except sr.WaitTimeoutError:
           print("[WARNING] Speech Listen limeout occured.")
 
-      # Indicate that you are currently active. 
+      # Indicate that you are currently inactive. 
       if indicate_led is True:
         self.web_server_status.query_speech_server_module_toggle(self.led_state_off, self.led_room_id, self.led_action_id)
   
