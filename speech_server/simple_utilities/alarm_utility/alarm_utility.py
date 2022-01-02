@@ -111,6 +111,8 @@ class AlarmUtility:
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=snooze_message)
         self.snooze_remaining = self.snooze_remaining - 1
         snooze_requested = True
+      else:
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Alarm finished.")
     else:
       # If no snoozes remaining, simply notify the user. 
       self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=alarm_message)
