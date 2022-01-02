@@ -61,14 +61,14 @@ class AlarmUtility:
   # If the user snoozes, this event will be re-registered and
   # will trigger again in the specified duration.
   def activate_event(self):
-    print("[INFO] Alarm event triggered. Executing alarm. Size of action dict: " + str(len(self.action_dict.keys())))
+    print("[INFO] Alarm event triggered. Executing alarm.")
  
     pre_event_action_states = None
 
     # Trigger all actions first. Requries that we're connected
     # to the home automation system and that we have things to 
     # actually trigger. 
-    if self.web_server_status is True and len(self.action_dict.keys()) > 0:
+    if self.web_server_status.web_server_status is True and len(self.action_dict.keys()) > 0:
       # Update the most recent action states if we're connected to
       # the home automation system. Blocking action, so this
       # may delay the alarm by just a bit.
@@ -110,16 +110,17 @@ class AlarmUtility:
       # If no snoozes remaining, simply notify the user. 
       self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=alarm_message)
     
-    # Alarm routine has finished. Return pre_event action_states. 
-    for roomid_actionid in self.action_dict:
-      split_ids = roomid_actionid.split("_")
-      room_id = split_ids[0]
-      action_id = split_ids[1]
-      split_states = self.action_dict[roomid_actionid].split("_")
-      revert_state = pre_event_action_states[str(room_id)][str(action_id)]
+    if self.web_server_status.web_server_status is True and len(self.action_dict.keys()) > 0:
+      # Alarm routine has finished. Return pre_event action_states. 
+      for roomid_actionid in self.action_dict:
+        split_ids = roomid_actionid.split("_")
+        room_id = split_ids[0]
+        action_id = split_ids[1]
+        split_states = self.action_dict[roomid_actionid].split("_")
+        revert_state = pre_event_action_states[str(room_id)][str(action_id)]
 
-      self.web_server_status.query_speech_server_module_toggle(
-        toState=revert_state, roomId=room_id, actionId=action_id)
+        self.web_server_status.query_speech_server_module_toggle(
+          toState=revert_state, roomId=room_id, actionId=action_id)
 
     if snooze_requested is True:
       pass
