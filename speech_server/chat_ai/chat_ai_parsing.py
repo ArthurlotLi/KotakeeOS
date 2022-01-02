@@ -18,7 +18,7 @@ class ChatAiParsing:
   # Some fun preset personas. Allow users to select from them
   # when starting up the chat. 
   preset_personas = {
-    "Geralt" : [
+    "geralt" : [
       "My name is Geralt.",
       "I hunt monsters.",
       "I say hmm a lot."
@@ -72,17 +72,18 @@ class ChatAiParsing:
       user_response = self.speech_listen.listen_response(prompt=init_chatbot_prompt, execute_chime = True)
 
       if user_response is not None:
-        self.conversation_routine(user_response, personality)
+        self.conversation_routine(message=user_response, personality=personality)
 
     return valid_command
 
   # Conversation loop. Takes in optional first message as well as a
   # personality strings list. 
   def conversation_routine(self, message, personality=None):
+    print("[DEBUG] ChatAI conversation routine started.")
     end_conversation = False
     conversation_history = []
 
-    while end_conversation is not False:
+    while end_conversation is False:
       if message is None or any (x in message for x in self.user_cancel_words):
         end_conversation = True
       else:
@@ -90,3 +91,4 @@ class ChatAiParsing:
         ai_response, conversation_history = self.chat_ai.model_interact(message, conversation_history, personality=personality)
         # Allow user to respond to ai response. 
         message = self.speech_listen.listen_response(prompt=ai_response, execute_chime = True)
+    print("[DEBUG] ChatAI conversation routine completed.")

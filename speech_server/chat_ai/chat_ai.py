@@ -62,11 +62,14 @@ class ChatAi:
   # also be provided. A personality may also be provided - if
   # not, a random persona will be assumed. 
   def model_interact(self, new_message, conversation_history = [], personality = None):
+    print("[DEBUG] ChatAI recieved new message '" + new_message + "'. Processing...")
+    start_time = time.time()
     ai_response, conversation_history = self.model.interact_single(
       message=new_message, 
       history=conversation_history,
       personality=personality)
-
+    end_time = time.time()
+    print("[DEBUG] ChatAI responded with message '" + ai_response + "' in " + str(end_time-start_time) + " seconds.")
     return ai_response, conversation_history
 
   # Further train the model on the the minimal_train json file -
