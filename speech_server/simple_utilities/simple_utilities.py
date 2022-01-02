@@ -152,7 +152,7 @@ class SimpleUtilities:
           am_pm = "a.m."
           alarm_hours = alarm_module.additional_data["alarm_hour"]
           if alarm_hours > 12:
-            alarm_hours = alarm_hours - alarm_hours
+            alarm_hours = alarm_hours - 12
             am_pm = "p.m."
           alarm_list_prompt = alarm_list_prompt + ", " + str(alarm_module.additional_data["alarm_name"]) + ", at " + str(alarm_hours) + ":" + str(alarm_module.additional_data["alarm_minute"]) + " " + am_pm + ", "
       

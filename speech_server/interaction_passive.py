@@ -143,7 +143,7 @@ class InteractionPassive:
     for event in management_dict:
       if event == "clear_module":
         print("[DEBUG] Module Management - Initialized passive module '" + str(module.class_name) + "' being deleted.")
-        del self.initialzied_passive_modules_index[initialized_passive_modules_index]
+        del self.initialized_passive_modules[initialized_passive_modules_index]
       elif event == "add_module_passive":
         first_event = None
         id = None
