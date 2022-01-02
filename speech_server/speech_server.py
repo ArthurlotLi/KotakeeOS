@@ -38,6 +38,7 @@ class SpeechServer:
   speech_speak_startup_location = "./assets/startup.wav"
   speech_speak_shutdown_location = "./assets/shutdown.wav"
   speech_speak_timer_location = "./assets/timer.wav"
+  speech_speak_alarm_location = "./assets/timer.wav"
   speech_speak_use_python3 = True
 
   speech_listen_led_state_on = 1
@@ -132,6 +133,7 @@ class SpeechServer:
       startup_location=self.speech_speak_startup_location, 
       shutdown_location=self.speech_speak_shutdown_location,
       timer_location=self.speech_speak_timer_location,
+      alarm_location=self.speech_speak_alarm_location,
       use_python3=self.speech_speak_use_python3)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 

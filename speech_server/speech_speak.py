@@ -50,19 +50,21 @@ class SpeechSpeak:
   # event_contents is optional depending on the type. 
   speak_thrd_event_types = []
   speak_thrd_event_contents = []
-  speak_thrd_tick = 0.25 # How many seconds the thread sleeps for. 
+  speak_thrd_tick = 0.10 # How many seconds the thread sleeps for. 
   speak_thrd_stop = False
 
   chime_location = None
   startup_location = None
   shutdown_location = None
   timer_location = None
+  alarm_location = None
 
-  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, use_python3 = True):
+  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, use_python3 = True):
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
+    self.alarm_location = alarm_location
     self.use_python3 = use_python3
 
     if self.initialize_subprocess() is False:
@@ -106,7 +108,6 @@ class SpeechSpeak:
           return True
     return False
 
-  
   def shutdown_process(self):
     print("[DEBUG] Speak Text shutting down existing process.")
     # Socket interaction using multiprocessing library. 
@@ -196,6 +197,8 @@ class SpeechSpeak:
       self.execute_chime()
     elif event_type == "execute_timer":
       self.execute_timer()
+    elif event_type == "execute_alarm":
+      self.execute_alarm()
     else:
       print("[ERROR] Speak thrd recieved an unknown event type '" + str(event_type)+ "'!")
 
@@ -227,6 +230,9 @@ class SpeechSpeak:
 
   def execute_timer(self):
     self.execute_sound(self.timer_location)
+
+  def execute_alarm(self):
+    self.execute_sound(self.alarm_location)
 
   # Let out a chime to indicate that you're listening. Source:
   # stack overflow

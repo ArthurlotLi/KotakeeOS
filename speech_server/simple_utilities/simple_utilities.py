@@ -60,7 +60,7 @@ class SimpleUtilities:
           timer_list_prompt = "There one active timer. It's duration is: " + timer_list_prompt
         else:  
           timer_list_prompt = "There are " + str(num_timers) + " active timers. Their durations are: " + timer_list_prompt
-        user_response = self.speech_listen.listen_response(prompt=timer_list_prompt, execute_chime = False)
+        user_response = self.speech_listen.listen_response(prompt=timer_list_prompt, execute_chime = True)
 
         if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
           # Got confirmation. Delete all timers. 
@@ -81,7 +81,7 @@ class SimpleUtilities:
         if int(duration_seconds) > self.timer_confirmation_threshold:
           user_response_requied = True
           user_prompt = "Confirm set timer for " + str(duration) + " " + str(units) + "?"
-          user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = False)
+          user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = True)
 
         if user_response_requied is False or (user_response is not None and any(x in user_response for x in self.user_confirmation_words)):
           # Timer module will add the TimerUtility passive module to the 
