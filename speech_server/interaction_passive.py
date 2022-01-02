@@ -45,6 +45,10 @@ class InteractionPassive:
   passive_module_list = []
   passive_module_ids = []
 
+  # Managed list of all active modules. May contain modules 
+  # actively running, or modules still in the event queue. 
+  initialized_passive_modules = []
+
   # Pointers to "subthreads" - threads executing passive modules
   # for proper memory utilization purposes. 
   passive_thrd_subthrds = []
@@ -107,15 +111,20 @@ class InteractionPassive:
       self.passive_module_list.append(new_module)
       self.passive_module_events.append(new_module.first_event)
       self.passive_module_ids.append(new_module.id)
+      self.initialized_passive_modules.append(new_module)
     else:
       print("[WARNING] Interaction Passive failed to load a module from '" + str(class_location) + "'.")
     
   # Add already created modules to the queue. This is used 
   # by executed modules that wish to re-add themselves to the
   # queue. 
-  def add_module_passive(self, new_module, first_event=None, id=None):
-    if first_event is None:
+  def add_module_passive(self, new_module, first_event=None, id=None, duration_seconds = None):
+    if first_event is None and duration_seconds is None:
       new_module.first_event = first_event
+    elif duration_seconds is None:
+      current_ticks = self.passive_thrd_ticks_since_start
+      first_event_time = current_ticks + (float(duration_seconds)/self.passive_thrd_tick) # Append seconds. 
+      new_module.first_event = first_event_time
     if id is None:
       new_module.id = id
 
@@ -126,6 +135,28 @@ class InteractionPassive:
       print("[DEBUG] Interaction Passive successfully readded a module '" + str(new_module.class_location) + "' provided to add_module_passive.")
     else:
       print("[WARNING] Interaction Passive failed to load a module provided to add_module_passive.")
+
+  # Allows existing modules to event requests up to us, the
+  # parent, so we can manage them properly. 
+  def handle_module_management(self, management_dict, module, initialized_passive_modules_index):
+    for event in management_dict:
+      if event == "clear_module":
+        print("[DEBUG] Module Management - Initialized passive module '" + str(module.class_name) + "' being deleted.")
+        del self.initialzied_passive_modules_index[initialized_passive_modules_index]
+      elif event == "add_module_passive":
+        first_event = None
+        id = None
+        duration_seconds = None
+        # We expect a dict in this case. 
+        add_module_dict = management_dict[event]
+        if "duration_seconds" in add_module_dict:
+          duration_seconds = add_module_dict["duration_seconds"]
+        if "first_event" in add_module_dict:
+          first_event = add_module_dict["first_event"]
+        if "id" in add_module_dict:
+          id = add_module_dict["id"]
+        
+        self.add_module_passive(module, first_event=first_event, id=id, duration_seconds=duration_seconds)
 
   # Allows other classes to ask for certain modules by id. If they
   # do not exist, None will be returned. Otherwise, the module object
@@ -142,6 +173,7 @@ class InteractionPassive:
     for i in range(len(self.passive_module_events)-1,-1,-1):
       if id == self.passive_module_ids[i]:
         module_class = self.passive_module_list[i]
+        module_class.clear_module()
         del self.passive_module_list[i]
         del self.passive_module_events[i]
         del self.passive_module_ids[i]
@@ -159,6 +191,15 @@ class InteractionPassive:
   # here. Expects the tick value when starting. 
   def passive_thrd(self, passive_thread_tick):
     while self.passive_thrd_stop is False:
+
+      # Every run, check all modules for management events. 
+      # Note this checks all initialized modules - not just
+      # modules that have an upcoming event. 
+      for i in range(0, len(self.initialized_passive_modules)):
+        module = self.initialized_passive_modules[i]
+        management_dict = module.retrive_management_events()
+        if len(management_dict) > 0:
+          self.handle_module_management(management_dict, module, i)
 
       # Clear the executed modules once done. 
       indices_to_drop = []
@@ -189,4 +230,4 @@ class InteractionPassive:
   # "activate_event()".
   def activate_module_passive(self, module):
     print("[DEBUG] Event triggered for passive module '"+str(module.class_name)+"' (id"+str(module.id)+"). Beginning thread.")
-    self.passive_thrd_subthrds.append(threading.Thread(target=module.activate_event, args=(self), daemon=True).start())
+    self.passive_thrd_subthrds.append(threading.Thread(target=module.activate_event, daemon=True).start())

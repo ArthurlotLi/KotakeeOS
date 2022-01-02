@@ -30,6 +30,8 @@ class ModulePassive:
   # utilizing this module anymore.
   valid_module = False
 
+  module_management = {}
+
   module_passive_json_filename = "module_passive.json"
 
   # We expect all passive module json files to provide these properties
@@ -246,6 +248,33 @@ class ModulePassive:
       return False
     
     return True
+
+  # Standard routine to check if there are any management events
+  # that the child wants to push up to the parent. 
+  def retrive_management_events(self):
+    if self.valid_module is False:
+      return None
+
+    # Handle this class's management messages. 
+    if len(self.module_management) > 0:
+      module_management = self.module_management
+      # Clear the management dict once the parent has recieved
+      # it. 
+      self.module_management = {}
+      return module_management
+    
+    # Handle subclass's management messages. 
+    if len(self.module_class_instance.module_management) > 0:
+      module_management = self.module_class_instance.module_management
+      # Clear the management dict once the parent has recieved
+      # it. 
+      self.module_class_instance.module_management = {}
+      return module_management
+
+  # Upon delete message, events up to the parent that it needs to be
+  # removed from the list of initialized modules.  
+  def clear_module(self):
+    self.module_management["clear_module"] = True
 
   # Standardized routine to be called when the module is activated by
   # it's time requirement being hit in the passive_thrd. Executed in 

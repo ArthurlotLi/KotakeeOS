@@ -17,6 +17,11 @@
 # irises with all your house lights. 
 
 class AlarmUtility:
+  # Management dict checked via passive_module by the interaction
+  # passive thread. If this dict holds an action, the parent of
+  # the parent will respond accordingly. 
+  module_management = {}
+
   snooze_confirmation_words = ["sure", "yep", "go ahead", "okay", "yeah", "affirm", "that's it", "ok", "yes", "go for it", "snooze", "please", "more minutes"]
 
   speech_speak = None
@@ -60,7 +65,7 @@ class AlarmUtility:
   # by the passive interaction thread. Execute an alarm once. 
   # If the user snoozes, this event will be re-registered and
   # will trigger again in the specified duration.
-  def activate_event(self, calling_class):
+  def activate_event(self):
     print("[INFO] Alarm event triggered. Executing alarm.")
  
     pre_event_action_states = None
@@ -125,9 +130,13 @@ class AlarmUtility:
     # Refer to the passed in calling_class pointer (interaction_passive)
     # and toss yourself back into the queue. 
     if snooze_requested is True:
-      current_ticks = calling_class.passive_thrd_ticks_since_start
-      first_event_time = current_ticks + (float(self.snooze_duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
-      print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+      print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds.")
+      #current_ticks = calling_class.passive_thrd_ticks_since_start
+      #first_event_time = current_ticks + (float(self.snooze_duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
+      #print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
 
-      calling_class.add_module_passive(new_module=self, first_event=first_event_time)
+      #calling_class.add_module_passive(new_module=self, first_event=first_event_time)
+      self.module_management["add_module_passive"] = {
+        "duration_seconds" : self.snooze_duration_seconds
+      }
         

@@ -6,6 +6,11 @@
 # announce that the timer has completed. Simple.
 
 class TimerUtility:
+  # Management dict checked via passive_module by the interaction
+  # passive thread. If this dict holds an action, the parent of
+  # the parent will respond accordingly. 
+  module_management = {}
+  
   speech_speak = None
 
   timer_duration = None
@@ -24,7 +29,7 @@ class TimerUtility:
 
   # Standard routine triggered when the event time is triggered
   # by the passive interaction thread. 
-  def activate_event(self, calling_class):
+  def activate_event(self):
     print("[INFO] Timer event triggered. Executing timer and text.")
     timer_message = None
     if self.timer_duration is None or self.timer_units is None:
