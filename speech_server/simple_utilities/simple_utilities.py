@@ -154,7 +154,7 @@ class SimpleUtilities:
         # abort. 
         user_response = None
         alarm_hours_24 = alarm_hours
-        if alarm_am is True: alarm_hours_24 = alarm_hours + 12
+        if alarm_am is False: alarm_hours_24 = alarm_hours + 12
 
         user_prompt = "Please give a name for the " + str(alarm_hours) + ":" + str(alarm_minutes)
         if alarm_am is True: user_prompt = user_prompt + " a.m. alarm."
