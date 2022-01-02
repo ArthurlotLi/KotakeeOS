@@ -109,6 +109,23 @@ class InteractionPassive:
       self.passive_module_ids.append(new_module.id)
     else:
       print("[WARNING] Interaction Passive failed to load a module from '" + str(class_location) + "'.")
+    
+  # Add already created modules to the queue. This is used 
+  # by executed modules that wish to re-add themselves to the
+  # queue. 
+  def add_module_passive(self, new_module, first_event=None, id=None):
+    if first_event is None:
+      new_module.first_event = first_event
+    if id is None:
+      new_module.id = id
+
+    if new_module.valid_module is True and new_module.first_event is not None:
+      self.passive_module_list.append(new_module)
+      self.passive_module_events.append(new_module.first_event)
+      self.passive_module_ids.append(new_module.id)
+      print("[DEBUG] Interaction Passive successfully readded a module '" + str(new_module.class_location) + "' provided to add_module_passive.")
+    else:
+      print("[WARNING] Interaction Passive failed to load a module provided to add_module_passive.")
 
   # Allows other classes to ask for certain modules by id. If they
   # do not exist, None will be returned. Otherwise, the module object
@@ -172,4 +189,4 @@ class InteractionPassive:
   # "activate_event()".
   def activate_module_passive(self, module):
     print("[DEBUG] Event triggered for passive module '"+str(module.class_name)+"' (id"+str(module.id)+"). Beginning thread.")
-    self.passive_thrd_subthrds.append(threading.Thread(target=module.activate_event, daemon=True).start())
+    self.passive_thrd_subthrds.append(threading.Thread(target=module.activate_event, args=(self), daemon=True).start())

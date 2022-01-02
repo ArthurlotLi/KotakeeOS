@@ -60,7 +60,7 @@ class AlarmUtility:
   # by the passive interaction thread. Execute an alarm once. 
   # If the user snoozes, this event will be re-registered and
   # will trigger again in the specified duration.
-  def activate_event(self):
+  def activate_event(self, calling_class):
     print("[INFO] Alarm event triggered. Executing alarm.")
  
     pre_event_action_states = None
@@ -122,8 +122,12 @@ class AlarmUtility:
         self.web_server_status.query_speech_server_module_toggle(
           toState=revert_state, roomId=room_id, actionId=action_id)
 
+    # Refer to the passed in calling_class pointer (interaction_passive)
+    # and toss yourself back into the queue. 
     if snooze_requested is True:
-      pass
-      # TODO: Implement ability for events to indicate that they want to re-event 
-      # with an updated duration. 
+      current_ticks = calling_class.passive_thrd_ticks_since_start
+      first_event_time = current_ticks + (float(self.snooze_duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
+      print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+
+      calling_class.add_module_passive(new_module=self, first_event=first_event_time)
         
