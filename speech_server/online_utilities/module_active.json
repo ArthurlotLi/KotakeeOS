@@ -10,6 +10,6 @@
 
   "require_speech_speak" : "True",
   "require_speech_listen" : "False",
-  "require_web_server_status" : "True",
+  "require_web_server_status" : "False",
   "require_interaction_passive": "False"
 }
