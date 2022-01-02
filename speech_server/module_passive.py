@@ -306,6 +306,9 @@ class ModulePassive:
       return False
 
     # All groundwork done. Go ahead and kick the event off. 
+    self.module_class_instance.activate_event()
+    # For development purposes, let exceptions occur. 
+    """
     try:
       self.module_class_instance.activate_event()
     except Exception as e:
@@ -314,5 +317,6 @@ class ModulePassive:
       print("[ERROR] Exception parsing command with passive module class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Disabling module. Exception:")
       print(e)
       self.valid_module = False
+    """
     
     return True

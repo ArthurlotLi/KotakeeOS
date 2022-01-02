@@ -344,6 +344,9 @@ class ModuleActive:
     if self.module_class_instance is None:
       return False
 
+    action_triggered = self.module_class_instance.parse_command(command)
+    # For development purposes, allow module failures to hard stop. 
+    """
     try:
       action_triggered = self.module_class_instance.parse_command(command)
     except Exception as e:
@@ -352,5 +355,6 @@ class ModuleActive:
       print("[ERROR] Exception parsing command with active module class " + str(self.class_name) + " from '" + str(self.class_location) + "'. Disabling module. Exception:")
       print(e)
       self.valid_module = False
+    """
 
     return action_triggered

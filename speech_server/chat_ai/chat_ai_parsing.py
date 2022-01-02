@@ -11,7 +11,7 @@ class ChatAiParsing:
   speech_speak = None
   speech_listen = None
 
-  user_cancel_words = ["stop", "cancel", "no", "wrong", "end"] 
+  user_cancel_words = ["stop", "cancel", "no", "wrong", "end", "terminate", "freeze all motor functions"] 
 
   chat_ai = None
 
@@ -21,7 +21,9 @@ class ChatAiParsing:
     "geralt" : [
       "My name is Geralt.",
       "I hunt monsters.",
-      "I say hmm a lot."
+      "I say hmm a lot.",
+      "I'm in love with Yennefer of Vengerberg.",
+      "I have a daughter called Ciri."
     ],
   }
 
@@ -42,11 +44,12 @@ class ChatAiParsing:
       # a ransom one will be selected from the PersonaChat dataset. 
       personality_name = None
 
-      for word in command:
-        if personality_name is None and word in self.preset_personas.keys():
+      for word in command.split():
+        if personality_name is None and word in self.preset_personas:
           # The name of a persona was provided. Use it directly.
           personality_name = word
-      if personality_name is None and ("persona" in command or "personality" in command):
+
+      if personality_name is None:
         # List all personas for user and ask them to specify one.
         persona_prompt = "Please choose from the following personas: "
         for persona in self.preset_personas:
@@ -54,31 +57,26 @@ class ChatAiParsing:
         user_response = self.speech_listen.listen_response(prompt=persona_prompt, execute_chime = True)
 
         if user_response is not None:
-          for word in user_response:
-            if personality_name is None and word in self.preset_personas.keys():
+          for word in user_response.split():
+            if personality_name is None and word in self.preset_personas:
               # The name of a persona was provided. Use it directly.
               personality_name = word
 
-      # If personality_name is none, a random one will be chosen. 
-      init_chatbot_prompt = None
-      personality = None
+      # If personality_name is none, we can't proceed.
       if personality_name is not None:
-        init_chatbot_prompt = "Starting ChatAI with persona '" + personality_name + "'."
+        init_chatbot_prompt = "Starting ChatAI with persona '" + personality_name + "'. What would you like to say?"
         personality = self.preset_personas[personality_name]
-      else:
-        init_chatbot_prompt = "Starting ChatAI with a random persona."
-      init_chatbot_prompt = init_chatbot_prompt + " What would you like to say?"
 
-      user_response = self.speech_listen.listen_response(prompt=init_chatbot_prompt, execute_chime = True)
+        user_response = self.speech_listen.listen_response(prompt=init_chatbot_prompt, execute_chime = True)
 
-      if user_response is not None:
-        self.conversation_routine(message=user_response, personality=personality)
+        if user_response is not None:
+          self.conversation_routine(message=user_response, personality=personality)
 
     return valid_command
 
   # Conversation loop. Takes in optional first message as well as a
   # personality strings list. 
-  def conversation_routine(self, message, personality=None):
+  def conversation_routine(self, message, personality):
     print("[DEBUG] ChatAI conversation routine started.")
     end_conversation = False
     conversation_history = []
@@ -91,4 +89,6 @@ class ChatAiParsing:
         ai_response, conversation_history = self.chat_ai.model_interact(message, conversation_history, personality=personality)
         # Allow user to respond to ai response. 
         message = self.speech_listen.listen_response(prompt=ai_response, execute_chime = True)
+
+    self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Stopping ChatAI.")
     print("[DEBUG] ChatAI conversation routine completed.")

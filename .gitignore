@@ -9,6 +9,11 @@
 /triggerWordDetection/model_checkpoints
 /satelliteServer/node_modules
 /speech_server/old_code
-/speech_server/__pycache__
 /speech_server/quest_ai/quest_ai_dependencies/roberta-large_fine-tuned
 /speech_server/chat_ai/chat_ai_dependencies/gpt_personachat_cache
+/speech_server/chat_ai/__pycache__
+/speech_server/home_automation/__pycache__
+/speech_server/online_utilities/__pycache__
+/speech_server/quest_ai/__pycache__
+/speech_server/simple_utilities/__pycache__
+/speech_server/__pycache__

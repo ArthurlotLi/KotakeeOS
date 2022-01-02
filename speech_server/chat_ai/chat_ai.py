@@ -33,11 +33,6 @@ class ChatAi:
   # Files expected to be within the dependencies folder.
   minimal_train_name = "minimal_train.json"
 
-  train_args = {
-    "overwrite_output_dir": True,
-    "reprocess_input_data": True
-  }
-
   model = None
   model_use_cuda = False # Change if you're training the model. 
 
@@ -50,7 +45,7 @@ class ChatAi:
 
     # Create a ConvAIModel, loading the pretrained weights from 
     # the specified location. 
-    self.model = ConvAIModel("gpt", self.model_location, use_cuda=self.model_use_cuda, args=self.train_args)
+    self.model = ConvAIModel("gpt", self.model_location, use_cuda=self.model_use_cuda)
 
     end_time = time.time()
     print("[DEBUG] ChatAI successfully initialized in " + str(end_time-start_time) + " seconds.")
@@ -65,9 +60,7 @@ class ChatAi:
     print("[DEBUG] ChatAI recieved new message '" + new_message + "'. Processing...")
     start_time = time.time()
     ai_response, conversation_history = self.model.interact_single(
-      message=new_message, 
-      history=conversation_history,
-      personality=personality)
+      message=new_message, history=conversation_history, personality=personality)
     end_time = time.time()
     print("[DEBUG] ChatAI responded with message '" + ai_response + "' in " + str(end_time-start_time) + " seconds.")
     return ai_response, conversation_history
