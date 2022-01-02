@@ -7,7 +7,7 @@
 class OnlineUtilities:
   speech_speak = None
 
-  wikipedia_query_max_sentences = 20
+  wikipedia_query_max_sentences = None # If not specified, will not pass argument. 
 
   def __init__(self, speech_speak):
     self.speech_speak = speech_speak
@@ -30,7 +30,13 @@ class OnlineUtilities:
       print("[DEBUG] Attempting to query wikipedia summary for keywords: '" + str(wikipedia_query) + "'.")
       wiki_passage = ""
       try:
-        summary = wikipedia.summary(wikipedia_query, sentences = self.wikipedia_query_max_sentences)
+        # Don't pass the sentences requirement because in doing so
+        # you'll get more than you bargained for. 
+        summary = None
+        if self.wikipedia_query_max_sentences is None:
+          summary = wikipedia.summary(wikipedia_query)
+        else:
+          summary = wikipedia.summary(wikipedia_query, sentences = self.wikipedia_query_max_sentences)
         wiki_passage += summary.strip() + " "
       except:
         pass
