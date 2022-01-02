@@ -34,7 +34,6 @@ class InteractionPassive:
   # time requirements are met. 
   passive_thrd_instance = None
   passive_thrd_stop = False
-  passive_thrd_ticks_since_start = 0
 
   # Like-indexed lists. Events consists of relative timestamps
   # from the startup time of the thread, in the quanity of 
@@ -98,7 +97,12 @@ class InteractionPassive:
   # 
   # If no first_event is specified, expects the
   # first_event to be specified in the moduele_passive.json as well. 
-  def create_module_passive(self, class_location, first_event=None, additional_data=None, id=None):
+  def create_module_passive(self, class_location, first_event=None, additional_data=None, id=None, duration_seconds = None):
+    if first_event is None and duration_seconds is not None:
+      current_time = time.time()
+      first_event_time = current_time + (float(duration_seconds)) # Append seconds. 
+      first_event = first_event_time
+
     new_module = ModulePassive(
       class_location=class_location, 
       speech_speak=self.speech_speak, 
@@ -120,8 +124,8 @@ class InteractionPassive:
   # queue. 
   def add_module_passive(self, new_module, first_event=None, id=None, duration_seconds = None):
     if duration_seconds is not None:
-      current_ticks = self.passive_thrd_ticks_since_start
-      first_event_time = current_ticks + (float(duration_seconds)/self.passive_thrd_tick) # Append seconds. 
+      current_time = time.time()
+      first_event_time = current_time + (float(duration_seconds)) # Append seconds. 
       new_module.first_event = first_event_time
     elif first_event is not None:
       new_module.first_event = first_event
@@ -205,9 +209,12 @@ class InteractionPassive:
       # Clear the executed modules once done. 
       indices_to_drop = []
 
+      # Use current timestamp in seconds. 
+      current_time = time.time()
+
       for i in range(0, len(self.passive_module_events)):
         time_req = self.passive_module_events[i]
-        if self.passive_thrd_ticks_since_start >= time_req:
+        if current_time >= time_req:
           # An event time has been triggered. Kick off the thread,
           # passing in the module object in the like-indexed module
           # list. 
@@ -224,7 +231,6 @@ class InteractionPassive:
         del self.passive_module_ids[indices_to_drop[i]]
 
       time.sleep(passive_thread_tick)
-      self.passive_thrd_ticks_since_start = self.passive_thrd_ticks_since_start + 1
 
   # Initializes a new thread for a passive module whose time has come.
   # Expects the module to have a standard function name 

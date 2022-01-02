@@ -11,7 +11,7 @@ from datetime import date
 class SimpleUtilities:
   # Paths relative to where interaction_active is. 
   timer_class_location = "./simple_utilities/timer_utility/timer_utility.TimerUtility"
-  timer_confirmation_threshold = 5400 # Amount of time required to ask for confirmation of new timer. Seconds.
+  timer_confirmation_threshold = 7200 # Amount of time required to ask for confirmation of new timer. Seconds.
   timer_ids = [] # Note this may contain stale data - need to check each id, asking if they exist first.  
 
   alarm_class_location = "./simple_utilities/alarm_utility/alarm_utility.AlarmUtility"
@@ -101,9 +101,9 @@ class SimpleUtilities:
           # Timer module will add the TimerUtility passive module to the 
           # passive_thrd routine with a first_event time equivalent to the
           # specified time. 
-          current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
-          first_event_time = current_ticks + (float(duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
-          print("[DEBUG] Setting timer for " + str(duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+          current_time = time.time()
+          first_event_time = current_time + (float(duration_seconds)) # Append seconds. 
+          print("[DEBUG] Setting timer for " + str(duration_seconds) + " seconds. Current time: " + str(current_time) + ". Targeted time: " + str(first_event_time) + ".")
           timer_additional_data = { "timer_duration" : duration, "timer_seconds":duration_seconds, "timer_units": units }
 
           # Create a timer that we can add to our list of known timers. 
@@ -217,9 +217,9 @@ class SimpleUtilities:
           else:
             duration_seconds = alarm_time_since_midnight - current_time_since_midnight
 
-          current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
-          first_event_time = current_ticks + (float(duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
-          print("[DEBUG] Setting alarm for " + str(duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+          current_time = time.time()
+          first_event_time = current_time + (float(duration_seconds)) # Append seconds. 
+          print("[DEBUG] Setting alarm for " + str(duration_seconds) + " seconds. Current time: " + str(current_time) + ". Targeted time: " + str(first_event_time) + ".")
 
           additional_data = {
             "alarm_name" : user_response,
