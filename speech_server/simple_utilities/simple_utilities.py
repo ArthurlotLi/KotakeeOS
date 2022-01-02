@@ -51,6 +51,7 @@ class SimpleUtilities:
     or "all timers" in command or "delete timers" in command 
     or "clear timers" in command or "clear all timers" in command 
     or "delete all timers" in command):
+      valid_command = True
       timer_list_prompt = ""
       # List all active timers. Ask the user if they want to delete
       # any afterwards. 
@@ -138,8 +139,41 @@ class SimpleUtilities:
     or "clear alarms" in command or "clear all alarms" in command 
     or "delete all alarms" in command):
       valid_command = True
-      # TODO
-      pass
+
+      alarm_list_prompt = ""
+      # List all active alarms. Ask the user if they want to delete
+      # any afterwards. 
+      for i in range(len(self.alarm_ids)-1,-1,-1):
+        # Check if it exists. If not, delete it. 
+        alarm_module = self.interaction_passive.get_module_by_id(self.alarm_ids[i])
+        if alarm_module is None:
+          del self.alarm_ids[i]
+        else:
+          am_pm = "a.m."
+          alarm_hours = alarm_module.additional_data["alarm_hour"]
+          if alarm_hours > 12:
+            alarm_hours = alarm_hours - alarm_hours
+            am_pm = "p.m."
+          alarm_list_prompt = alarm_list_prompt + ", " + str(alarm_module.additional_data["alarm_name"]) + ", at " + str(alarm_hours) + ":" + str(alarm_module.additional_data["alarm_minute"]) + " " + am_pm + ", "
+      
+      if alarm_list_prompt == "":
+        self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="There are currently no active alarms.")
+      else:
+        # List all alarms and ask if they want to clear all alarms. 
+        # Singular vs plural.
+        num_alarms = len(self.alarm_ids)
+        alarm_list_prompt = alarm_list_prompt + ". Would you like to clear all alarms?"  
+        if num_alarms == 1:
+          alarm_list_prompt = "There is currently one active alarm: " + alarm_list_prompt
+        else:  
+          alarm_list_prompt = "There are currently " + str(num_alarms) + " active alarms: " + alarm_list_prompt
+        user_response = self.speech_listen.listen_response(prompt=alarm_list_prompt, execute_chime = True)
+
+        if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
+          # Got confirmation. Delete all alarms. 
+          for alarm_id in self.alarm_ids:
+            self.interaction_passive.clear_module_by_id(alarm_id)
+          self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="All alarms have now been deleted.")
 
     # Set up alarms.Require a name for each alarm in a way of 
     # confirming that the registered time was correct. 
@@ -211,7 +245,6 @@ class SimpleUtilities:
             id = alarm_id)
 
           self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Setting alarm, " +str(user_response)+ ", for " + str(alarm_hours) + ":" + str(alarm_minutes) + ".") 
-
 
     elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()

@@ -107,7 +107,7 @@ class AlarmUtility:
       alarm_message = alarm_message + " Do you wish to snooze?"
       user_response = self.speech_listen.listen_response(prompt=alarm_message, execute_chime = True)
       if user_response is not None and any(x in user_response for x in self.snooze_confirmation_words):
-        snooze_message = "Snoozing, " + str(self.alarm_name) + ", for " + str(int(self.snooze_duration_seconds)/60) + " more minutes."
+        snooze_message = "Snoozing, " + str(self.alarm_name) + ", for " + str(int(int(self.snooze_duration_seconds)/60)) + " more minutes."
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=snooze_message)
         self.snooze_remaining = self.snooze_remaining - 1
         snooze_requested = True
