@@ -71,7 +71,7 @@ class SimpleUtilities:
         num_timers = len(self.timer_ids)
         timer_list_prompt = timer_list_prompt + ". Would you like to clear all timers?"  
         if num_timers == 1:
-          timer_list_prompt = "There one active timer. It's duration is: " + timer_list_prompt
+          timer_list_prompt = "There is a single active timer. It's duration is: " + timer_list_prompt
         else:  
           timer_list_prompt = "There are " + str(num_timers) + " active timers. Their durations are: " + timer_list_prompt
         user_response = self.speech_listen.listen_response(prompt=timer_list_prompt, execute_chime = True)
