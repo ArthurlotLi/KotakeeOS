@@ -214,9 +214,7 @@ if __name__ == "__main__":
   trigger_word_iternum = int(args.iternum)
   use_python3 = not args.p == True
 
-  speech_server = SpeechServer(
-    trigger_word_iternum=trigger_word_iternum, 
-    speech_speak_use_python3=use_python3)
+  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3)
 
   # If a negative number is passed, execute as a direct query. 
   if (trigger_word_iternum < 0):
