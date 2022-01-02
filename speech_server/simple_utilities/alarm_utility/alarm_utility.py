@@ -24,7 +24,6 @@ class AlarmUtility:
   web_server_status = None
 
   additional_data = None
-  duration_seconds = None
   alarm_name = None
   alarm_hour = None # Time in 24_00 format
   alarm_minute = None
@@ -50,7 +49,6 @@ class AlarmUtility:
   # a passive module instantiated during runtime. 
   def provide_additional_data(self, additional_data):
     self.additional_data = additional_data
-    self.duration_seconds = additional_data["duration_seconds"]
     self.alarm_name = additional_data["alarm_name"]
     self.alarm_hour = additional_data["alarm_hour"]
     self.alarm_minute = additional_data["alarm_minute"]

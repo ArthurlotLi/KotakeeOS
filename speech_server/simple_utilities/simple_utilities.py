@@ -14,12 +14,25 @@ class SimpleUtilities:
   timer_confirmation_threshold = 1800 # Amount of time required to ask for confirmation of new timer.
   timer_ids = [] # Note this may contain stale data - need to check each id, asking if they exist first.  
 
+  alarm_class_location = "./simple_utilities/alarm_utility/alarm_utility.AlarmUtility"
+  alarm_snooze_remaining = 3 # Maximum snoozes for an alarm. 
+  alarm_snooze_duration_seconds = 300 # Time for a snooze in seconds. 
+   # Standard actions to accompany an alarm with. 
+  alarm_action_dict = { 
+    "2_50": "1_0",
+    "1_50": "1_0",
+    "1_1000" : "107_100",
+    "2_1000" : "107_100",
+  }
+  alarm_ids = [] # Note this may contain stale data - need to check each id, asking if they exist first. 
+
   speech_speak = None
   speech_listen = None
   web_server_status = None
   interaction_passive = None
 
   user_confirmation_words = ["sure", "yep", "go ahead", "okay", "yeah", "affirm", "that's it", "ok", "yes", "go for it"]
+  user_cancel_words = ["stop", "cancel", "no", "wrong"] 
 
   def __init__(self, speech_speak, speech_listen, web_server_status, interaction_passive):
     self.speech_speak = speech_speak
@@ -119,6 +132,87 @@ class SimpleUtilities:
       self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=timeString)
       valid_command = True
 
+    # List all alarms and delete them all if desired. 
+    elif("list alarms" in command or "list all alarms" in command 
+    or "all alarms" in command or "delete alarms" in command 
+    or "clear alarms" in command or "clear all alarms" in command 
+    or "delete all alarms" in command):
+      valid_command = True
+      # TODO
+      pass
+
+    # Set up alarms.Require a name for each alarm in a way of 
+    # confirming that the registered time was correct. 
+    elif("alarm" in command):
+      valid_command = True
+      
+      alarm_hours, alarm_minutes, alarm_am = self.parse_alarm_time_from_command(command)
+
+      if alarm_hours is not None and alarm_minutes is not None and alarm_am is not None:
+        # Level 2 subroutine for confirming the parsed information
+        # by asking for a alarm name. If a cancel word is detected,
+        # abort. 
+        user_response = None
+        alarm_hours_24 = alarm_hours
+        if alarm_am is True: alarm_hours_24 = alarm_hours + 12
+
+        user_prompt = "Please give a name for the " + str(alarm_hours) + ":" + str(alarm_minutes)
+        if alarm_am is True: user_prompt = user_prompt + " a.m. alarm."
+        else: user_prompt = user_prompt + " p.m. alarm."
+        user_response = self.speech_listen.listen_response(prompt=user_prompt, execute_chime = True)
+
+        if user_response is not None and not any(x in user_response for x in self.user_cancel_words):
+          # No cancel words detected, valid name given. Let's apply
+          # the alarm by setting a new passive module.  Calculate the
+          # amount of time remaining between now and the alarm time,
+          # ensuring to convert it into tick units at the end. 
+          duration_seconds = 0
+          current_seconds = time.strftime("%S", time.localtime())
+          current_minutes = time.strftime("%M", time.localtime())
+          current_hours = time.strftime("%H", time.localtime())
+          current_time_since_midnight = int(current_seconds) + int(current_minutes) * 60 + int(current_hours) * 3600
+
+          # Check if our time is going to put us before or after now. 
+          alarm_time_since_midnight = alarm_minutes*60 + alarm_hours_24*3600
+          print("[DEBUG] Current time is " + str(current_time_since_midnight) + ". Alarm time is " + str(alarm_time_since_midnight) + ".")
+
+          if alarm_time_since_midnight < current_time_since_midnight:
+            # Alarm will be for tomorrow.
+            remainder_time_today = 86400 - current_time_since_midnight 
+            duration_seconds = remainder_time_today + alarm_time_since_midnight
+          else:
+            duration_seconds = alarm_time_since_midnight - current_time_since_midnight
+
+          current_ticks = self.interaction_passive.passive_thrd_ticks_since_start
+          first_event_time = current_ticks + (float(duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
+          print("[DEBUG] Setting alarm for " + str(duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
+
+          additional_data = {
+            "alarm_name" : user_response,
+            "alarm_hour" : alarm_hours_24,
+            "alarm_minute" : alarm_minutes,
+            "snooze_remaining" : self.alarm_snooze_remaining,
+            "snooze_duration_seconds" : self.alarm_snooze_duration_seconds,
+            "action_dict" : self.alarm_action_dict,
+          }
+
+          # Create a alarm that we can add to our list of known alarm. 
+          # Later on if asked, we can ping interaction_passive with the
+          # id to retrive the additional data dict and report it's info.
+          # Before it's triggered, naturally. 
+          alarm_id = "simple_utilities_alarm_" + str(first_event_time)
+          self.alarm_ids.append(alarm_id)
+ 
+          # Create a new passive module given the path to this folder.
+          self.interaction_passive.create_module_passive(
+            class_location = self.alarm_class_location,
+            first_event = first_event_time,
+            additional_data=additional_data,
+            id = alarm_id)
+
+          self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Setting alarm, " +str(user_response)+ ", for " + str(alarm_hours) + ":" + str(alarm_minutes) + ".") 
+
+
     elif("date" in command or "day" in command or "month" in command or "today" in command):
       dateToday = date.today()
       dateString = "Today is "+ time.strftime("%A", time.localtime()) + ", " + time.strftime("%B", time.localtime()) + " " + str(dateToday.day) + ", " + str(dateToday.year)
@@ -213,6 +307,42 @@ class SimpleUtilities:
 
     return None, None
 
+  # Given a command, parse the alarm time. 
+  #
+  # We always expect the user to specify the time in
+  # 12 hr format, honing in on a.m. or p.m. The a.m. or p.m.
+  # specification must be directly to the left of the actual time. 
+  # The actual time may or may not contain a colon. 
+  #
+  # Some example strings:
+  # Ex) Set an alarm for 6 p.m.
+  # Ex) Set an alarm for 6:30 p.m.
+  #
+  # Returns alarm_hours, alarm_minutes, am (True/false). 
+  def parse_alarm_time_from_command(self, command):
+    alarm_hours = None
+    alarm_minutes = None
+    alarm_am = None
+
+    if "a.m."  in command or "p.m." in command:
+      split_command = command.split()
+      for i in range(1, len(split_command)):
+        if split_command[i] == "a.m." or split_command[i] == "p.m.":
+          if split_command[i] == "a.m.":
+            alarm_am = True
+          elif split_command[i] == "p.m.":
+            alarm_am = False
+          alarm_time_string = split_command[i-1]
+          if ":" in alarm_time_string:
+            split_alarm_time_string = alarm_time_string.split(":")
+            alarm_hours = int(split_alarm_time_string[0])
+            alarm_minutes = int(split_alarm_time_string[1])
+          else:
+            alarm_hours = int(alarm_time_string)
+            alarm_minutes = 0
+
+    return alarm_hours, alarm_minutes, alarm_am
+        
     
   # Helper function I got off stack overflow - really sweet code!
   # Slightly modified to allow non-number characters. 
