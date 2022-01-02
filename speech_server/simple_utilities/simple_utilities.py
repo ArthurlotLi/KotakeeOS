@@ -123,7 +123,7 @@ class SimpleUtilities:
           self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Timer set for " + str(duration) + " " + str(units) + ".")
 
     elif("time" in command):
-      current_hours = time.strftime("%H", time.localtime())
+      current_hours = int(time.strftime("%H", time.localtime()))
       current_minutes = time.strftime("%M", time.localtime())
       am_pm = "a.m."
       if current_hours > 12:
