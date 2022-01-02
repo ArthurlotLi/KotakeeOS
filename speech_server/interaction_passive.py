@@ -172,12 +172,12 @@ class InteractionPassive:
   def clear_module_by_id(self, id):
     for i in range(len(self.passive_module_events)-1,-1,-1):
       if id == self.passive_module_ids[i]:
-        module_class = self.passive_module_list[i]
-        module_class.clear_module()
+        module = self.passive_module_list[i]
+        module.clear_module()
         del self.passive_module_list[i]
         del self.passive_module_events[i]
         del self.passive_module_ids[i]
-        print("[DEBUG] Interaction Passive removed module '"+str(module_class)+"' (id"+str(id)+").")
+        print("[DEBUG] Interaction Passive removed module '"+str(module.class_name)+"' (id"+str(id)+").")
     return False 
 
   # Kicks off the thread.
@@ -198,7 +198,7 @@ class InteractionPassive:
       for i in range(0, len(self.initialized_passive_modules)):
         module = self.initialized_passive_modules[i]
         management_dict = module.retrive_management_events()
-        if len(management_dict) > 0:
+        if management_dict is not None and len(management_dict) > 0:
           self.handle_module_management(management_dict, module, i)
 
       # Clear the executed modules once done. 
