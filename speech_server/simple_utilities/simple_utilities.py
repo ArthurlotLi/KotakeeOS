@@ -129,7 +129,7 @@ class SimpleUtilities:
       if current_hours > 12:
         current_hours = current_hours - 12
         am_pm = "p.m."
-      time_string = "It is currently " + str(current_hours) + ":" + str(current_minutes).zfill(2) + "."
+      time_string = "It is currently " + str(current_hours) + ":" + str(current_minutes).zfill(2) + " " + am_pm +"."
       self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=time_string)
       valid_command = True
 
