@@ -1,7 +1,7 @@
 {
   "class_name" : "ChatAiParsing",
 
-  "require_online" : "True",
+  "require_online" : "False",
   "require_web_server" : "False",
   "dispose_timeout" : "120",
   "init_on_startup" : "False",

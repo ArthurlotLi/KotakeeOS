@@ -7,8 +7,8 @@
 /triggerWordDetection/train.wav
 /triggerWordDetection/__pycache__
 /triggerWordDetection/model_checkpoints
-/speechServer/__pycache__
 /satelliteServer/node_modules
 /speech_server/old_code
 /speech_server/__pycache__
 /speech_server/quest_ai/quest_ai_dependencies/roberta-large_fine-tuned
+/speech_server/chat_ai/chat_ai_dependencies/gpt_personachat_cache

@@ -4,9 +4,8 @@
 # Passive module dynamically added by active module SimpleUtilties
 # upon user command. When the event happens, play a jingle and 
 # announce that the alarm has rung. Interact with the user
-# and ask for a snooze or cancel. If no response is heard, a 
-# snooze will be assumed, until the maximum number of snoozes
-# have been reached.
+# and ask for a snooze or cancel. If no response is heard, 
+# cancellation will be assumed. 
 # 
 # If we are connected to the web server (optional, detected via 
 # static object), trigger specific lights to turn on. Remember 
