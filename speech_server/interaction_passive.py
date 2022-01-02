@@ -196,7 +196,7 @@ class InteractionPassive:
       # Every run, check all modules for management events. 
       # Note this checks all initialized modules - not just
       # modules that have an upcoming event. 
-      for i in range(0, len(self.initialized_passive_modules)):
+      for i in range(len(self.initialized_passive_modules)-1,-1,-1):
         module = self.initialized_passive_modules[i]
         management_dict = module.retrive_management_events()
         if management_dict is not None and len(management_dict) > 0:
