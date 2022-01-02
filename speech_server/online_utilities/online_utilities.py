@@ -28,10 +28,10 @@ class OnlineUtilities:
       print("[DEBUG] Attempting to query wikipedia summary for keywords: '" + str(wikipedia_query) + "'.")
       wiki_passage = ""
       try:
-        s = wikipedia.summary(wikipedia_query, sentences = self.wikipedia_query_max_sentences)
+        summary = wikipedia.summary(wikipedia_query, sentences = self.wikipedia_query_max_sentences)
+        wiki_passage += summary.strip() + " "
       except:
         pass
-      wiki_passage += s.strip() + " "
 
       response_to_query = ""
       
