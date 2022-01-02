@@ -1,0 +1,45 @@
+#
+# online_utilites.py
+#
+# Provides an assortment of functions to allow the user to interact
+# with open internet resources. 
+
+class OnlineUtilities:
+  speech_speak = None
+
+  def __init__(self, speech_speak):
+    self.speech_speak = speech_speak
+
+  # Level 1 standard routine.
+  def parse_command(self, command):
+    valid_command = False
+
+    # Given keywords, attempt to grab a summary from the wikipedia
+    # API. 
+    if("wikipedia" in command or "summary" in command):
+      valid_command = True
+
+      wikipedia_query = command.replace("wikipedia", "")
+      wikipedia_query = wikipedia_query.replace("summary", "'")
+
+      import wikipedia
+      print("[DEBUG] Attempting to query wikipedia summary for keywords: '" + str(wikipedia_query) + "'.")
+      results = wikipedia.search(wikipedia_query, results = 3)
+      wiki_passage = ""
+      for r in results[1:]:
+        try:
+          s = wikipedia.summary(r)
+        except:
+          continue
+        wiki_passage += s.strip() + " "
+
+      response_to_query = ""
+      
+      if len(wiki_passage) > 0:
+        response_to_query = wiki_passage
+      else:
+        response_to_query = "I was unable to find a matching wikipedia page for the keywords: '" + str(wikipedia_query) + "'."
+      
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=response_to_query) 
+
+    return valid_command
