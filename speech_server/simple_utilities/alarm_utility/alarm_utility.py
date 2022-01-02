@@ -131,12 +131,9 @@ class AlarmUtility:
     # and toss yourself back into the queue. 
     if snooze_requested is True:
       print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds.")
-      #current_ticks = calling_class.passive_thrd_ticks_since_start
-      #first_event_time = current_ticks + (float(self.snooze_duration_seconds)/self.interaction_passive.passive_thrd_tick) # Append seconds. 
-      #print("[DEBUG] Setting snoozed alarm for " + str(self.snooze_duration_seconds) + " seconds. Passive ticks: " + str(current_ticks) + ". Targeted ticks: " + str(first_event_time) + ".")
-
-      #calling_class.add_module_passive(new_module=self, first_event=first_event_time)
       self.module_management["add_module_passive"] = {
         "duration_seconds" : self.snooze_duration_seconds
       }
+    else:
+      self.module_management["clear_module"] = True
         

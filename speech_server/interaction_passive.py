@@ -119,13 +119,14 @@ class InteractionPassive:
   # by executed modules that wish to re-add themselves to the
   # queue. 
   def add_module_passive(self, new_module, first_event=None, id=None, duration_seconds = None):
-    if first_event is None and duration_seconds is None:
-      new_module.first_event = first_event
-    elif duration_seconds is None:
+    if duration_seconds is not None:
       current_ticks = self.passive_thrd_ticks_since_start
       first_event_time = current_ticks + (float(duration_seconds)/self.passive_thrd_tick) # Append seconds. 
       new_module.first_event = first_event_time
-    if id is None:
+    elif first_event is not None:
+      new_module.first_event = first_event
+
+    if id is not None:
       new_module.id = id
 
     if new_module.valid_module is True and new_module.first_event is not None:

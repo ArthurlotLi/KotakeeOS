@@ -40,3 +40,4 @@ class TimerUtility:
     self.speech_speak.blocking_speak_event(event_type="execute_timer")
     self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=timer_message)
     print("[DEBUG] Timer event complete.")
+    self.module_management["clear_module"] = True
