@@ -42,7 +42,7 @@ class AlarmUtility:
 
   def __init__(self, speech_speak, speech_listen, web_server_status):
     self.speech_speak = speech_speak
-    self.speech_listen = speech_listen,
+    self.speech_listen = speech_listen
     self.web_server_status = web_server_status
 
   # Standard routine in the case that we expect additional data for
@@ -61,14 +61,14 @@ class AlarmUtility:
   # If the user snoozes, this event will be re-registered and
   # will trigger again in the specified duration.
   def activate_event(self):
-    print("[INFO] Alarm event triggered. Executing alarm.")
+    print("[INFO] Alarm event triggered. Executing alarm. Size of action dict: " + str(len(self.action_dict.keys())))
  
     pre_event_action_states = None
 
     # Trigger all actions first. Requries that we're connected
     # to the home automation system and that we have things to 
     # actually trigger. 
-    if self.web_server_status is True and len(self.action_dict) > 0:
+    if self.web_server_status is True and len(self.action_dict.keys()) > 0:
       # Update the most recent action states if we're connected to
       # the home automation system. Blocking action, so this
       # may delay the alarm by just a bit.

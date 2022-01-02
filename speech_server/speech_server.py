@@ -159,7 +159,7 @@ class SpeechServer:
       led_state_on=self.speech_listen_led_state_on,
       led_state_off=self.speech_listen_led_state_off,
       led_room_id=self.speech_listen_led_room_id,
-      led_action_id=self.speech_listen_led_action_id,)
+      led_action_id=self.speech_listen_led_action_id)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
