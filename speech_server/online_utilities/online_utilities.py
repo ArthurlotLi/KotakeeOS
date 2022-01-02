@@ -22,7 +22,9 @@ class OnlineUtilities:
       valid_command = True
 
       wikipedia_query = command.replace("wikipedia", "")
-      wikipedia_query = wikipedia_query.replace("summary", "'")
+      wikipedia_query = wikipedia_query.replace("summary", "")
+      wikipedia_query = wikipedia_query.replace("summarize", "")
+      wikipedia_query = wikipedia_query.strip()
 
       import wikipedia
       print("[DEBUG] Attempting to query wikipedia summary for keywords: '" + str(wikipedia_query) + "'.")
