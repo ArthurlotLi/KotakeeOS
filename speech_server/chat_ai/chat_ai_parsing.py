@@ -4,7 +4,6 @@
 # Handles user interactions with the chat_ai class - active module
 # utilized by interaction_active. 
 
-from transformers.file_utils import USE_JAX
 from chat_ai import ChatAi
 
 class ChatAiParsing:
@@ -23,7 +22,8 @@ class ChatAiParsing:
       "I hunt monsters.",
       "I say hmm a lot.",
       "I'm in love with Yennefer of Vengerberg.",
-      "I have a daughter called Ciri."
+      "I have a daughter called Ciri.",
+      "My daughter Ciri has magic powers.",
     ],
   }
 
@@ -82,7 +82,7 @@ class ChatAiParsing:
     conversation_history = []
 
     while end_conversation is False:
-      if message is None or any (x in message for x in self.user_cancel_words):
+      if message is None or any (x in message.split() for x in self.user_cancel_words):
         end_conversation = True
       else:
         # Continue the conversation. 
