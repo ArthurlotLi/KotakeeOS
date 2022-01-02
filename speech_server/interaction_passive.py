@@ -60,8 +60,8 @@ class InteractionPassive:
     interaction_passive_json = None
     interaction_passive_modules = None
 
-    self.speech_speak = speech_speak,
-    self.speech_listen = speech_listen,
+    self.speech_speak = speech_speak
+    self.speech_listen = speech_listen
     self.web_server_status = web_server_status
 
     # Attempt to load the list of all passive modules. 

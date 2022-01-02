@@ -74,7 +74,6 @@ class SpeechSpeak:
 
   # Initializes the subprocess.
   def initialize_subprocess(self):
-    successful_initialization = False
     # Use subprocess Popen as we don't want to block for a 
     # process we want to keep running. We'll interact with it
     # using multiprocessing's wrapped sockets. 
@@ -86,8 +85,8 @@ class SpeechSpeak:
 
     print("[DEBUG] Speak Text subprocess spawned successfully.")
     self.wait_for_subprocess_port()
-    
-    return successful_initialization
+
+    return True
 
   # Read the stdout of the subprocess until we get a complete port. 
   # output should be terminated by / character. Ex) 42312/

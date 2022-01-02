@@ -12,10 +12,8 @@ class TimerUtility:
   timer_seconds = None
   timer_units = None
 
-  # When initializing from a thread, be warned that arguments
-  # come through as tuples (Ex) speech_speak = (speech_speak.SpeechSpeak,))
   def __init__(self, speech_speak):
-    self.speech_speak = speech_speak[0]
+    self.speech_speak = speech_speak
 
   # Standard routine in the case that we expect additional data for
   # a passive module instantiated during runtime. 

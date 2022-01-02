@@ -59,7 +59,7 @@ class SpeechServer:
   hotword_trigger_word = None
 
   def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True):
-    self.trigger_word_iternum = trigger_word_iternum,
+    self.trigger_word_iternum = trigger_word_iternum
     self.speech_speak_use_python3 = speech_speak_use_python3
 
   #
