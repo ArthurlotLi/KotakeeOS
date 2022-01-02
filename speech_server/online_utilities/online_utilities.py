@@ -7,6 +7,8 @@
 class OnlineUtilities:
   speech_speak = None
 
+  wikipedia_query_max_sentences = 20
+
   def __init__(self, speech_speak):
     self.speech_speak = speech_speak
 
@@ -16,7 +18,7 @@ class OnlineUtilities:
 
     # Given keywords, attempt to grab a summary from the wikipedia
     # API. 
-    if("wikipedia" in command or "summary" in command):
+    if("wikipedia" in command or "summary" in command or "summarize" in command):
       valid_command = True
 
       wikipedia_query = command.replace("wikipedia", "")
@@ -24,14 +26,12 @@ class OnlineUtilities:
 
       import wikipedia
       print("[DEBUG] Attempting to query wikipedia summary for keywords: '" + str(wikipedia_query) + "'.")
-      results = wikipedia.search(wikipedia_query, results = 3)
       wiki_passage = ""
-      for r in results[1:]:
-        try:
-          s = wikipedia.summary(r)
-        except:
-          continue
-        wiki_passage += s.strip() + " "
+      try:
+        s = wikipedia.summary(wikipedia_query, sentences = self.wikipedia_query_max_sentences)
+      except:
+        pass
+      wiki_passage += s.strip() + " "
 
       response_to_query = ""
       
