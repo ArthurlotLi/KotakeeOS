@@ -7,5 +7,5 @@
 
   "require_speech_speak" : "True",
   "require_speech_listen" : "True",
-  "require_web_server_status" : "True"
+  "require_web_server_status" : "True",
 }

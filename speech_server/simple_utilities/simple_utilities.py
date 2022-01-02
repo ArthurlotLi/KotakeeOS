@@ -11,13 +11,13 @@ from datetime import date
 class SimpleUtilities:
   # Paths relative to where interaction_active is. 
   timer_class_location = "./simple_utilities/timer_utility/timer_utility.TimerUtility"
-  timer_confirmation_threshold = 1800 # Amount of time required to ask for confirmation of new timer.
+  timer_confirmation_threshold = 5400 # Amount of time required to ask for confirmation of new timer. Seconds.
   timer_ids = [] # Note this may contain stale data - need to check each id, asking if they exist first.  
 
   alarm_class_location = "./simple_utilities/alarm_utility/alarm_utility.AlarmUtility"
   alarm_snooze_remaining = 3 # Maximum snoozes for an alarm. 
   alarm_snooze_duration_seconds = 300 # Time for a snooze in seconds. 
-   # Standard actions to accompany an alarm with. 
+  # Standard actions to accompany an alarm with. 
   alarm_action_dict = { 
     "2_50": "1_0",
     "1_50": "1_0",
@@ -123,14 +123,14 @@ class SimpleUtilities:
           self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="Timer set for " + str(duration) + " " + str(units) + ".")
 
     elif("time" in command):
-      currentTime = time.strftime("%H%M", time.localtime())
-      # Separate the time with spaces + periods so the text synthesizer 
-      # reads it out digit by digit. 
-      separated_time_string = ""
-      for character in currentTime:
-        separated_time_string = separated_time_string + character + ", "
-      timeString = "It is currently " + separated_time_string + "."
-      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=timeString)
+      current_hours = time.strftime("%H", time.localtime())
+      current_minutes = time.strftime("%M", time.localtime())
+      am_pm = "a.m."
+      if current_hours > 12:
+        current_hours = current_hours - 12
+        am_pm = "p.m."
+      time_string = "It is currently " + str(current_hours) + ":" + str(current_minutes).zfill(2) + "."
+      self.speech_speak.blocking_speak_event(event_type="speak_text", event_content=time_string)
       valid_command = True
 
     # List all alarms and delete them all if desired. 
@@ -154,7 +154,7 @@ class SimpleUtilities:
           if alarm_hours > 12:
             alarm_hours = alarm_hours - 12
             am_pm = "p.m."
-          alarm_list_prompt = alarm_list_prompt + ", " + str(alarm_module.additional_data["alarm_name"]) + ", at " + str(alarm_hours) + ":" + str(alarm_module.additional_data["alarm_minute"]) + " " + am_pm + ", "
+          alarm_list_prompt = alarm_list_prompt + ", " + str(alarm_module.additional_data["alarm_name"]) + ", at " + str(alarm_hours) + ":" + str(alarm_module.additional_data["alarm_minute"]).zfill(2) + " " + am_pm + ", "
       
       if alarm_list_prompt == "":
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="There are currently no active alarms.")

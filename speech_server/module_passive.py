@@ -134,6 +134,10 @@ class ModulePassive:
       else:
         self.first_event = float(module_json["first_event"])
 
+      if self.additional_data is None:
+        if "additional_data" in module_json:
+          self.additional_data = module_json["additional_data"]
+
       self.init_on_startup = module_json["init_on_startup"] == 'True'
       self.require_online = module_json["require_online"] == 'True'
       self.require_web_server = module_json["require_web_server"] == 'True'
