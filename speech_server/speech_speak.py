@@ -58,11 +58,12 @@ class SpeechSpeak:
   shutdown_location = None
   timer_location = None
 
-  def __init__(self, chime_location, startup_location, shutdown_location, timer_location):
+  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, use_python3 = True):
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
+    self.use_python3 = use_python3
 
     if self.initialize_subprocess() is False:
       print("[ERROR] Failed to initialize subprocess. Speech Server initialization failed.")  
@@ -74,26 +75,18 @@ class SpeechSpeak:
   # Initializes the subprocess.
   def initialize_subprocess(self):
     successful_initialization = False
-    # Try two times - meant to accomodate an initial attempt to use
-    # python3. Use subprocess Popen as we don't want to block for 
-    # a process we want to keep running. We'll interact with it
+    # Use subprocess Popen as we don't want to block for a 
+    # process we want to keep running. We'll interact with it
     # using multiprocessing's wrapped sockets. 
-    for i in range(0,2):
-      if successful_initialization is False:
-        try:
-          if self.use_python3 is True:
-            self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
-          else:
-            self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
-          successful_initialization = True
-        except:
-          self.use_python3 = not self.use_python3
 
-    if successful_initialization is False:
-      print("[ERROR] Failure to spawn subprocess '" + str(self.subprocess_location) + "'. Speak text failed.")
+    if self.use_python3 is True:
+      self.subprocess_instance = Popen(["python3", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
     else:
-      print("[DEBUG] Speak Text subprocess spawned successfully.")
-      self.wait_for_subprocess_port()
+      self.subprocess_instance = Popen(["python", self.subprocess_location, ""], stdout=PIPE, bufsize=1, universal_newlines=True)
+
+    print("[DEBUG] Speak Text subprocess spawned successfully.")
+    self.wait_for_subprocess_port()
+    
     return successful_initialization
 
   # Read the stdout of the subprocess until we get a complete port. 
@@ -111,6 +104,8 @@ class SpeechSpeak:
           print("[DEBUG] Successfully recieved subprocess port number: " + str(port_number))
           self.subprocess_port = port_number
           read_full_output = True
+          return True
+    return False
 
   
   def shutdown_process(self):

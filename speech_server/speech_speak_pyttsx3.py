@@ -9,9 +9,8 @@
 # Also uses the multiprocessing library to recieve information 
 # from the main program via it's wrapped socket library. 
 
-from multiprocessing.connection import Listener, Client
+from multiprocessing.connection import Listener
 import pyttsx3
-import time
 
 import sys
 import socketserver

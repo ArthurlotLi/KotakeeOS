@@ -15,6 +15,11 @@
 #
 # Alt Usage: (query)
 # python speech_server.py -1 
+#
+# Note: to facilitate subprocesses (used by speech speak), you may
+# need to specify to use the command "python" instead of the 
+# default "python3". To do this, add the -p flag:
+# python speech_server.py 13561 -p
 
 from web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
@@ -28,10 +33,13 @@ import argparse
 class SpeechServer:
   # Configurable constants passed down to components. 
   trigger_word_models_path = '../triggerWordDetection/models'
+
   speech_speak_chime_location = "./assets/hotword.wav"
   speech_speak_startup_location = "./assets/startup.wav"
   speech_speak_shutdown_location = "./assets/shutdown.wav"
   speech_speak_timer_location = "./assets/timer.wav"
+  speech_speak_use_python3 = True
+
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
   speech_listen_led_room_id = 2
@@ -50,8 +58,9 @@ class SpeechServer:
   interaction_active = None
   hotword_trigger_word = None
 
-  def __init__(self, trigger_word_iternum):
-    self.trigger_word_iternum = trigger_word_iternum  
+  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True):
+    self.trigger_word_iternum = trigger_word_iternum,
+    self.speech_speak_use_python3 = speech_speak_use_python3
 
   #
   # Runtime functions
@@ -122,7 +131,8 @@ class SpeechServer:
       chime_location=self.speech_speak_chime_location, 
       startup_location=self.speech_speak_startup_location, 
       shutdown_location=self.speech_speak_shutdown_location,
-      timer_location=self.speech_speak_timer_location)
+      timer_location=self.speech_speak_timer_location,
+      use_python3=self.speech_speak_use_python3)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
@@ -147,7 +157,7 @@ class SpeechServer:
       led_state_on=self.speech_listen_led_state_on,
       led_state_off=self.speech_listen_led_state_off,
       led_room_id=self.speech_listen_led_room_id,
-      led_action_id=self.speech_listen_led_action_id)
+      led_action_id=self.speech_listen_led_action_id,)
     if self.speech_listen is None: 
       print("[ERROR] Failed to initialize Listen handler.") 
       return False
@@ -198,11 +208,15 @@ class SpeechServer:
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('iternum')
+  parser.add_argument('-p', action='store_true', default=False)
   args = parser.parse_args()
 
   trigger_word_iternum = int(args.iternum)
+  use_python3 = not args.p == True
 
-  speech_server = SpeechServer(trigger_word_iternum)
+  speech_server = SpeechServer(
+    trigger_word_iternum=trigger_word_iternum, 
+    use_python3=use_python3)
 
   # If a negative number is passed, execute as a direct query. 
   if (trigger_word_iternum < 0):
