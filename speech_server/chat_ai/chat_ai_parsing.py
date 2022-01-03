@@ -6,6 +6,8 @@
 
 from chat_ai import ChatAi
 
+import json
+
 class ChatAiParsing:
   speech_speak = None
   speech_listen = None
@@ -15,21 +17,19 @@ class ChatAiParsing:
   chat_ai = None
 
   # Some fun preset personas. Allow users to select from them
-  # when starting up the chat. 
-  preset_personas = {
-    "geralt" : [
-      "My name is Geralt.",
-      "I hunt monsters.",
-      "I say hmm a lot.",
-      "I'm in love with Yennefer of Vengerberg.",
-      "I have a daughter called Ciri.",
-      "My daughter Ciri has magic powers.",
-    ],
-  }
+  # when starting up the chat. Loaded from the preset_personas.json
+  # file. 
+  preset_personas = None
+  perset_personas_location = "./chat_ai/preset_personas.json"
 
   def __init__(self, speech_speak, speech_listen):
     self.speech_speak = speech_speak
     self.speech_listen = speech_listen
+
+    # Load the preset personas file. Don't bother with error
+    # parsing because active modules will handle the catching. 
+    json_file = open(self.perset_personas_location)
+    self.preset_personas = json.load(json_file)
 
     # Initialize ChatAI.
     self.chat_ai = ChatAi()
