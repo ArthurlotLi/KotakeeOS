@@ -62,7 +62,7 @@ class EmotionDetectionDataUtility:
   wassa_directory = "./datasets/wasa2017"
   cecilia_directory = "./datasets/cecilia"
   daily_dialog_directory = "./datasets/dailydialog"
-  emotion_stimulus_directoy = "./datasets/emotionstimulus"
+  emotion_stimulus_directory = "./datasets/emotionstimulus"
 
   isear_location = "./datasets/isear.csv"
   meld_location = "./datasets/meld.csv"
@@ -231,6 +231,42 @@ class EmotionDetectionDataUtility:
   # your own. Don't forget to drop the shame category as well. 
   def generate_emotion_stimulus(self):
     print("[INFO] Generating Emotion Stimulus csv.")
+    emotion_stimulus_data = None
+
+    for filename in os.listdir(self.emotion_stimulus_directory):
+      if filename.endswith("txt"):
+        try:
+          print("[DEBUG] EmotionStimulus - processing file " + str(filename) + ".")
+          file_data = pd.read_csv(self.emotion_stimulus_directory + "/" + filename, delimiter="\n", names = ["nodes"])
+          # We only expect one file. 
+          emotion_stimulus_data = file_data
+          break
+        except Exception as e:
+          print("[ERROR] EmotionStimulus - Failed to process file " + str(filename) + ". Error:")
+          print(e)
+
+    # Now we need to parse each row and extract the emotion from the
+    # row node name. Ex) <happy>text</happy>
+    solution_column = []
+    text_column = []
+    for index, row in emotion_stimulus_data.iterrows():
+      original_node = row["nodes"]
+      split_last_node = original_node.split("<\\")
+      emotion = split_last_node[1].replace(">","").strip()
+      text = split_last_node[0].split(">")[1].strip()
+
+      # Drop the shame emotion.
+      if emotion != "shame":
+        # Need to map Happy to Joy and Sad to Sadness.
+        if emotion == "happy": emotion = "joy"
+        elif emotion == "sad": emotion = "sadness"
+
+        solution_column.append(emotion)
+        text_column.append(text)
+    
+    emotion_stimulus_data = pd.DataFrame(data={"text":text_column, "solution":solution_column})
+    
+    return emotion_stimulus_data
 
   # The ISEAR dataset is pretty straightforward - looks like there is
   # a phantom column to get rid of, though. Change the order and drop
@@ -245,21 +281,89 @@ class EmotionDetectionDataUtility:
     except Exception as e:
       print("[ERROR] ISEAR - Failed to read file " + str(self.isear_location) + ". Error:")
       print(e)
+      return
 
-    # Rearrange columns. Spring cleaning. 
-    isear_data = isear_data[["text","solution"]]
+    # There are some typos we need to address. 
+    text_column = []
+    solution_column = []
+    for index, row in isear_data.iterrows():
+      emotion = row["solution"]
+      text = row["text"]
+      # Split the entry if there is a matchup. 
+      emotion = emotion.split("|")[0] 
+      # Drop classes that we cannot easily fold into other categories. 
+      if emotion == "shame" or emotion == "guilt":
+        continue
+      # Print out any typos that we run into. 
+      if emotion != "disgust" and emotion != "surprise" and emotion != "joy" and emotion != "sadness" and emotion != "fear" and emotion != "anger":
+        print("[WARNING] ISEAR - encountered an unknown emotion " + str(emotion) + "! Skipping...")
+        continue
+    
+      solution_column.append(emotion)
+      text_column.append(text)
 
-    # Drop classes that we cannot easily fold into other categories. 
-    isear_data = isear_data[isear_data["solution"].str.contains("shame")==False]
-    isear_data = isear_data[isear_data["solution"].str.contains("guilt")==False]
+    isear_data = pd.DataFrame(data={"text":text_column,"solution":solution_column})
     
     return isear_data
 
+  # The MELD dataset is about as clean as it gets. Kudos to these 
+  # folks. 
   def generate_meld(self):
     print("[INFO] Generating MELD csv.")
+    try:
+      print("[DEBUG] MELD - processing file " + str(self.meld_location) + ".")
+      file_data = pd.read_csv(self.meld_location)
+      meld_data = file_data
+    except Exception as e:
+      print("[ERROR] MELD - Failed to read file " + str(self.meld_location) + ". Error:")
+      print(e)
+      return
 
+    # Rearrange columns. Spring cleaning. 
+    meld_data["text"] = meld_data["Utterance"]
+    meld_data["solution"] = meld_data["Emotion"]
+    meld_data = meld_data[["text","solution"]]
+    
+    return meld_data
+
+  # The SMILE dataset is rather messy - solutions can contain a | bar 
+  # with two emotions, while a large majority have "nocode" solutions. 
+  # This is different from instances with "not-relevant" solutions. 
   def generate_smile(self):
     print("[INFO] Generating Smile csv.")
+    try:
+      print("[DEBUG] SMILE - processing file " + str(self.smile_location) + ".")
+      file_data = pd.read_csv(self.smile_location, names = ["_", "text", "orig_solution"])
+      smile_data = file_data
+    except Exception as e:
+      print("[ERROR] SMILE - Failed to read file " + str(self.smile_location) + ". Error:")
+      print(e)
+      return
+
+    # Address the wide variety of classes. 
+    text_column = []
+    solution_column = []
+    for index, row in smile_data.iterrows():
+      emotion = row["orig_solution"]
+      text = row["text"]
+      # Split the entry if there is a matchup. 
+      emotion = emotion.split("|")[0] 
+      if emotion == "happy": emotion = "joy"
+      elif emotion == "sad": emotion = "sadness"
+      elif emotion == "angry": emotion = "anger"
+      elif emotion == "nocode": emotion = "neutral"
+      elif emotion == "not-relevant":
+        continue
+      elif emotion != "disgust" and emotion != "surprise":
+        print("[WARNING] SMILE - encountered an unknown emotion " + str(emotion) + "! Skipping...")
+        continue
+    
+      solution_column.append(emotion)
+      text_column.append(text)
+
+    smile_data = pd.DataFrame(data={"text":text_column,"solution":solution_column})
+    
+    return smile_data
 
   # Given a pandas dataframe, output the dataframe to a csv file names
   # appropriately. 

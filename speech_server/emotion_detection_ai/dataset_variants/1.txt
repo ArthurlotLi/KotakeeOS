@@ -1,0 +1,10 @@
+['cecilia', 'dailydialog', 'emotionstimulus', 'isear', 'meld', 'smile', 'wassa2017']
+
+neutral     104742
+joy          20218
+anger         6214
+sadness       5872
+fear          4570
+surprise      4031
+disgust       1937
+Name: solution, dtype: int64
