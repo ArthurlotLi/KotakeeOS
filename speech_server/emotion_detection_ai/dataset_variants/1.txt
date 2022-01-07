@@ -1,5 +1,7 @@
 ['cecilia', 'dailydialog', 'emotionstimulus', 'isear', 'meld', 'smile', 'wassa2017']
 
+(147584, 2)
+
 neutral     104742
 joy          20218
 anger         6214
