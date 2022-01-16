@@ -12,11 +12,19 @@
 # Functions based on the contents of the raw_data folder - if
 # new datasets are generated in the future and placed in the
 # folder, this program does not need to be modified. 
+#
+# Preprocesses all data via the following: converting to lowercase, 
+# removing stop words, removing any mentions (@ for tweets),
+# and removing URLs. 
 
 import argparse
 import pandas as pd
+import numpy as np
 import os
 from sklearn.model_selection import train_test_split
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
 
 class EmotionDetectionDataset:
   raw_data_location = "./raw_data"
@@ -110,13 +118,47 @@ class EmotionDetectionDataset:
       for i in range(1, len(read_files_data)):
         product_data = pd.concat([product_data, read_files_data[i]], axis=0)
 
-      # We've now combined our product dataset. Let's write it. 
+      # We've now combined our product dataset. Execute preprocessing.
+      product_data = self.preprocess_dataset_variant(data = product_data)
+      
+      # Write the final product dataset to file.
       if product_data is not None:
         self.write_csv_txt(self.output_data_location + "/" + str(variant_num), product_data)
 
         print("[INFO] Dataset generation for variant "+str(variant_num)+" successful.")
 
     return product_data
+
+  # Given a dataframe, manage the following: converting to lowercase, 
+  # removing stop words, removing any mentions (@ for tweets),
+  # and removing URLs
+  def preprocess_dataset_variant(self, data):
+    # Convert all to lowercase
+    print("[INFO] Preprocessing - converting to lowercase.")
+    data = data.apply(lambda x: x.astype(str).str.lower())
+
+    # Remove stop words using nltk.corpus + remove mentions, URLS.
+    print("[INFO] Preprocessing - removing stop words, mentions, and URLs.")
+    substrings_to_eliminate = ["@", ".com", ".net", ".gov", "https:", ".org", ".co", ".us", ".edu", ".info"]
+    stop = stopwords.words('english')
+    data["text"] = data["text"].apply(lambda x: ' '.join([word for word in x.split() if (word not in (stop) 
+      and not any(y in word for y in substrings_to_eliminate))]))
+
+    # Harmonize punctuation by addressing unecessary spaces in front
+    # Ex) "text ." -> "text."
+    print("[INFO] Preprocessing - harmonizing punctuation.")
+    data["text"] = data["text"].apply(lambda x: x.replace(" .","."))
+    data["text"] = data["text"].apply(lambda x: x.replace(" ,",","))
+    data["text"] = data["text"].apply(lambda x: x.replace(" !","!"))
+    data["text"] = data["text"].apply(lambda x: x.replace(" ?","?"))
+
+    # Clear any empty rows, or rows with just leftover punctuation.
+    print("[INFO] Preprocessing - removing empty rows.")
+    data["text"] = data["text"].apply(lambda x: x.strip()) # Clear trailing/leading whitespace.
+    data["text"].replace(["",".",",","?","!",",.",".,",",,","..","!!","?!","!?","??"], np.nan, inplace=True)
+    data.dropna(subset=["text"], inplace=True)
+
+    return data
 
   # Given an iternum, splits a dataset variant into test and train
   # given a ratio (default is 20% for test). Does not read from 
@@ -190,6 +232,7 @@ if __name__ == "__main__":
 
   variant_num = args.variant_num
   variant_flags = None
+  #variant_flags = ["meld"]
   variant_code = None
   """
   variant_flags = [

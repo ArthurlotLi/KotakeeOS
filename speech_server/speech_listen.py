@@ -34,7 +34,7 @@ class SpeechListen:
   default_max_response_attempts = 1
   default_response_timeout = 5
   default_response_phrase_timeout = 5
-  default_ambient_noise_duration = 1.0
+  default_ambient_noise_duration = 0.3
 
   def __init__(self, speech_speak, web_server_status, led_state_on, led_state_off, led_room_id, led_action_id):
     self.speech_speak = speech_speak

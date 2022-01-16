@@ -24,3 +24,6 @@ spacy
 
 # ChatAi reqs:
 simpletransformers
+
+# Emotion Detection reqs:
+ntlk
