@@ -70,7 +70,17 @@ class TestModelChain:
           else:
             print("[INFO] Model " + str(filename) + " processing complete.")
             self.chain_test_results[filename_uid] = "%.8f - " % (acc*100) + str(filename) + "\n"
-            self.chain_test_results_acc_map[acc] = filename_uid
+            # If a model of that exact accuracy exists already, append
+            # a tiny number to it until it's unique. 
+            if acc in self.chain_test_results_acc_map:
+              sorting_acc = None
+              while sorting_acc is None:
+                acc = acc + 0.000000000000001 # Acc has 15 decimal precision. Append by 1 to break ties.
+                if acc not in self.chain_test_results_acc_map:
+                  sorting_acc = acc
+              self.chain_test_results_acc_map[sorting_acc] = filename_uid
+            else:
+              self.chain_test_results_acc_map[acc] = filename_uid
         except:
           # Use a try/except so that we still write the remaining stuff 
           # to file in case of a failure or the user cancels the rest.
@@ -119,10 +129,12 @@ class TestModelChain:
       filename = self.chain_test_results_location + "/"+file_name_prefix+str(result_index)+file_name_suffix
       f = open(filename, "w")
       print("\n[INFO] Chain test complete. Writing results to file '"+filename+"'...")
-      f.write("=================================\nChain Test Results\n=================================\n\n")
+
+      f.write("=================================\nSORTED Chain Test Results\n=================================\n\n")
       # Write results of each model, sorted.
       for key in self.chain_test_results_acc_map:
         f.write(self.chain_test_results[self.chain_test_results_acc_map[key]])
+
       f.close()
       print("[INFO] Write complete. Have a good night...")
     except:

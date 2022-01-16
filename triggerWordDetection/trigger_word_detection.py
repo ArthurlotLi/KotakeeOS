@@ -77,6 +77,8 @@ class TriggerWordDetection:
   model_gru_1 = 128
   model_gru_2 = 128
   model_gru_3 = 0
+  model_gru_4 = 0
+  model_gru_5 = 0
 
   # Additional parameters
   mcp_save_best_only = False
@@ -107,6 +109,8 @@ class TriggerWordDetection:
       if "model_gru_1" in model_parameters: self.model_gru_1 = model_parameters["model_gru_1"]
       if "model_gru_2" in model_parameters: self.model_gru_2 = model_parameters["model_gru_2"]
       if "model_gru_3" in model_parameters: self.model_gru_3 = model_parameters["model_gru_3"]
+      if "model_gru_4" in model_parameters: self.model_gru_4 = model_parameters["model_gru_4"]
+      if "model_gru_5" in model_parameters: self.model_gru_5 = model_parameters["model_gru_5"]
 
       if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
       if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
@@ -546,6 +550,18 @@ class TriggerWordDetection:
       # Third GRU Layer
       if(self.model_gru_3 is not None and self.model_gru_3 > 0):
         X = GRU(units = self.model_gru_3, return_sequences = True)(X)
+        X = Dropout(0.8)(X)
+        X = BatchNormalization()(X)
+    
+      # Fourth GRU Layer
+      if(self.model_gru_4 is not None and self.model_gru_4 > 0):
+        X = GRU(units = self.model_gru_4, return_sequences = True)(X)
+        X = Dropout(0.8)(X)
+        X = BatchNormalization()(X)
+
+      # Fifth GRU Layer
+      if(self.model_gru_5 is not None and self.model_gru_5 > 0):
+        X = GRU(units = self.model_gru_5, return_sequences = True)(X)
         X = Dropout(0.8)(X)
         X = BatchNormalization()(X)
         
