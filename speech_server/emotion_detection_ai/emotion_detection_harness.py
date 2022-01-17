@@ -13,13 +13,18 @@
 # Model (DEM) of human emotion with 6 categories, alongside an
 # additional "neutral" category. Together, the 7 possible solutions
 # for the model are:
-#  - Joy
-#  - Sadness
-#  - Fear
-#  - Anger
-#  - Disgust
-#  - Surprise
-#  - Neutral
+#  0 Joy
+#  1 Sadness
+#  2 Fear
+#  3 Anger
+#  4 Disgust
+#  5 Surprise
+#  6 Neutral
+#
+# Approach utilizes a fine-tuned RoBERTa-Large model in order to 
+# predict the emotion from text. Models are saved in the appropriate
+# folder for usage in applications such as the Emotion Representation
+# project. 
 #
 # Train the model on a combination of datasets obtained from online
 # resources, as well as with homegrown personally labelled datsets. 
@@ -62,17 +67,18 @@ import matplotlib.pyplot as plt
 class EmotionDetectionHarness:
   dataset_variants_location = "./dataset_variants"
   model_variants_location = "./models"
+  roberta_large_clean_name = "roberta-large"
   test_dataset_suffix = "_test"
   dev_dataset_suffix = "_dev"
   train_dataset_suffix = "_train"
 
   # Configurable model training settings/hyperparameters.
   adam_learning_rate = 0.00001 
-  max_seq_length = 200
+  max_seq_length = 256
 
   # Note 32 is the upper limit that my GPU VRAM can handle. 
   dataloader_batch_size = 32
-  model_epochs = 2
+  model_epochs = 4
   model_grad_acc_steps = 4
 
   solution_string_map = {
@@ -88,9 +94,10 @@ class EmotionDetectionHarness:
   # If the dataset is already generated, provide this method with the
   # variant number and the written csv files will be utilized.
   def load_and_train_model(self, variant_num, model_num, use_cpu = False):
-    print("[INFO] Loading existing dataset and training for emotion detection dataset variant " + str(variant_num) + ".")
+    print("[INFO] Loading existing dataset and training for emotion detection dataset variant " + str(variant_num) + " and model iteration "+str(model_num)+".")
     train_set, dev_set, test_set = self.load_train_dev_test(variant_num = variant_num)
     model = self.train_model(model_num=model_num, variant_num=variant_num, train_set=train_set, dev_set = dev_set, test_set=test_set, use_cpu=use_cpu)
+    print("[INFO] Training session completed successfully. Goodnight...")
 
   # Given a variant number, loads train and test datasets. Returns
   # a none tuple of length two if an error is encountered.
@@ -129,6 +136,51 @@ class EmotionDetectionHarness:
       return None
     print("[INFO] Utilizing Train set "  + str(train_set.shape) + ", Dev set " + str(dev_set.shape)+", and Test set " + str(test_set.shape) + ".")
 
+    model, tokenizer, device = self.load_or_download_roberta(use_cpu = use_cpu)
+
+    # Declare our optimizer, providing it the pretrained model's
+    # parameters. 
+    optimizer = AdamW(model.parameters(), lr=self.adam_learning_rate)
+
+    # Encode the data, preparing the data for input into the model. 
+    dataloader_train, dataloader_dev = self.train_model_encode_train_dev(train_set=train_set, dev_set=dev_set, tokenizer=tokenizer)
+
+    # Now we're ready to train! We'll be doing this rather "manually",
+    # fine-tuning the RoBERTa Large model for a number of epochs. 
+    model, train_loss_values, dev_acc_values = self.train_model_fine_tune(
+      model=model, 
+      device=device, 
+      optimizer=optimizer, 
+      dataloader_train=dataloader_train, 
+      dataloader_dev=dataloader_dev)
+
+    # Training routine complete! We've completed our fine-tuning and
+    # should save the model. 
+    self.save_model(model = model, tokenizer = tokenizer, model_num = model_num)
+
+    # Evalaute the model with the test dataset. 
+    test_accuracy = self.evaluate_model(
+      model_num = model_num, 
+      variant_num = variant_num, 
+      tokenizer = tokenizer, 
+      test_set = test_set, 
+      model = model, 
+      device = device)
+
+    # Now we should save our training history. 
+    self.save_model_history(
+      train_loss_values = train_loss_values, 
+      dev_acc_values = dev_acc_values, 
+      test_accuracy = test_accuracy, 
+      model_num = model_num)
+    
+    # All done. Training complete. 
+    return model
+
+  # Load the device for torch work. Expects a boolean indicating whether
+  # we'll be using the CPU. Returns None in the event of a GPU CUDA load
+  # failure.
+  def train_model_load_device(self, use_cpu):
     device = None
 
     if not use_cpu:
@@ -149,64 +201,111 @@ class EmotionDetectionHarness:
     else:
       print("[INFO] NOTE!! CPU is being utilized! Do not use this for proper training!")
       device = torch.device("cpu") # Use the CPU for better debugging messages. 
+    
+    return device
 
-    # Grab roberta-large model + tokenizer from huggingface.
-    print("[INFO] Obtaining RoBERTa-Large tokenizer.")
-    tokenizer = AutoTokenizer.from_pretrained("roberta-large") 
+  # Looks to see if a local copy of roberta has been downloaded. 
+  # Expects within ./models/roberta-large.
+  def load_or_download_roberta(self, use_cpu = False):
+    tokenizer = None
+    model = None
+    model_path = self.model_variants_location + "/" + self.roberta_large_clean_name
 
-    print("[INFO] Obtaining RoBERTa-Large config.")
-    # Set the model's labels. Make sure the class numbers start with 0. 
-    # If this is not present, you'll get the Target # is out of bounds
-    # given then default RoBERTa model.
-    config = AutoConfig.from_pretrained("roberta-large", num_labels=len(self.solution_string_map))
+    if not os.path.exists(model_path):
+      print("[DEBUG] RoBERTa-Large clean does not exist at path: '" +  model_path + "'.")
+      # Path doesn't exist. We'll need to download the model
+      # and place it in a new directory.
+      os.makedirs(model_path)
+    else:
+      # Path exists. see if we can load a model from there.
+      model, tokenizer, device = self.load_tokenizer_and_model(self.roberta_large_clean_name, device = None, use_cpu = use_cpu)
+    
+    if model is None or tokenizer is None:
+      # Need to grab it from the internet. 
+      print("[INFO] Downloading RoBERTa-Large.")
 
-    print("[INFO] Obtaining RoBERTa-Large model.")
-    model = AutoModelForSequenceClassification.from_pretrained("roberta-large", config=config)
+      # Initialize the device. 
+      device = self.train_model_load_device(use_cpu = use_cpu)
 
-    # Send the model to the GPU. 
-    model.to(device)
+      # Grab roberta-large model + tokenizer from huggingface.
+      print("[INFO] Obtaining RoBERTa-Large tokenizer.")
+      tokenizer = AutoTokenizer.from_pretrained("roberta-large") 
 
-    # Declare our optimizer, providing it the pretrained model's
-    # parameters. 
-    optimizer = AdamW(model.parameters(), lr=self.adam_learning_rate)
+      print("[INFO] Obtaining RoBERTa-Large config.")
+      # Set the model's labels. Make sure the class numbers start with 0. 
+      # If this is not present, you'll get the Target # is out of bounds
+      # given then default RoBERTa model.
+      config = AutoConfig.from_pretrained("roberta-large", num_labels=len(self.solution_string_map))
 
-    # Encode the data, preparing the data for input into the model. 
-    print("[INFO] Preparing train, dev, and test data for RoBERTa Large model via encoding.")
+      print("[INFO] Obtaining RoBERTa-Large model.")
+      model = AutoModelForSequenceClassification.from_pretrained("roberta-large", config=config)
+
+      # Send the model to the GPU. 
+      model.to(device)
+
+      # Save the downloaded model for future use. 
+      print("[DEBUG] Saving RoBERTa-Large clean.")
+      self.save_model(model = model, tokenizer = tokenizer, model_num = self.roberta_large_clean_name)
+    
+    return model, tokenizer, device
+
+
+  # Encode the data, preparing the data for input into the model. 
+  # Returns two dataloaders for train and dev respectively.
+  def train_model_encode_train_dev(self, train_set, dev_set, tokenizer):
+    print("[INFO] Preparing Train and Dev data for RoBERTa Large model via encoding.")
     sentences_train = train_set["text"]
     sentences_dev = dev_set["text"]
-    sentences_test = test_set["text"]
     input_ids_train, attention_masks_train = self.train_model_encode_data(tokenizer, sentences_train)
     input_ids_dev, attention_masks_dev = self.train_model_encode_data(tokenizer, sentences_dev)
-    input_ids_test, attention_masks_test = self.train_model_encode_data(tokenizer, sentences_test)
 
     # Mush everything together into length 3 tuples for the model.
     # (input id, attention mask, solutions)
     solutions_train = train_set["solution"].astype(int)
     solutions_dev = dev_set["solution"].astype(int)
-    solutions_test = test_set["solution"].astype(int)
     features_train = (input_ids_train, attention_masks_train, solutions_train)
     features_dev = (input_ids_dev, attention_masks_dev, solutions_dev)
-    features_test = (input_ids_test, attention_masks_test, solutions_test)
 
     # Place the created data into torch objects useful for training. 
-    print("[INFO] Creating TensorDatasets and DataLoaders.")
+    print("[INFO] Creating TensorDatasets and DataLoaders for Train and Dev.")
     features_train_tensors = [torch.tensor(feature, dtype=torch.long) for feature in features_train]
     features_dev_tensors = [torch.tensor(feature, dtype=torch.long) for feature in features_dev]
-    features_test_tensors = [torch.tensor(feature, dtype=torch.long) for feature in features_test]
     dataset_train = TensorDataset(*features_train_tensors)
     dataset_dev = TensorDataset(*features_dev_tensors)
-    dataset_test = TensorDataset(*features_test_tensors)
 
     # Create DataLoaders from the datasets, first declaring Samplers. 
     sampler_train = RandomSampler(dataset_train)
     sampler_dev = SequentialSampler(dataset_dev)
-    sampler_test = SequentialSampler(dataset_test)
     dataloader_train = DataLoader(dataset_train, sampler=sampler_train, batch_size=self.dataloader_batch_size)
     dataloader_dev = DataLoader(dataset_dev, sampler=sampler_dev, batch_size=self.dataloader_batch_size)
-    dataloader_test = DataLoader(dataset_test, sampler=sampler_test, batch_size=self.dataloader_batch_size)
 
-    # Now we're ready to train! We'll be doing this rather "manually",
-    # fine-tuning the RoBERTa Large model for a number of epochs. 
+    return dataloader_train, dataloader_dev
+
+  # Encode the data into attention masks to let the model train.
+  # Uses the RoBERTa Large tokenizer, which is in charge of
+  # preparing the inputs for a model. 
+  def train_model_encode_data(self, tokenizer, sentences):
+    print("[DEBUG] Encoding a set of " + str(len(sentences)) + " sentences with RoBERTa Large's preprocessing tokenizer.")
+    input_ids = []
+    attention_masks = []
+    # For each sentence, generate an input_id and an attention_mask.
+    for sentence in sentences:
+      encoded_data = tokenizer.encode_plus(
+        sentence,
+        max_length=self.max_seq_length, 
+        padding = "max_length",
+        truncation_strategy="longest_first",
+        truncation=True)
+      input_ids.append(encoded_data["input_ids"])
+      attention_masks.append(encoded_data["attention_mask"])
+    print("[DEBUG] Encoding complete: generated " + str(len(attention_masks)) + " attention masks.")
+    return np.array(input_ids), np.array(attention_masks)
+
+  # Execute training session given the model, the device, and the 
+  # dataloaders for train and dev. 
+  #
+  # Return the model, train_loss_values, and dev_acc_values.
+  def train_model_fine_tune(self, model, device, optimizer, dataloader_train, dataloader_dev):
     print("[INFO] Beginning training session.")
     train_loss_values = []
     dev_acc_values = []
@@ -277,36 +376,7 @@ class EmotionDetectionHarness:
       # Each epoch, output the results. 
       print("Epoch: "+str(epoch+1)+" - Train Loss: " + str(train_loss) + " | Dev Acc: " + str(epoch_dev_acc)+ "\n")
 
-    # Training routine complete! We've completed our fine-tuning and
-    # should save the model. 
-    print("[INFO] Training complete. Saving model " +str(model_num)+"...")
-    self.save_model(model = model, tokenizer = tokenizer, model_num = model_num)
-
-    # Now we should save our training history. 
-    self.save_model_history(train_loss_values = train_loss_values, dev_acc_values = dev_acc_values, model_num = model_num)
-
-    # TODO: Evaluate with test dataset. Perhaps this can be part
-    # of another class that we can call independently? 
-
-  # Encode the data into attention masks to let the model train.
-  # Uses the RoBERTa Large tokenizer, which is in charge of
-  # preparing the inputs for a model. 
-  def train_model_encode_data(self, tokenizer, sentences):
-    print("[DEBUG] Encoding a set of " + str(len(sentences)) + " sentences with RoBERTa Large's preprocessing tokenizer.")
-    input_ids = []
-    attention_masks = []
-    # For each sentence, generate an input_id and an attention_mask.
-    for sentence in sentences:
-      encoded_data = tokenizer.encode_plus(
-        sentence,
-        max_length=self.max_seq_length, 
-        padding = "max_length",
-        truncation_strategy="longest_first",
-        truncation=True)
-      input_ids.append(encoded_data["input_ids"])
-      attention_masks.append(encoded_data["attention_mask"])
-    print("[DEBUG] Encoding complete: generated " + str(len(attention_masks)) + " attention masks.")
-    return np.array(input_ids), np.array(attention_masks)
+    return model, train_loss_values, dev_acc_values
 
   # Saves the model in the self.model_variants_location under a 
   # subdirectory labeled with the provided model_num. Overwrites
@@ -329,9 +399,11 @@ class EmotionDetectionHarness:
   # in the same folder as the model under a subdirectory. 
   # 
   # Provide graphs as well as the raw lists just in case. 
-  def save_model_history(self, train_loss_values, dev_acc_values, model_num):
+  def save_model_history(self, train_loss_values, dev_acc_values, test_accuracy, model_num):
+
     model_folder = self.model_variants_location + "/" + str(model_num)
     model_history_folder = model_folder + "/train_history"
+
     print("[INFO] Saving model training history at location: '" + model_folder + "'.")
     
     # Ensure the folders are there. 
@@ -343,18 +415,20 @@ class EmotionDetectionHarness:
       os.makedirs(model_history_folder)
 
     # Save the raw lists. 
-    train_loss_values_file = model_history_folder + "/train_loss.txt"
+    train_results_file = model_history_folder + "/train_results.txt"
     train_loss_graph_file = model_history_folder + "/train_loss" # Suffix will be added by plt.
-    dev_acc_values_file = model_history_folder + "/dev_acc.txt"
     dev_acc_graph_file = model_history_folder + "/dev_acc" # Suffix will be added by plt.
 
-    with open(train_loss_values_file, "w") as output_file:
-      print("[DEBUG] Writing train loss values: '" + train_loss_values_file + "'.")
-      output_file.write(str(train_loss_values))
-      output_file.close()
-    with open(dev_acc_values_file, "w") as output_file:
-      print("[DEBUG] Writing dev acc values: '" + dev_acc_values_file + "'.")
-      output_file.write(str(dev_acc_values))
+    with open(train_results_file, "w") as output_file:
+      print("[DEBUG] Writing train results to: '" + train_results_file + "'.")
+      output_file.write("=================================\nModel " + str(model_num) + " Train Results\n=================================\n\n")
+      output_file.write("Test Acc Result: " + str(test_accuracy*100) + "\n")
+      if len(dev_acc_values) > 0:
+        output_file.write("Dev Acc Result: " + str(dev_acc_values[len(dev_acc_values) - 1] *100) + "\n\n")
+      else:
+        output_file.write("\n")
+      output_file.write("Train Loss History:" + str(train_loss_values) + "\n\n")
+      output_file.write("Dev Acc History:" + str(dev_acc_values) + "\n\n")
       output_file.close()
 
     graph_width_inches = 13
@@ -403,6 +477,82 @@ class EmotionDetectionHarness:
     if not os.path.exists(model_folder):
       print("[INFO] Creating model iteration " +str(model_num)+ " subfolder '" + model_folder + "'.")
       os.makedirs(model_folder)
+
+  # Given the model num, evaluate the model. If the test set is
+  # not provided directly, load it. May be called directly after
+  # the training session to provide additional metrics and may
+  # also be called indirectly. 
+  def evaluate_model(self, model_num, variant_num, tokenizer = None, test_set = None, model = None, device = None, use_cpu = False):
+    print("[INFO] Testing model iteration "+str(model_num)+" with test set variant "+str(variant_num)+".")
+    if test_set is None:
+      # TODO: Load the test set only and don't be lazy.
+      train_set, dev_set, test_set = self.load_train_dev_test(variant_num = variant_num)
+  
+    # If any are missing, load the entire shebang.
+    if tokenizer is None or model is None or device is None:
+      model, tokenizer, device = self.load_tokenizer_and_model(model_num=model_num, device=device, use_cpu=use_cpu)
+
+    # Prepare the Test Dataloader. 
+    sentences_test = test_set["text"]
+    input_ids_test, attention_masks_test = self.train_model_encode_data(tokenizer, sentences_test)
+    solutions_test = test_set["solution"].astype(int)
+    features_test = (input_ids_test, attention_masks_test, solutions_test)
+    features_test_tensors = [torch.tensor(feature, dtype=torch.long) for feature in features_test]
+    dataset_test = TensorDataset(*features_test_tensors)
+    sampler_test = SequentialSampler(dataset_test)
+    dataloader_test = DataLoader(dataset_test, sampler=sampler_test, batch_size=self.dataloader_batch_size)
+
+    # Evaluate the model. 
+    test_accuracy = 0
+    # Set the model in evaluation mode. 
+    model.eval()
+    for batch in tqdm(dataloader_test, desc="Final Test Eval", total=len(dataloader_test)):
+      # For each batch of samples, predict the outputs. 
+      input_ids = batch[0].to(device)
+      attention_masks = batch[1].to(device)
+      labels = batch[2]
+      with torch.no_grad():
+        outputs = model(input_ids, token_type_ids=None, attention_mask=attention_masks)
+
+      # Given the outputs, calculate the accuracy. 
+      logits = outputs[0]
+      logits = logits.detach().cpu().numpy()
+      predictions = np.argmax(logits, axis=1).flatten()
+      labels = labels.numpy().flatten()
+      # Accuracy is # correct / # labels. 
+      test_accuracy += np.sum(predictions == labels) / len(labels)
+    
+    # Once all done iterating through all of the dev data,
+    # Calculate the total dev acc and keep it for our records. 
+    test_accuracy = test_accuracy / len(dataloader_test)
+
+    # Each epoch, output the results. 
+    print("[INFO] Model Test Accuracy: " + str(test_accuracy)+ "\n")
+    return test_accuracy
+  
+  # Given a model_num, return the tokenizer and model stored at the
+  # expected location. Loads the device to run it on if it is not 
+  # provided. Also returns the device in case it is needed.
+  def load_tokenizer_and_model(self, model_num, device = None, use_cpu = False):
+    # Grab the device first if we don't have it. 
+    if device is None:
+      device = self.train_model_load_device(use_cpu = use_cpu)
+
+    try:
+      model_path = self.model_variants_location + "/" + str(model_num)
+      print("[INFO] Loading Tokenizer for model " + str(model_num) + " from '" + model_path + "'.")
+      tokenizer = AutoTokenizer.from_pretrained(model_path)
+      print("[INFO] Loading Model for model " + str(model_num) + " from '" + model_path + "'.")
+      model = AutoModelForSequenceClassification.from_pretrained(model_path)
+
+      print("[DEBUG] Loading Model onto device.")
+      model.to(device)
+
+      return model, tokenizer, device
+    except Exception as e:
+      print("[ERROR] Unable to load model " + str(model_num) + ". Exception: ")
+      print(e)
+    return None, None, None
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
