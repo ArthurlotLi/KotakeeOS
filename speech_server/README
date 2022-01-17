@@ -79,20 +79,42 @@ with a base pretrained model weights provided by Hugging Face.
 To use ChatAI, you need to make sure to do some manual steps to allow your
 local environment to function correctly. 
 
-1. Install pytorch. If you wish to use CUDA, you must go to pytorch.org. 
-   otherwise, run:
-  
-   pip install torch
-
-2. Make sure you have transformers and simpletransformers.
+1. Make sure you have transformers and simpletransformers.
 
    pip install -r requirements.txt 
    or
    pip install transformers simpletransformers
 
-3. Manually acquire Hugging Face's pretrained ConvAIModel and export all
+2. Manually acquire Hugging Face's pretrained ConvAIModel and export all
    contents into the ./chat_ai/chat_ai_dependencies/gpt_personachat_cache
    folder (which may need to be created). The files may be downloaded 
    directly:
 
    https://s3.amazonaws.com/models.huggingface.co/transfer-learning-chatbot/gpt_personachat_cache.tar.gz 
+
+------------------------------------------------------------------------------
+Emotion Detection AI Setup
+------------------------------------------------------------------------------
+RoBERTa Large powered Natural Language Processing project. Given a
+line of text, predict the emotion category under which that text falls 
+under. Based upon the Paul Ekman Discrete Emotion Model (DEM) of human 
+emotion with 6 categories, alongside an additional "neutral" category. 
+
+Implemented as part of KotakeeOS Speech Server with a companion Emotion 
+Representation class that is tied into the server's ability to output
+speech. That is to say whenever the program says anything, an accompanying
+emotion will be predicted and presented to the user with a visual 
+representation. 
+
+To use EmotionDetectionAI, you need to make sure you do some manual steps to allow your
+local environment to function correctly.
+
+1. Install pytorch to train the model. Training the model requires CUDA, 
+   for which you must go to pytorch.org. 
+
+2. Install everything required by EmotionDetectionAI. Run:
+
+   pip install -r requirements.txt 
+
+3. Manually acquire roberta-large_fine-tuned and insert it inside the 
+   ./emotion_detection_ai/models folder. 

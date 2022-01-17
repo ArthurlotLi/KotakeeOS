@@ -31,23 +31,36 @@ class EmotionDetectionDataset:
   output_data_location = "./dataset_variants"
 
   test_dataset_suffix = "_test"
+  dev_dataset_suffix = "_dev"
   train_dataset_suffix = "_train"
 
-  # Default 20% test set size. 
-  default_test_ratio = 0.20
+  # Default: 20% dev set, 10% test. 
+  default_test_ratio = 0.10
+  default_dev_ratio = 0.20
 
   # It is assumed all of these are of the .csv suffix. 
   subset_filenames = None
   variant_flags = None
+
+  # Solution strings to integers for categories.  
+  solution_string_map = {
+    "joy" : 0,
+    "sadness" : 1,
+    "fear" : 2,
+    "anger" : 3,
+    "disgust" : 4,
+    "surprise" : 5,
+    "neutral" : 6,
+  }
 
   # Primary function that allows callers to both create a dataset and
   # split it at the same time. 
   def generate_split_variant(self, variant_num, variant_flags = None, variant_code = None, test_ratio = None):
     print("[INFO] Beginning Emotion Detection generate split variant with variant num " + str(variant_num) + ".")
     full_data = self.generate_dataset_variant(variant_num=variant_num, variant_flags=variant_flags, variant_code=variant_code)
-    train_set, test_set = self.split_dataset_variant(variant_num=variant_num, full_data=full_data, test_ratio=test_ratio)
+    train_set, dev_set, test_set = self.split_dataset_variant(variant_num=variant_num, full_data=full_data, test_ratio=test_ratio)
     print("[INFO] Generate split variant finished for variant num " + str(variant_num) + ". Goodnight.")
-    return train_set, test_set
+    return train_set, dev_set, test_set
 
   # Given a combination of flags demarcating what datasets to
   # use, as well as a dataset variant number, generate a new 
@@ -131,7 +144,9 @@ class EmotionDetectionDataset:
 
   # Given a dataframe, manage the following: converting to lowercase, 
   # removing stop words, removing any mentions (@ for tweets),
-  # and removing URLs
+  # and removing URLs.
+  #
+  # Replace all category strings with class integers. 
   def preprocess_dataset_variant(self, data):
     # Convert all to lowercase
     print("[INFO] Preprocessing - converting to lowercase.")
@@ -158,6 +173,12 @@ class EmotionDetectionDataset:
     data["text"].replace(["",".",",","?","!",",.",".,",",,","..","!!","?!","!?","??"], np.nan, inplace=True)
     data.dropna(subset=["text"], inplace=True)
 
+    # Encode all class strings with integers. There should NOT be
+    # any solution strings that do not exist in the solution string
+    # map - if there are, crash here. Something's wrong with the 
+    # data utility generated CSVs. 
+    data["solution"] = data["solution"].apply(lambda x: self.solution_string_map[x])
+
     return data
 
   # Given an iternum, splits a dataset variant into test and train
@@ -165,7 +186,7 @@ class EmotionDetectionDataset:
   # file if given dataframe via full_data.
   #
   # Returns the train_set and the test_set in that order. 
-  def split_dataset_variant(self, variant_num, full_data = None, test_ratio = None):
+  def split_dataset_variant(self, variant_num, full_data = None, test_ratio = None, dev_ratio = None):
     print("[INFO] Beginning Dataset Variant Split operation.")
     if full_data is None:
       try:
@@ -181,20 +202,30 @@ class EmotionDetectionDataset:
     if test_ratio is None:
       print("[INFO] No test ratio specified - using default test ratio " + str(self.default_test_ratio) + ".")
       test_ratio = self.default_test_ratio
+    if dev_ratio is None:
+      print("[INFO] No test ratio specified - using default test ratio " + str(self.default_dev_ratio) + ".")
+      dev_ratio = self.default_dev_ratio
     
-    # Everything's here, let's split the data randomly. 
-    print("[INFO] Executing Test Train Split with data shape ", end="")
+    # Everything's here, let's split the data randomly for first 
+    # test | working and then split the latter into train | dev. 
+    print("[INFO] Executing Test Working Split with data shape ", end="")
     print(full_data.shape, end="")
     print(" and test ratio " + str(test_ratio) + ".")
-    train_set, test_set = train_test_split(full_data, test_size = test_ratio)
+    working_set, test_set = train_test_split(full_data, test_size = test_ratio)
+
+    print("[INFO] Executing Dev Train Split with data shape ", end="")
+    print(full_data.shape, end="")
+    print(" and test ratio " + str(test_ratio) + ".")
+    train_set, dev_set = train_test_split(working_set, test_size = dev_ratio)
 
     # Write to file for both of them.
     self.write_csv_txt(self.output_data_location + "/" + str(variant_num) + self.train_dataset_suffix, train_set)
+    self.write_csv_txt(self.output_data_location + "/" + str(variant_num) + self.dev_dataset_suffix, dev_set)
     self.write_csv_txt(self.output_data_location + "/" + str(variant_num) + self.test_dataset_suffix, test_set)
 
-    print("[INFO] Train and Test dataset generation for variant "+str(variant_num)+" successful.")
+    print("[INFO] Train, Dev, and Test dataset generation for variant "+str(variant_num)+" successful.")
 
-    return train_set, test_set
+    return train_set, dev_set, test_set,
 
   # Writes a csv and txt file given a dataframe and a filename.
   # The txt file describes the contents of the dataframe itself.
@@ -231,8 +262,8 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   variant_num = args.variant_num
-  variant_flags = None
-  #variant_flags = ["meld"]
+  #variant_flags = None
+  variant_flags = ["meld"]
   variant_code = None
   """
   variant_flags = [

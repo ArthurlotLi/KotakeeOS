@@ -1,12 +1,12 @@
-['cecilia', 'dailydialog', 'emotionstimulus', 'isear', 'meld', 'smile', 'wassa2017']
+['meld']
 
-(29205, 2)
+(1366, 2)
 
-neutral     20711
-joy          4000
-anger        1222
-sadness      1182
-fear          915
-surprise      774
-disgust       401
+6    609
+0    255
+5    166
+3    146
+1    106
+4     45
+2     39
 Name: solution, dtype: int64
