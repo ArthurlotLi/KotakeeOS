@@ -37,7 +37,10 @@ class EmotionDetectionAi:
   # detection harness class variable). However, in the interest
   # of speed, you may specify a lower number than this to truncate
   # incoming text. 
-  max_seq_length = 256
+  #
+  # Specified to 125 as longer sentences take 3.3 seconds on the 
+  # crappy macbook and don't result in necessarily better predicitons.
+  max_seq_length = 125
     
   # Upon initialization, attempt to load the model specified.
   # Allow user to provide model location and override the default.
