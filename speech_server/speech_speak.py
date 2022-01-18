@@ -261,17 +261,18 @@ class SpeechSpeak:
       if self.emotion_detection_representation_enabled:
         start_time = time.time()
         emotion_category = self.emotion_detection.predict_emotion(text=output_text)
-        # TODO
+        self.emotion_representation.display_emotion_simple(emotion_category=emotion_category)
         end_time = time.time()
-        print("[DEBUG] Speech Speak Emotion Detection + Representation routine complete after " + str(end_time-start_time) + " seconds.")
+        print("[DEBUG] Speech Speak Emotion Detection + Representation routine duration: " + str(end_time-start_time) + " seconds.")
 
       # Wait for the subprocess to reply with anything. When you
       # do get that message, continue. Contents are ignored. 
       print("[DEBUG] Speech Speak thread blocking until text execution complete...")    
+      start_time = time.time()
       _ = connection.recv()
       connection.close()
-
-      print("[DEBUG] Speak Speak text output complete.")
+      end_time = time.time()
+      print("[DEBUG] Speak Speak text output complete. Blocking duration: " + str(end_time-start_time) + " seconds.")
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)
