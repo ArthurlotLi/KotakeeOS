@@ -14,8 +14,6 @@
 
 import os
 import time
-import vlc
-
 
 class EmotionRepresentation:
   # Relative to speech_speak.py. May pass in an override for this.
@@ -108,8 +106,9 @@ class EmotionRepresentation:
           os.startfile(video_location)
         else:
           # Assumed mac. 
-          media = vlc.MediaPlayer(video_location)
-          media.play()
+          # TODO: Currently FAR TOO MUCH HASSLE to get VLC working
+          # on mac, especially considering this is a temporary measure. 
+          pass 
       except Exception as e:
         print("[ERROR] Emotion Representation failed to play video! Exception: ")
         print(e)
