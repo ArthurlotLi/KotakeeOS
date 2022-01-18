@@ -44,7 +44,7 @@ class SpeechServer:
   # Which model to use for emotion detection + emotion representation
   # attached to the speech speak module. If the value is negative, 
   # Emotion Detection + Representation will be disabled. 
-  speech_speak_emotion_detection_model_num = 1
+  speech_speak_emotion_detection_model_num = 2
   speech_speak_emotion_detection_location = "./emotion_detection_ai/emotion_detection_ai"
   speech_speak_emotion_detection_class_name = "EmotionDetectionAi"
   speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"

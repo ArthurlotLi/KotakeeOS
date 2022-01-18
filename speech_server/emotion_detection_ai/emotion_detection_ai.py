@@ -134,32 +134,42 @@ class EmotionDetectionAi:
 
     # Make predictions with the model we loaded.
     outputs = self.model(sequence)
-    logits = outputs[0]
-    prediction_vector = logits.detach().cpu().tolist()[0]
 
-    # We now have a prediction vector listing confidence of all
+    # The output of the predictions contains a vector of logits that 
+    # output unnormalized log probabilities likened to confidence
+    # values.
+    logits = outputs[0]
+
+    # The logits will output a vector listing confidence of all
     # of the classes it considered even remotely likely.
     # Ex) [-0.14414964616298676, -0.06529509276151657, -0.49382615089416504, 2.442490339279175, 1.221635341644287, -0.23346763849258423, -1.888406753540039]
     #
+    # We want to normalize the probabilities. We can do this using
+    # the softmax that will normalize the log probabilities that were
+    # output by the model. (Softmax: The sigmoid in n dimensional 
+    # space)
+    probability_vector = torch.softmax(logits, dim=1).detach().cpu().tolist()[0]
+
     # Parse the vector and grab the 3rd highest confidence 
     # options. (Kinda messy, but as far as I believe this is
     # fastest way)
     max_prediction_index = None
-    max_prediction_confidence = -9999
+    max_prediction_confidence = -999
     second_max_prediction_index = None
     second_max_prediction_confidence = None
     third_max_prediction_index = None
     third_max_prediction_confidence = None
-    for i in range(0, len(prediction_vector)):
-      prediction = prediction_vector[i]
+    for i in range(0, len(probability_vector)):
+      prediction = probability_vector[i]
       if prediction > max_prediction_confidence:
         # Shuffle the three. 
         third_max_prediction_index = second_max_prediction_index
         third_max_prediction_confidence = second_max_prediction_confidence
         second_max_prediction_index = max_prediction_index
         second_max_prediction_confidence = max_prediction_confidence
+        # Convert all probabilities into percentages. 
         max_prediction_index = i
-        max_prediction_confidence = prediction
+        max_prediction_confidence = prediction*100
 
     max_prediction = None
     second_max_prediction = None
@@ -174,15 +184,15 @@ class EmotionDetectionAi:
 
     # Output the results for debug and return the maximum
     # confidence. 
-    print("[INFO] Best Prediction: " + str(max_prediction) + " ["+str(max_prediction_confidence)+"]")
-    print("                   2nd: " + str(second_max_prediction) + " ["+str(second_max_prediction_confidence)+"]")
-    print("                   3nd: " + str(third_max_prediction) + " ["+str(third_max_prediction_confidence)+"]")
+    print("[INFO] Best Prediction: " + str(max_prediction) + " ("+str(max_prediction_confidence)+")")
+    print("                   2nd: " + str(second_max_prediction) + " ("+str(second_max_prediction_confidence)+")")
+    print("                   3nd: " + str(third_max_prediction) + " ("+str(third_max_prediction_confidence)+")")
 
     return max_prediction
 
 # For debug purposes only, test a simple text for emotion category. 
 if __name__ == "__main__":
-  model_num = 1
+  model_num = 2
   text = "I hate you!"
   model_variants_location = "./models"
 

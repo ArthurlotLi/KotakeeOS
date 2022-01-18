@@ -63,6 +63,7 @@ from torch.utils.data import TensorDataset, DataLoader, RandomSampler, Sequentia
 from tqdm import tqdm
 import os
 import matplotlib.pyplot as plt
+import time
 
 class EmotionDetectionHarness:
   dataset_variants_location = "./dataset_variants"
@@ -77,8 +78,8 @@ class EmotionDetectionHarness:
   max_seq_length = 256
 
   # Note 32 is the upper limit that my GPU VRAM can handle. 
-  dataloader_batch_size = 32
-  model_epochs = 4
+  dataloader_batch_size = 20
+  model_epochs = 6
   model_grad_acc_steps = 4
 
   solution_string_map = {
@@ -131,6 +132,9 @@ class EmotionDetectionHarness:
   # emotion categories we desire. 
   def train_model(self, model_num, variant_num, train_set, dev_set, test_set, use_cpu = False):
     print("[INFO] Beginning Emotion Detection training session with variant num " + str(variant_num) + " and model num "+str(model_num)+".")
+    # Part of metrics output as part of training history.
+    train_time_start = time.time()
+
     if train_set is None or dev_set is None or test_set is None:
       print("[ERROR] train_model recieved empty train/dev/test sets. Stopping...")
       return None
@@ -167,12 +171,15 @@ class EmotionDetectionHarness:
       model = model, 
       device = device)
 
+    train_duration = time.time() - train_time_start
+
     # Now we should save our training history. 
     self.save_model_history(
       train_loss_values = train_loss_values, 
       dev_acc_values = dev_acc_values, 
       test_accuracy = test_accuracy, 
-      model_num = model_num)
+      model_num = model_num,
+      train_duration=train_duration)
     
     # All done. Training complete. 
     return model
@@ -399,7 +406,8 @@ class EmotionDetectionHarness:
   # in the same folder as the model under a subdirectory. 
   # 
   # Provide graphs as well as the raw lists just in case. 
-  def save_model_history(self, train_loss_values, dev_acc_values, test_accuracy, model_num):
+  # Expects train duration in seconds. 
+  def save_model_history(self, train_loss_values, dev_acc_values, test_accuracy, model_num, train_duration):
 
     model_folder = self.model_variants_location + "/" + str(model_num)
     model_history_folder = model_folder + "/train_history"
@@ -422,6 +430,7 @@ class EmotionDetectionHarness:
     with open(train_results_file, "w") as output_file:
       print("[DEBUG] Writing train results to: '" + train_results_file + "'.")
       output_file.write("=================================\nModel " + str(model_num) + " Train Results\n=================================\n\n")
+      output_file.write("Train Duration: " + str(train_duration*3600) + " hours\n\n") 
       output_file.write("Test Acc Result: " + str(test_accuracy*100) + "\n")
       if len(dev_acc_values) > 0:
         output_file.write("Dev Acc Result: " + str(dev_acc_values[len(dev_acc_values) - 1] *100) + "\n\n")

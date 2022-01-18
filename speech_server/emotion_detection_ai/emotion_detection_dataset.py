@@ -262,9 +262,10 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   variant_num = args.variant_num
-  #variant_flags = None
-  variant_flags = ["meld"]
+  variant_flags = None
+  #variant_flags = ["meld"]
   variant_code = None
+
   """
   variant_flags = [
     "cecilia",
@@ -274,9 +275,8 @@ if __name__ == "__main__":
     "meld",
     "smile",
     "wassa2017"
-  ]
-  variant_code = 127
-  """
+  ]"""
+  #variant_code = 127
 
   emotion_detection_dataset = EmotionDetectionDataset()
   #emotion_detection_dataset.generate_dataset_variant(variant_num = variant_num, variant_flags = variant_flags)
