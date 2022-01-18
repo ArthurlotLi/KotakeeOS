@@ -20,3 +20,4 @@
 /speech_server/emotion_detection_ai/__pycache__
 /speech_server/emotion_detection_ai/datasets
 /speech_server/emotion_detection_ai/models
+/speech_server/emotion_representation/__pycache__

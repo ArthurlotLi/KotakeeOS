@@ -41,6 +41,15 @@ class SpeechServer:
   speech_speak_alarm_location = "./assets/timer.wav"
   speech_speak_use_python3 = True
 
+  # Which model to use for emotion detection + emotion representation
+  # attached to the speech speak module. If the value is negative, 
+  # Emotion Detection + Representation will be disabled. 
+  speech_speak_emotion_detection_model_num = 1
+  speech_speak_emotion_detection_location = "./emotion_detection_ai/emotion_detection_ai"
+  speech_speak_emotion_detection_class_name = "EmotionDetectionAi"
+  speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"
+  speech_speak_emotion_representation_class_name = "EmotionRepresentation" 
+
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
   speech_listen_led_room_id = 2
@@ -134,7 +143,12 @@ class SpeechServer:
       shutdown_location=self.speech_speak_shutdown_location,
       timer_location=self.speech_speak_timer_location,
       alarm_location=self.speech_speak_alarm_location,
-      use_python3=self.speech_speak_use_python3)
+      emotion_detection_location=self.speech_speak_emotion_detection_location,
+      emotion_detection_class_name = self.speech_speak_emotion_detection_class_name,
+      emotion_representation_location=self.speech_speak_emotion_representation_location,
+      emotion_representation_class_name = self.speech_speak_emotion_representation_class_name,
+      use_python3=self.speech_speak_use_python3,
+      emotion_detection_model_num = self.speech_speak_emotion_detection_model_num)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False

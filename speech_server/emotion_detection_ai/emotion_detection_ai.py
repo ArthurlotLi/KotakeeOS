@@ -21,7 +21,9 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
 class EmotionDetectionAi:
-  model_variants_location = "./models"
+  # Default is based off the speech_server level. May be 
+  # overridden during initialization.
+  model_variants_location = "./emotion_detection_ai/models"
 
   model = None
   tokenizer = None
@@ -38,8 +40,14 @@ class EmotionDetectionAi:
   max_seq_length = 256
     
   # Upon initialization, attempt to load the model specified.
-  def __init__(self, model_num, use_cpu = True):
+  # Allow user to provide model location and override the default.
+  def __init__(self, model_num, use_cpu = True, model_variants_location = None):
     print("[DEBUG] Initializing EmotionDetectionAI with model number "+str(model_num)+"...")
+
+    # Override the default location if provided. This is because
+    # the default is based off the speech_server level. 
+    if model_variants_location is not None:
+      self.model_variants_location = model_variants_location
 
     model, tokenizer, device = self.load_tokenizer_and_model(model_num=model_num, device=None, use_cpu=use_cpu)
 
@@ -130,7 +138,7 @@ class EmotionDetectionAi:
     prediction_vector = logits.detach().cpu().tolist()[0]
 
     # We now have a prediction vector listing confidence of all
-    # of the classes
+    # of the classes it considered even remotely likely.
     # Ex) [-0.14414964616298676, -0.06529509276151657, -0.49382615089416504, 2.442490339279175, 1.221635341644287, -0.23346763849258423, -1.888406753540039]
     #
     # Parse the vector and grab the 3rd highest confidence 
@@ -153,14 +161,21 @@ class EmotionDetectionAi:
         max_prediction_index = i
         max_prediction_confidence = prediction
 
-    max_prediction = self.solution_int_map[max_prediction_index]
-    second_max_prediciton = self.solution_int_map[second_max_prediction_index]
-    third_max_prediction = self.solution_int_map[third_max_prediction_index]
+    max_prediction = None
+    second_max_prediction = None
+    third_max_prediction = None
+
+    if max_prediction_index is not None:
+      max_prediction = self.solution_int_map[max_prediction_index]
+    if second_max_prediction_index is not None:
+      second_max_prediction = self.solution_int_map[second_max_prediction_index]
+    if third_max_prediction_index is not None:
+      third_max_prediction = self.solution_int_map[third_max_prediction_index]
 
     # Output the results for debug and return the maximum
     # confidence. 
     print("[INFO] Best Prediction: " + str(max_prediction) + " ["+str(max_prediction_confidence)+"]")
-    print("                   2nd: " + str(second_max_prediciton) + " ["+str(second_max_prediction_confidence)+"]")
+    print("                   2nd: " + str(second_max_prediction) + " ["+str(second_max_prediction_confidence)+"]")
     print("                   3nd: " + str(third_max_prediction) + " ["+str(third_max_prediction_confidence)+"]")
 
     return max_prediction
@@ -168,7 +183,8 @@ class EmotionDetectionAi:
 # For debug purposes only, test a simple text for emotion category. 
 if __name__ == "__main__":
   model_num = 1
-  text = "this is the worst!"
+  text = "I hate you!"
+  model_variants_location = "./models"
 
-  emotion_detection = EmotionDetectionAi(model_num=model_num)
+  emotion_detection = EmotionDetectionAi(model_num=model_num, model_variants_location = model_variants_location)
   emotion_detection.predict_emotion(text = text)

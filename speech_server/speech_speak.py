@@ -25,6 +25,7 @@ import threading
 import wave
 import pyaudio
 import time
+import sys
 
 class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
@@ -59,7 +60,20 @@ class SpeechSpeak:
   timer_location = None
   alarm_location = None
 
-  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, use_python3 = True):
+  # Emotion detection + representation classes and instances. 
+  emotion_detection_representation_enabled = False
+  emotion_detection_model_num = None
+  emotion_detection_location = None
+  emotion_representation_location = None
+  emotion_detection_class_name = None
+  emotion_representation_class_name = None
+
+  emotion_detection_class = None
+  emotion_representation_class = None
+  emotion_detection = None
+  emotion_representation = None
+
+  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1):
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
@@ -67,12 +81,36 @@ class SpeechSpeak:
     self.alarm_location = alarm_location
     self.use_python3 = use_python3
 
+    self.emotion_detection_model_num = emotion_detection_model_num
+    self.emotion_detection_location = emotion_detection_location
+    self.emotion_detection_class_name = emotion_detection_class_name
+    self.emotion_representation_location = emotion_representation_location
+    self.emotion_representation_class_name = emotion_representation_class_name
+
     if self.initialize_subprocess() is False:
       print("[ERROR] Failed to initialize subprocess. Speech Server initialization failed.")  
       return
 
+    if self.intTryParse(self.emotion_detection_model_num) and int(self.emotion_detection_model_num) < 0:
+      # Disable emotion detection.
+      print("[DEBUG] Emotion Detection + Representation disabled for Speech Server.")
+    else:
+      print("[DEBUG] Importing Emotion Detection + Representation classes.")
+      self.emotion_detection_class = self.load_class(module_name=self.emotion_detection_location, class_name=self.emotion_detection_class_name)
+      self.emotion_representation_class = self.load_class(module_name=self.emotion_representation_location, class_name=self.emotion_representation_class_name)
+      if self.emotion_detection_class is not None and self.emotion_representation_class is not None:
+        print("[DEBUG] Initializing Emotion Detection + Representation.")
+        self.emotion_detection = self.emotion_detection_class(model_num=self.emotion_detection_model_num)
+        self.emotion_representation = self.emotion_representation_class()
+        # Successful initialization.
+        self.emotion_detection_representation_enabled = True
+      else:
+        print("[ERROR] Failed to import Emotion Detection + Representation.")
+
     # Get the show on the road!
     self.initialize_speak_thrd()
+
+    print("[DEBUG] Speech Server initialization complete.")
 
   # Initializes the subprocess.
   def initialize_subprocess(self):
@@ -204,20 +242,36 @@ class SpeechSpeak:
 
   # Convert text to speech using pyttsx3 engine. Note calling this by 
   # itself causes a block on the main thread. 
+  #
+  # Whenever text is executed, if text emotion detection and emotion
+  # representation is enabled, a corresponding emotion category will
+  # be predicted by the model and represented by a video for the 
+  # duration of the video.
   def speak_text(self, output_text):
     if(output_text is not None and output_text != ""):
-      print("[DEBUG] Speak Text executing output text: '"+output_text+"'")
+      print("[DEBUG] Speech Speak executing output text: '"+output_text+"'")
 
       # Socket interaction using multiprocessing library. 
       address = (self.subprocess_address, self.subprocess_port)
       connection = Client(address, authkey=self.subprocess_key)
       connection.send(output_text)
+
+      # While the text is outputting, predict the emotion category
+      # of the text (if enabled)
+      if self.emotion_detection_representation_enabled:
+        start_time = time.time()
+        emotion_category = self.emotion_detection.predict_emotion(text=output_text)
+        # TODO
+        end_time = time.time()
+        print("[DEBUG] Speech Speak Emotion Detection + Representation routine complete after " + str(end_time-start_time) + " seconds.")
+
       # Wait for the subprocess to reply with anything. When you
       # do get that message, continue. Contents are ignored. 
+      print("[DEBUG] Speech Speak thread blocking until text execution complete...")    
       _ = connection.recv()
       connection.close()
 
-      print("[DEBUG] Speak Text text output complete.")
+      print("[DEBUG] Speak Speak text output complete.")
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)
@@ -253,3 +307,48 @@ class SpeechSpeak:
 
     #close PyAudio  
     p.terminate()
+
+  # Dunno why this isn't standard. 
+  def intTryParse(self, value):
+    try:
+      int(value)
+      return True
+    except ValueError:
+      return False
+
+  # Dynamic class import. Changes sys.path to navigate directories
+  # if necessary. Utilized for emotion detection and
+  # representation classes. 
+  #
+  # Expects module_name Ex) ./home_automation/home_automation
+  # and class_name Ex) HomeAutomation
+  def load_class(self,  module_name, class_name):
+    module = None
+    imported_class = None
+    module_file_name = None
+
+    # Ex) ./home_automation - split by last slash. 
+    # Don't bother if the original file is not within a subdirectory.
+    split_module_name = module_name.rsplit("/", 1)
+    module_folder_path = split_module_name[0]
+    if(module_folder_path != "." and len(split_module_name) > 1):
+      sys.path.append(module_folder_path)
+      module_file_name = split_module_name[1]
+    else:
+      module_file_name = module_name.replace("./", "")
+
+    # Fetch the module first.
+    try:
+      module = __import__(module_file_name)
+    except:
+      print("[ERROR] Failed to import module " + module_file_name + " from subdirectory '" + module_folder_path + "'.")
+      return None
+
+    # Return the class. 
+    try:
+      imported_class = getattr(module, class_name)
+    except:
+      print("[ERROR] Failed to import class_name " + class_name + ".")
+      return None
+
+    return imported_class
