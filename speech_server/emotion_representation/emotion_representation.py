@@ -12,7 +12,7 @@
 #
 # A pretty silly way to use a legitimately useful model. 
 
-from os import startfile
+import os
 
 class EmotionRepresentation:
   emotion_videos_location = "./emotion_media"
@@ -43,7 +43,7 @@ class EmotionRepresentation:
       # have that be able to stop given a flag when we're done speaking.
       print("[DEBUG] Emotion Representation playing video located at: " + video_location + ".")
       try:
-        startfile(video_location)
+        os.startfile(video_location)
       except Exception as e:
         print("[ERROR] Emotion Representation failed to play video! Exception: ")
         print(e)

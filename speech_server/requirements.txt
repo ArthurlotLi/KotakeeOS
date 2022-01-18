@@ -28,4 +28,4 @@ simpletransformers
 
 # Emotion Detection reqs:
 # (WARNING torch must be installed differently. See README)
-ntlk
+nltk
