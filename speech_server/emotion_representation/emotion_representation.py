@@ -14,6 +14,8 @@
 
 import os
 import time
+import vlc
+
 
 class EmotionRepresentation:
   # Relative to speech_speak.py. May pass in an override for this.
@@ -102,7 +104,12 @@ class EmotionRepresentation:
       # have that be able to stop given a flag when we're done speaking.
       print("[DEBUG] Emotion Representation playing video located at: " + video_location + ".")
       try:
-        os.startfile(video_location)
+        if (operating_system_name == "nt"):
+          os.startfile(video_location)
+        else:
+          # Assumed mac. 
+          media = vlc.MediaPlayer(video_location)
+          media.play()
       except Exception as e:
         print("[ERROR] Emotion Representation failed to play video! Exception: ")
         print(e)

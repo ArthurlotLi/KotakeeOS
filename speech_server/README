@@ -118,3 +118,6 @@ local environment to function correctly.
 
 3. Manually acquire roberta-large_fine-tuned and insert it inside the 
    ./emotion_detection_ai/models folder. 
+
+4. Note that for Mac devices relating to Emotion Representation, videos
+   can be played by VLC - VLC must be installed first. 
