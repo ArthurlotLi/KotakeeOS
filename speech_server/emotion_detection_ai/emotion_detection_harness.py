@@ -78,9 +78,15 @@ class EmotionDetectionHarness:
   max_seq_length = 256
 
   # Note 32 is the upper limit that my GPU VRAM can handle. 
-  dataloader_batch_size = 20
-  model_epochs = 6
+  dataloader_batch_size = 22
+  model_epochs = 9
   model_grad_acc_steps = 4
+  
+  # My own version of MCP - saves the model with the best
+  # DEV accuracy only. 
+  model_checkpoint_save_best_only = True
+  model_checkpoint_dev_acc = 0
+  model_checkpoint_epoch = 0
 
   solution_string_map = {
     "joy" : 0,
@@ -153,16 +159,25 @@ class EmotionDetectionHarness:
     # fine-tuning the RoBERTa Large model for a number of epochs. 
     model, train_loss_values, dev_acc_values = self.train_model_fine_tune(
       model=model, 
+      model_num = model_num,
+      tokenizer=tokenizer,
       device=device, 
       optimizer=optimizer, 
       dataloader_train=dataloader_train, 
       dataloader_dev=dataloader_dev)
 
     # Training routine complete! We've completed our fine-tuning and
-    # should save the model. 
-    self.save_model(model = model, tokenizer = tokenizer, model_num = model_num)
+    # should save the model. Don't save the model however if model
+    # checkpointing is on - the model should've already been saved.
+    if self.model_checkpoint_save_best_only is False:
+      self.save_model(model = model, tokenizer = tokenizer, model_num = model_num)
 
-    # Evalaute the model with the test dataset. 
+    # Evalaute the model with the test dataset. If model checkpointing
+    # is on, don't pass the final model and just load it from file. 
+    # We drop the last model (which may not be the BEST model) now.
+    if self.model_checkpoint_save_best_only is True:
+      model, tokenizer, device = self.load_tokenizer_and_model(model_num=model_num, device=device, use_cpu=use_cpu)
+
     test_accuracy = self.evaluate_model(
       model_num = model_num, 
       variant_num = variant_num, 
@@ -179,7 +194,8 @@ class EmotionDetectionHarness:
       dev_acc_values = dev_acc_values, 
       test_accuracy = test_accuracy, 
       model_num = model_num,
-      train_duration=train_duration)
+      train_duration=train_duration,
+      variant_num=variant_num)
     
     # All done. Training complete. 
     return model
@@ -312,7 +328,7 @@ class EmotionDetectionHarness:
   # dataloaders for train and dev. 
   #
   # Return the model, train_loss_values, and dev_acc_values.
-  def train_model_fine_tune(self, model, device, optimizer, dataloader_train, dataloader_dev):
+  def train_model_fine_tune(self, model, model_num, tokenizer, device, optimizer, dataloader_train, dataloader_dev):
     print("[INFO] Beginning training session.")
     train_loss_values = []
     dev_acc_values = []
@@ -329,7 +345,7 @@ class EmotionDetectionHarness:
       # Load the data from the train dataset using our dataloader
       # with the random sampler for each epoch. 
       #for step, batch in enumerate(dataloader_train):
-      for step, batch in tqdm(enumerate(dataloader_train), desc="Epoch " +str(epoch+1) + "/" + str(self.model_epochs) + " Training", total=len(dataloader_train)):
+      for step, batch in tqdm(enumerate(dataloader_train), desc="Epoch " +str(epoch) + "/" + str(self.model_epochs -1) + " Training", total=len(dataloader_train)):
         # For each batch of samples, predict the outputs.
         input_ids = batch[0].to(device)
         attention_masks = batch[1].to(device)
@@ -359,7 +375,7 @@ class EmotionDetectionHarness:
       epoch_dev_acc = 0
       # Set the model in evaluation mode. 
       model.eval()
-      for batch in tqdm(dataloader_dev, desc="Epoch " +str(epoch+1) + "/" + str(self.model_epochs) + " Dev Eval", total=len(dataloader_dev)):
+      for batch in tqdm(dataloader_dev, desc="Epoch " +str(epoch) + "/" + str(self.model_epochs-1) + " Dev Eval", total=len(dataloader_dev)):
         # For each batch of samples, predict the outputs. 
         input_ids = batch[0].to(device)
         attention_masks = batch[1].to(device)
@@ -380,8 +396,17 @@ class EmotionDetectionHarness:
       epoch_dev_acc = epoch_dev_acc / len(dataloader_dev)
       dev_acc_values.append(epoch_dev_acc)
 
+      # Model checkpointing. If this model is best, save it. 
+      if self.model_checkpoint_save_best_only is True and epoch_dev_acc > self.model_checkpoint_dev_acc:
+        print("[MCP] Dev Acc " + str(epoch_dev_acc) + " is greater than " + str(self.model_checkpoint_dev_acc) + ". Saving new best model.")
+        self.model_checkpoint_dev_acc = epoch_dev_acc
+        self.model_checkpoint_epoch = epoch
+        self.save_model(model = model, tokenizer = tokenizer, model_num = model_num)
+      elif self.model_checkpoint_save_best_only is True:
+        print("[MCP] Dev Acc " + str(epoch_dev_acc) + " is not greater than " + str(self.model_checkpoint_dev_acc) + ".")
+
       # Each epoch, output the results. 
-      print("Epoch: "+str(epoch+1)+" - Train Loss: " + str(train_loss) + " | Dev Acc: " + str(epoch_dev_acc)+ "\n")
+      print("Epoch: "+str(epoch)+" - Train Loss: " + str(train_loss) + " | Dev Acc: " + str(epoch_dev_acc)+ "\n")
 
     return model, train_loss_values, dev_acc_values
 
@@ -407,7 +432,7 @@ class EmotionDetectionHarness:
   # 
   # Provide graphs as well as the raw lists just in case. 
   # Expects train duration in seconds. 
-  def save_model_history(self, train_loss_values, dev_acc_values, test_accuracy, model_num, train_duration):
+  def save_model_history(self, train_loss_values, dev_acc_values, test_accuracy, model_num, train_duration, variant_num):
 
     model_folder = self.model_variants_location + "/" + str(model_num)
     model_history_folder = model_folder + "/train_history"
@@ -430,12 +455,24 @@ class EmotionDetectionHarness:
     with open(train_results_file, "w") as output_file:
       print("[DEBUG] Writing train results to: '" + train_results_file + "'.")
       output_file.write("=================================\nModel " + str(model_num) + " Train Results\n=================================\n\n")
-      output_file.write("Train Duration: " + str(train_duration*3600) + " hours\n\n") 
+      output_file.write("Train Duration: " + str(train_duration/3600) + " hours\n") 
+      output_file.write("Dataset Variant: " + str(variant_num) + "\n")
+      output_file.write("Total Epochs: " + str(self.model_epochs) + "\n") 
+      output_file.write("Batch Size: " + str(self.dataloader_batch_size) + "\n\n") 
+
+      if self.model_checkpoint_save_best_only is True:
+        output_file.write("MCP Best Epoch: " + str(self.model_checkpoint_epoch) + "/" + str(self.model_epochs -1) + "\n")
+
       output_file.write("Test Acc Result: " + str(test_accuracy*100) + "\n")
-      if len(dev_acc_values) > 0:
-        output_file.write("Dev Acc Result: " + str(dev_acc_values[len(dev_acc_values) - 1] *100) + "\n\n")
+
+      if self.model_checkpoint_save_best_only is True:
+        output_file.write("Dev Acc Result: " + str(self.model_checkpoint_dev_acc*100) + "\n\n")
       else:
-        output_file.write("\n")
+        if len(dev_acc_values) > 0:
+          output_file.write("Dev Acc Result: " + str(dev_acc_values[len(dev_acc_values) - 1] *100) + "\n\n")
+        else:
+          output_file.write("\n")
+
       output_file.write("Train Loss History:" + str(train_loss_values) + "\n\n")
       output_file.write("Dev Acc History:" + str(dev_acc_values) + "\n\n")
       output_file.close()
