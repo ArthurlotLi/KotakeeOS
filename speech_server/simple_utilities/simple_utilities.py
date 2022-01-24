@@ -338,7 +338,7 @@ class SimpleUtilities:
 
       return duration, duration_seconds, units
 
-    return None, None
+    return None, None, None
 
   # Given a command, parse the alarm time. 
   #
