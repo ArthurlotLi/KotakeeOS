@@ -274,4 +274,6 @@ if __name__ == "__main__":
   emotion_videos_location = "./emotion_media"
 
   emotion_representation = EmotionRepresentation(emotion_videos_location = emotion_videos_location)
-  emotion_representation.display_emotion_simple(emotion_category=emotion_category)
+  emotion_representation.start_display_emotion(emotion_category=emotion_category)
+  time.sleep(5)
+  emotion_representation.stop_display_emotion()
