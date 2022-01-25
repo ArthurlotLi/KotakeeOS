@@ -242,7 +242,7 @@ if __name__ == "__main__":
   trigger_word_iternum = int(args.iternum)
   use_python3 = not args.p == True
   use_emotion_representation = not args.e == True
-  use_emotion_representation_reduced = not args.er == True
+  use_emotion_representation_reduced = args.er
 
   speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3, speech_speak_use_emotion_representation = use_emotion_representation, speech_speak_use_emotion_representation_reduced = use_emotion_representation_reduced)
 

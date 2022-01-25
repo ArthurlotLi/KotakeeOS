@@ -62,7 +62,6 @@ class SpeechSpeak:
 
   # Emotion detection + representation classes and instances. 
   emotion_detection_representation_enabled = False
-  use_emotion_representation_reduced = None
   emotion_detection_model_num = None
   emotion_detection_location = None
   emotion_representation_location = None
