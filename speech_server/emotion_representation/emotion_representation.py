@@ -14,10 +14,19 @@
 
 import os
 import time
+import cv2
+import threading
 
 class EmotionRepresentation:
   # Relative to speech_speak.py. May pass in an override for this.
   emotion_videos_location = "./emotion_representation/emotion_media"
+
+  emotion_representation_thrd_instance = None
+  emotion_representation_thrd_run = False
+
+  # How fast the videos run: ms delay between frames. For example,
+  # for 24 fps (24 in 1000 ms), you'd set this delay to 42.
+  video_delay_ms = 25
 
   # Provide maps from emotion category strings to the actual 
   # Blender 3D Character renders depicting someone expressing
@@ -115,16 +124,32 @@ class EmotionRepresentation:
     else:
       print("[ERROR] Emotion Representation does not support emotion '"+ str(emotion_category) + "'!")
   
-  # TODO: Fully implement openCV's video playing using a thread. 
-  def start_display_emotion(self, emotion_category):
-    if emotion_category in self.emotion_video_map:
-      #video_location = self.emotion_video_map[emotion_category]
+  # Start displaying an emotion on the emotion representation thread. 
+  # This means that we're actively "talking" right now. We later expect
+  # stop_display_emotion in order to stop talking. 
+  def start_display_emotion(self, emotion_category, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration= None):
+    if emotion_category in self.emotion_video_map_sunlight:
+      # Get the video location. 
+      video_location = self.derive_video_location(
+        emotion_category=emotion_category,  
+        sunrise_hours = sunrise_hours, 
+        sunrise_minutes = sunrise_minutes, 
+        sunset_hours = sunset_hours, 
+        sunset_minutes = sunset_minutes,
+        sunset_sunrise_duration = sunset_sunrise_duration)
 
-      #print("[DEBUG] Emotion Representation playing video located at: " + video_location + ".")
+      # For windows, convert all slashes appropriately. OS.startfile
+      # is sensitive to to this. 
+      operating_system_name = os.name
+      if (operating_system_name == "nt"):
+        video_location = video_location.replace("/","\\")
+
+      # We have the filename. Kick off a thread to play it. 
+      print("[DEBUG] Emotion Representation playing video located at: " + video_location + ".")
       try:
-        # If we're currently display an emotion, replace the emotion.
-        # TODO
-        # https://www.geeksforgeeks.org/python-play-a-video-using-opencv/
+        self.emotion_representation_thrd_run = True
+        print("[DEBUG] Starting Emotion Reprentation Thread.")
+        self.emotion_representation_thrd_instance = threading.Thread(target=self.emotion_representation_thrd, args=(video_location,), daemon=True).start()
         pass
       except Exception as e:
         print("[ERROR] Emotion Representation failed to play video! Exception: ")
@@ -134,9 +159,39 @@ class EmotionRepresentation:
   
   # Stops the thread immediately - we've stopped speaking.
   def stop_display_emotion(self):
-    # TODO: If we're currently displaying an emotion, stop the thread
-    # entirely.
-    pass
+    self.emotion_representation_thrd_run = False
+
+  # For a single thread, run a single video endlessly until given 
+  # the stop signal.
+  def emotion_representation_thrd(self, video_location):
+    try:
+      while self.emotion_representation_thrd_run is not False:
+        cap = cv2.VideoCapture(video_location)
+        if cap.isOpened() is False: 
+          print("[ERROR] Emotion Representation Error opening video file at '" + video_location + "'.")
+          
+        while(cap.isOpened() and self.emotion_representation_thrd_run is not False):
+          # Read and capture video frame by frame. 
+          ret, frame = cap.read() 
+
+          if ret:
+              cv2.imshow("KotakeeOS - Textual Emotion Representation", frame)
+          else:
+            # No video was found. End. 
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            continue
+
+          if cv2.waitKey(self.video_delay_ms) & 0xFF == ord('q'):
+            break
+
+        cap.release()
+        cv2.destroyAllWindows()
+    except Exception as e:
+      print("[ERROR] Emotion Representation Thread ran into an exception! Exception text:")
+      print(e)
+      
+    # Shutdown has occured. Stop the process.
+    print("[DEBUG] Emotion Representation Thread closed successfully. ")
 
   # Given the emotion category as well as optionally the sunset
   # and sunrise times for today, return a video correlated to the

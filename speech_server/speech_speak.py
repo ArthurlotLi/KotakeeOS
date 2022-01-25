@@ -261,7 +261,7 @@ class SpeechSpeak:
       if self.emotion_detection_representation_enabled:
         start_time = time.time()
         emotion_category = self.emotion_detection.predict_emotion(text=output_text)
-        self.emotion_representation.display_emotion_simple(emotion_category=emotion_category)
+        self.emotion_representation.start_display_emotion(emotion_category=emotion_category)
         end_time = time.time()
         print("[DEBUG] Speech Speak Emotion Detection + Representation routine duration: " + str(end_time-start_time) + " seconds.")
 
@@ -270,6 +270,8 @@ class SpeechSpeak:
       print("[DEBUG] Speech Speak thread blocking until text execution complete...")    
       start_time = time.time()
       _ = connection.recv()
+      # Stop the thread immediately. 
+      self.emotion_representation.stop_display_emotion()
       connection.close()
       end_time = time.time()
       print("[DEBUG] Speak Speak text output complete. Blocking duration: " + str(end_time-start_time) + " seconds.")

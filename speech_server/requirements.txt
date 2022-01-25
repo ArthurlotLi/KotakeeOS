@@ -29,3 +29,6 @@ simpletransformers
 # Emotion Detection reqs:
 # (WARNING torch must be installed differently. See README)
 nltk
+
+# Emotion Representaiton reqs:
+opencv-python-headless
