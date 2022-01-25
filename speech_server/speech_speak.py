@@ -110,6 +110,10 @@ class SpeechSpeak:
     # Get the show on the road!
     self.initialize_speak_thrd()
 
+    # Submit a request to ourselves to display idle animation.
+    if self.emotion_detection_representation_enabled:
+      self.background_speak_event(event_type="emote_stop")
+
     print("[DEBUG] Speech Server initialization complete.")
 
   # Initializes the subprocess.
@@ -229,6 +233,12 @@ class SpeechSpeak:
   def handle_speak_event(self, event_type, event_content):
     if event_type == "speak_text":
       self.speak_text(event_content)
+    elif event_type == "emote":
+      self.emote(event_content)
+    elif event_type == "emote_stop":
+      self.emote_stop()
+    elif event_type == "emote_clear":
+      self.emote_clear()
     elif event_type == "execute_startup":
       self.execute_startup()
     elif event_type == "execute_shutdown":
@@ -277,6 +287,26 @@ class SpeechSpeak:
       connection.close()
       end_time = time.time()
       print("[DEBUG] Speak Speak text output complete. Blocking duration: " + str(end_time-start_time) + " seconds.")
+
+  # Allows other classes to direct emotion representation output.
+  # For example, Speech Listen wanting to change the played video
+  # to one indicating the server is listening. 
+  def emote(self, emotion_category):
+    if self.emotion_detection_representation_enabled:
+      start_time = time.time()
+      self.emotion_representation.start_display_emotion(emotion_category=emotion_category)
+      end_time = time.time()
+      print("[DEBUG] Speech Speak Emotion Representation routine duration: " + str(end_time-start_time) + " seconds.")
+
+  # Returns to Idle animation
+  def emote_stop(self):
+    if self.emotion_detection_representation_enabled:
+      self.emotion_representation.stop_display_emotion()
+
+  # Stops animation and closes window (does not close subprocess)
+  def emote_clear(self):
+    if self.emotion_detection_representation_enabled:
+      self.emotion_representation.clear_display_emotion()
 
   def execute_startup(self):
     self.execute_sound(self.startup_location)

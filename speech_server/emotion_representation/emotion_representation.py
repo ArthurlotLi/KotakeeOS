@@ -14,17 +14,12 @@
 
 import os
 import time
-import cv2
-import threading
 from subprocess import Popen, PIPE
 from multiprocessing.connection import Client
 
 class EmotionRepresentation:
   # Relative to speech_speak.py. May pass in an override for this.
   emotion_videos_location = "./emotion_representation/emotion_media"
-
-  emotion_representation_thrd_instance = None
-  emotion_representation_thrd_run = False
 
   windows_platform = None
 
@@ -47,10 +42,6 @@ class EmotionRepresentation:
   # python instead.
   use_python3 = None
 
-  # How fast the videos run: ms delay between frames. For example,
-  # for 24 fps (24 in 1000 ms), you'd set this delay to 42.
-  video_delay_ms = 25
-
   # Provide maps from emotion category strings to the actual 
   # Blender 3D Character renders depicting someone expressing
   # that emotion while talking. There are three separate 
@@ -68,6 +59,8 @@ class EmotionRepresentation:
     "disgust":"sunlight_disgust0000-0120.mp4",
     "surprise":"sunlight_surprise0000-0120.mp4",
     "neutral":"sunlight_neutral0000-0120.mp4",
+    "idle1":"sunlight_idle10000-0240.mp4",
+    "listen":"sunlight_listen0000-0120.mp4",
   }
   emotion_video_map_nightlight = {
     "joy":"nightlight_joy0000-0120.mp4",
@@ -77,6 +70,8 @@ class EmotionRepresentation:
     "disgust":"nightlight_disgust0000-0120.mp4",
     "surprise":"nightlight_surprise0000-0120.mp4",
     "neutral":"nightlight_neutral0000-0120.mp4",
+    "idle1":"nightlight_idle10000-0240.mp4",
+    "listen":"nightlight_listen0000-0120.mp4",
   }
   emotion_video_map_sunset = {
     "joy":"sunset_joy0000-0120.mp4",
@@ -86,6 +81,8 @@ class EmotionRepresentation:
     "disgust":"sunset_disgust0000-0120.mp4",
     "surprise":"sunset_surprise0000-0120.mp4",
     "neutral":"sunset_neutral0000-0120.mp4",
+    "idle1":"sunset_idle10000-0240.mp4",
+    "listen":"sunset_listen0000-0120.mp4",
   }
 
   # Default sunset time and duration. This may be passed into the 
@@ -169,6 +166,9 @@ class EmotionRepresentation:
   # Expects a solution string directly from the output of the
   # emotion detection model (Ex) "joy"). Remember we're using Paul
   # Ekman's Discrete Emotion Model + "neutral".
+  #
+  # OBSOLETE. Replaced by subprocess implementation. Kept around 
+  # in case of future testing in other platforms. 
   def display_emotion_simple(self, emotion_category, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration= None):
     if emotion_category in self.emotion_video_map_sunlight:
 
@@ -181,16 +181,9 @@ class EmotionRepresentation:
         sunset_minutes = sunset_minutes,
         sunset_sunrise_duration = sunset_sunrise_duration)
 
-      # For windows, convert all slashes appropriately. OS.startfile
-      # is sensitive to to this. 
-      if (self.windows_platform):
-        video_location = video_location.replace("/","\\")
-
       # Play the video. For now let's just use the simple startfile
       # with no way of knowing when it finishes and/or being able
-      # to cancel it. TODO: Look into opencv and playing a video
-      # frame by frame. We'll want to spawn a separate thread and
-      # have that be able to stop given a flag when we're done speaking.
+      # to cancel it. 
       print("[DEBUG] Emotion Representation using video located at: " + video_location + ".")
       try:
         if (self.windows_platform):
@@ -206,7 +199,7 @@ class EmotionRepresentation:
     else:
       print("[ERROR] Emotion Representation does not support emotion '"+ str(emotion_category) + "'!")
   
-  # Start displaying an emotion on the emotion representation thread. 
+  # Start displaying an emotion on the emotion representation subprocess. 
   # This means that we're actively "talking" right now. We later expect
   # stop_display_emotion in order to stop talking. 
   def start_display_emotion(self, emotion_category, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration= None):
@@ -220,79 +213,41 @@ class EmotionRepresentation:
         sunset_minutes = sunset_minutes,
         sunset_sunrise_duration = sunset_sunrise_duration)
 
-      # For windows, convert all slashes appropriately. OS.startfile
-      # is sensitive to to this. 
-      if (self.windows_platform):
-        video_location = video_location.replace("/","\\")
-
-      # We have the filename. Kick off a thread to play it. 
-      print("[DEBUG] Emotion Representation using video located at: " + video_location + ".")
-      try:
-        # If we're using the subprocess, send the video there.
-        # Otherwise, run a subthread. 
-        if self.use_subprocess:
-          # Socket interaction using multiprocessing library. 
-          address = (self.subprocess_address, self.subprocess_port)
-          connection = Client(address, authkey=self.subprocess_key)
-          connection.send(video_location)
-          connection.close()
-          # The process has the video and is playing it now. 
-        else:
-          self.emotion_representation_thrd_run = True
-          print("[DEBUG] Starting Emotion Reprentation Thread.")
-          self.emotion_representation_thrd_instance = threading.Thread(target=self.emotion_representation_thrd, args=(video_location,), daemon=True).start()
-      except Exception as e:
-        print("[ERROR] Emotion Representation failed to play video! Exception: ")
-        print(e)
+      # We have the filename. Send the subprocess the video to play. 
+      self.send_video_to_subprocess(video_location=video_location)
+      # The process has the video and is playing it now. 
     else:
       print("[ERROR] Emotion Representation does not support emotion '"+ str(emotion_category) + "'!")
   
-  # Stops the thread immediately - we've stopped speaking.
-  def stop_display_emotion(self):
-    if self.use_subprocess:
-      # Socket interaction using multiprocessing library. 
-      address = (self.subprocess_address, self.subprocess_port)
-      connection = Client(address, authkey=self.subprocess_key)
-      connection.send(self.subprocess_stop_video_code)
-      connection.close()
-      # The process has stopped the video. 
-    else:
-      self.emotion_representation_thrd_run = False
+  # Stop displaying emotion.
+  def stop_display_emotion(self, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration= None):
+    # Play idle animation. 
+    video_location = self.derive_video_location(
+      emotion_category="idle1",  
+      sunrise_hours = sunrise_hours, 
+      sunrise_minutes = sunrise_minutes, 
+      sunset_hours = sunset_hours, 
+      sunset_minutes = sunset_minutes,
+      sunset_sunrise_duration = sunset_sunrise_duration)
+    
+    self.send_video_to_subprocess(video_location=video_location)
 
-  # For a single thread, run a single video endlessly until given 
-  # the stop signal.
-  #
-  # NOTE: If the subprocess is being used, this thread will not be
-  # utilized. 
-  def emotion_representation_thrd(self, video_location):
-    try:
-      while self.emotion_representation_thrd_run is not False:
-        cap = cv2.VideoCapture(video_location)
-        if cap.isOpened() is False: 
-          print("[ERROR] Emotion Representation Error opening video file at '" + video_location + "'.")
-          
-        while(cap.isOpened() and self.emotion_representation_thrd_run is not False):
-          # Read and capture video frame by frame. 
-          ret, frame = cap.read() 
+  def clear_display_emotion(self):
+    self.send_video_to_subprocess(video_location=self.subprocess_stop_video_code)
 
-          if ret:
-              cv2.imshow("KotakeeOS - Textual Emotion Representation", frame)
-          else:
-            # No video was found. End. 
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            continue
-
-          if cv2.waitKey(self.video_delay_ms) & 0xFF == ord('q'):
-            break
-
-        cap.release()
-        cv2.destroyAllWindows()
-    except Exception as e:
-      print("[ERROR] Emotion Representation Thread ran into an exception! Exception text:")
-      print(e)
-      
-    # Shutdown has occured. Stop the subthread.
-    print("[DEBUG] Emotion Representation Thread closed successfully. ")
+  # Given a video location, give it to the subprocess. 
+  def send_video_to_subprocess(self, video_location):
+    if video_location is not None and video_location != "":
+      print("[DEBUG] Emotion Representation submitting video string: " + video_location + ".")
+      try:
+        # Socket interaction using multiprocessing library. 
+        address = (self.subprocess_address, self.subprocess_port)
+        connection = Client(address, authkey=self.subprocess_key)
+        connection.send(video_location)
+        connection.close()
+      except Exception as e:
+        print("[ERROR] Emotion Representation failed to play video! Exception: ")
+        print(e)
 
   # Given the emotion category as well as optionally the sunset
   # and sunrise times for today, return a video correlated to the
@@ -345,6 +300,11 @@ class EmotionRepresentation:
       print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in sunset/sunrise.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_sunset[emotion_category]
     
+    # For windows, convert all slashes appropriately. OS.startfile
+    # is sensitive to to this. 
+    if (self.windows_platform):
+      video_location = video_location.replace("/","\\")
+
     return video_location
 
   # Helper function - given a duration in minutes, adjust the

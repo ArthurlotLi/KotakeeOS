@@ -31,6 +31,7 @@ class EmotionRepresentationSubprocess:
 
   listener = None
   video_location = None
+  new_video = False
   listen_for_connection_thrd_instance = None
 
   # In s, how long to wait between checks to see if the video_location
@@ -39,7 +40,7 @@ class EmotionRepresentationSubprocess:
 
   # How fast the videos run: ms delay between frames. For example,
   # for 24 fps (24 in 1000 ms), you'd set this delay to 42.
-  video_delay_ms = 25
+  video_delay_ms = 30
 
   def __init__(self): 
     # Find a open port (unfortunately multiprocessing.connection does
@@ -90,6 +91,7 @@ class EmotionRepresentationSubprocess:
       # Start the video (or override it)
       print("[DEBUG] Emotion Representation Subprocess received video location '" + input_text + "'.")
       self.video_location = input_text
+      self.new_video = True
     
     # All done. End the interaction. 
     connection.close()
@@ -110,14 +112,18 @@ class EmotionRepresentationSubprocess:
           # windows, start the window thread first. 
           #
           # https://stackoverflow.com/questions/6116564/destroywindow-does-not-close-window-on-mac-using-python-and-opencv
-          cv2.namedWindow(self.video_window_text)
-          cv2.startWindowThread()
+          if self.new_video is False:
+            cv2.namedWindow(self.video_window_text)
+            cv2.startWindowThread()
+          else:
+            # Reset the boolean. We're opening the new video now. 
+            self.new_video = False
 
           cap = cv2.VideoCapture(self.video_location)
           if cap.isOpened() is False: 
             print("[ERROR] Emotion Representation Error opening video file at '" + self.video_location + "'.")
             
-          while(cap.isOpened() and self.stop_process is False and self.video_location is not None):
+          while(cap.isOpened() and self.stop_process is False and self.video_location is not None and self.new_video is False):
             # Read and capture video frame by frame. 
             ret, frame = cap.read() 
 
@@ -130,12 +136,16 @@ class EmotionRepresentationSubprocess:
 
             if cv2.waitKey(self.video_delay_ms) & 0xFF == ord('q'):
               break
-
+          
           # Clear the video. 
           cap.release()
-          cv2.waitKey(1)
-          cv2.destroyAllWindows()
-          cv2.waitKey(1)
+
+          if self.new_video is False:
+            # Don't delete the window if we've been given another video
+            # to replace the current one. 
+            cv2.waitKey(1)
+            cv2.destroyAllWindows()
+            cv2.waitKey(1)
     except Exception as e:
       print("[ERROR] Emotion Representation subprocess ran into an fatal exception! Exception text:")
       print(e)

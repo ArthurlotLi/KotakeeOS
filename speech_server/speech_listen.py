@@ -115,6 +115,10 @@ class SpeechListen:
           if execute_chime is True:
             self.speech_speak.background_speak_event(event_type="execute_chime")
 
+          # Attempt to have the speech speak indicate listening emotion
+          # given emotion representation "frontend".
+          self.speech_speak.background_speak_event(event_type="emote", event_content="listen")
+
           # Indicate that you are currently active. 
           if indicate_led is True:
             self.web_server_status.query_speech_server_module_toggle(self.led_state_on, self.led_room_id, self.led_action_id)
@@ -148,6 +152,10 @@ class SpeechListen:
       # Indicate that you are currently inactive. 
       if indicate_led is True:
         self.web_server_status.query_speech_server_module_toggle(self.led_state_off, self.led_room_id, self.led_action_id)
+      
+      # Attempt to have the speech speak show idle anmiation
+      # given emotion representation "frontend".
+      self.speech_speak.background_speak_event(event_type="emote_stop")
   
     # All done. Disable the flag and let the hotword parsing continue.
     # Note however that if we were not the only one in the queue someone
