@@ -105,6 +105,14 @@ class EmotionRepresentationSubprocess:
         else:
           # Video found! Play the video endlessly until it's set to
           # None again. 
+
+          # In order to address peculiarities with Linux/Mac and Cv2
+          # windows, start the window thread first. 
+          #
+          # https://stackoverflow.com/questions/6116564/destroywindow-does-not-close-window-on-mac-using-python-and-opencv
+          cv2.namedWindow(self.video_window_text)
+          cv2.startWindowThread()
+
           cap = cv2.VideoCapture(self.video_location)
           if cap.isOpened() is False: 
             print("[ERROR] Emotion Representation Error opening video file at '" + self.video_location + "'.")
@@ -125,7 +133,9 @@ class EmotionRepresentationSubprocess:
 
           # Clear the video. 
           cap.release()
+          cv2.waitKey(1)
           cv2.destroyAllWindows()
+          cv2.waitKey(1)
     except Exception as e:
       print("[ERROR] Emotion Representation subprocess ran into an fatal exception! Exception text:")
       print(e)
