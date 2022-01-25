@@ -31,4 +31,5 @@ simpletransformers
 nltk
 
 # Emotion Representaiton reqs:
-opencv-python-headless
+opencv-python
+opencv-contrib-python 
