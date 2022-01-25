@@ -101,7 +101,7 @@ class SpeechSpeak:
       if self.emotion_detection_class is not None and self.emotion_representation_class is not None:
         print("[DEBUG] Initializing Emotion Detection + Representation.")
         self.emotion_detection = self.emotion_detection_class(model_num=self.emotion_detection_model_num)
-        self.emotion_representation = self.emotion_representation_class()
+        self.emotion_representation = self.emotion_representation_class(use_python3=self.use_python3)
         # Successful initialization.
         self.emotion_detection_representation_enabled = True
       else:
@@ -188,6 +188,8 @@ class SpeechSpeak:
   def shutdown_speak_thrd(self):
     self.speak_thrd_stop = True
     self.shutdown_process()
+    if self.emotion_representation is not None:
+      self.emotion_representation.shutdown_process()
 
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
