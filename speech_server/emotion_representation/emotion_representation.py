@@ -274,6 +274,39 @@ if __name__ == "__main__":
   emotion_videos_location = "./emotion_media"
 
   emotion_representation = EmotionRepresentation(emotion_videos_location = emotion_videos_location)
-  emotion_representation.start_display_emotion(emotion_category=emotion_category)
-  time.sleep(5)
-  emotion_representation.stop_display_emotion()
+  #emotion_representation.start_display_emotion(emotion_category=emotion_category)
+  #time.sleep(5)
+  #emotion_representation.stop_display_emotion()
+
+  # DEBUG CODE.
+
+  # Get the video location. 
+  video_location = emotion_representation.derive_video_location(
+    emotion_category=emotion_category)
+
+  # For windows, convert all slashes appropriately. OS.startfile
+  # is sensitive to to this. 
+  operating_system_name = os.name
+  if (operating_system_name == "nt"):
+    video_location = video_location.replace("/","\\")
+
+  cap = cv2.VideoCapture(video_location)
+  if cap.isOpened() is False: 
+    print("[ERROR] Emotion Representation Error opening video file at '" + video_location + "'.")
+    
+  while(cap.isOpened()):
+    # Read and capture video frame by frame. 
+    ret, frame = cap.read() 
+
+    if ret:
+        cv2.imshow("KotakeeOS - Textual Emotion Representation", frame)
+    else:
+      # No video was found. End. 
+      cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+      continue
+
+    if cv2.waitKey(emotion_representation.video_delay_ms) & 0xFF == ord('q'):
+      break
+
+  cap.release()
+  cv2.destroyAllWindows()
