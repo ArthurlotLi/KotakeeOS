@@ -20,6 +20,10 @@
 # need to specify to use the command "python" instead of the 
 # default "python3". To do this, add the -p flag:
 # python speech_server.py 13561 -p
+#
+# Note: To disable Emotion Representation (in the interest of compute
+# intensity), add the -e flag:
+# python speech_server.py 13781 -e
 
 from web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
@@ -39,7 +43,7 @@ class SpeechServer:
   speech_speak_shutdown_location = "./assets/shutdown.wav"
   speech_speak_timer_location = "./assets/timer.wav"
   speech_speak_alarm_location = "./assets/timer.wav"
-  speech_speak_use_python3 = True
+  speech_speak_use_python3 = None
 
   # Which model to use for emotion detection + emotion representation
   # attached to the speech speak module. If the value is negative, 
@@ -49,6 +53,7 @@ class SpeechServer:
   speech_speak_emotion_detection_class_name = "EmotionDetectionAi"
   speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"
   speech_speak_emotion_representation_class_name = "EmotionRepresentation" 
+  speech_speak_use_emotion_representation = None
 
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
@@ -68,9 +73,10 @@ class SpeechServer:
   interaction_active = None
   hotword_trigger_word = None
 
-  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True):
+  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True, speech_speak_use_emotion_representation = True):
     self.trigger_word_iternum = trigger_word_iternum
     self.speech_speak_use_python3 = speech_speak_use_python3
+    self.speech_speak_use_emotion_representation = speech_speak_use_emotion_representation
 
   #
   # Runtime functions
@@ -148,7 +154,8 @@ class SpeechServer:
       emotion_representation_location=self.speech_speak_emotion_representation_location,
       emotion_representation_class_name = self.speech_speak_emotion_representation_class_name,
       use_python3=self.speech_speak_use_python3,
-      emotion_detection_model_num = self.speech_speak_emotion_detection_model_num)
+      emotion_detection_model_num = self.speech_speak_emotion_detection_model_num,
+      use_emotion_representation = self.speech_speak_use_emotion_representation)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
@@ -225,12 +232,14 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('iternum')
   parser.add_argument('-p', action='store_true', default=False)
+  parser.add_argument('-e', action='store_true', default=False)
   args = parser.parse_args()
 
   trigger_word_iternum = int(args.iternum)
   use_python3 = not args.p == True
+  use_emotion_representation = not args.e == True
 
-  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3)
+  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3, speech_speak_use_emotion_representation = use_emotion_representation)
 
   # If a negative number is passed, execute as a direct query. 
   if (trigger_word_iternum < 0):
