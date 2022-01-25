@@ -42,6 +42,9 @@ class EmotionRepresentation:
   # python instead.
   use_python3 = None
 
+  # Reduced emotion detection will NOT display idle animations. 
+  use_emotion_representation_reduced = None
+
   # Provide maps from emotion category strings to the actual 
   # Blender 3D Character renders depicting someone expressing
   # that emotion while talking. There are three separate 
@@ -99,8 +102,9 @@ class EmotionRepresentation:
 
   sunset_sunrise_duration = 60
 
-  def __init__(self, emotion_videos_location = None, subprocess_location = None, use_python3 = True):
+  def __init__(self, emotion_videos_location = None, subprocess_location = None, use_python3 = True, use_emotion_representation_reduced = False):
     self.use_python3 = use_python3
+    self.use_emotion_representation_reduced = use_emotion_representation_reduced
 
     # Path customization
     if emotion_videos_location is not None:
@@ -221,16 +225,19 @@ class EmotionRepresentation:
   
   # Stop displaying emotion.
   def stop_display_emotion(self, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration= None):
-    # Play idle animation. 
-    video_location = self.derive_video_location(
-      emotion_category="idle1",  
-      sunrise_hours = sunrise_hours, 
-      sunrise_minutes = sunrise_minutes, 
-      sunset_hours = sunset_hours, 
-      sunset_minutes = sunset_minutes,
-      sunset_sunrise_duration = sunset_sunrise_duration)
-    
-    self.send_video_to_subprocess(video_location=video_location)
+    if self.use_emotion_representation_reduced:
+      self.clear_display_emotion()
+    else:
+      # Play idle animation. 
+      video_location = self.derive_video_location(
+        emotion_category="idle1",  
+        sunrise_hours = sunrise_hours, 
+        sunrise_minutes = sunrise_minutes, 
+        sunset_hours = sunset_hours, 
+        sunset_minutes = sunset_minutes,
+        sunset_sunrise_duration = sunset_sunrise_duration)
+      
+      self.send_video_to_subprocess(video_location=video_location)
 
   def clear_display_emotion(self):
     self.send_video_to_subprocess(video_location=self.subprocess_stop_video_code)

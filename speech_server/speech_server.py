@@ -54,6 +54,7 @@ class SpeechServer:
   speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"
   speech_speak_emotion_representation_class_name = "EmotionRepresentation" 
   speech_speak_use_emotion_representation = None
+  speech_speak_use_emotion_representation_reduced = None
 
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
@@ -73,10 +74,11 @@ class SpeechServer:
   interaction_active = None
   hotword_trigger_word = None
 
-  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True, speech_speak_use_emotion_representation = True):
+  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True, speech_speak_use_emotion_representation = True, speech_speak_use_emotion_representation_reduced = False):
     self.trigger_word_iternum = trigger_word_iternum
     self.speech_speak_use_python3 = speech_speak_use_python3
     self.speech_speak_use_emotion_representation = speech_speak_use_emotion_representation
+    self.speech_speak_use_emotion_representation_reduced = speech_speak_use_emotion_representation_reduced
 
   #
   # Runtime functions
@@ -155,7 +157,8 @@ class SpeechServer:
       emotion_representation_class_name = self.speech_speak_emotion_representation_class_name,
       use_python3=self.speech_speak_use_python3,
       emotion_detection_model_num = self.speech_speak_emotion_detection_model_num,
-      use_emotion_representation = self.speech_speak_use_emotion_representation)
+      use_emotion_representation = self.speech_speak_use_emotion_representation,
+      use_emotion_representation_reduced = self.speech_speak_use_emotion_representation_reduced)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
@@ -233,13 +236,15 @@ if __name__ == "__main__":
   parser.add_argument('iternum')
   parser.add_argument('-p', action='store_true', default=False)
   parser.add_argument('-e', action='store_true', default=False)
+  parser.add_argument('-er', action='store_true', default=False)
   args = parser.parse_args()
 
   trigger_word_iternum = int(args.iternum)
   use_python3 = not args.p == True
   use_emotion_representation = not args.e == True
+  use_emotion_representation_reduced = not args.er == True
 
-  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3, speech_speak_use_emotion_representation = use_emotion_representation)
+  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3, speech_speak_use_emotion_representation = use_emotion_representation, speech_speak_use_emotion_representation_reduced = use_emotion_representation_reduced)
 
   # If a negative number is passed, execute as a direct query. 
   if (trigger_word_iternum < 0):

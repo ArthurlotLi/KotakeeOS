@@ -62,6 +62,7 @@ class SpeechSpeak:
 
   # Emotion detection + representation classes and instances. 
   emotion_detection_representation_enabled = False
+  use_emotion_representation_reduced = None
   emotion_detection_model_num = None
   emotion_detection_location = None
   emotion_representation_location = None
@@ -73,13 +74,14 @@ class SpeechSpeak:
   emotion_detection = None
   emotion_representation = None
 
-  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1, use_emotion_representation = True):
+  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1, use_emotion_representation = True, use_emotion_representation_reduced = False):
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
     self.timer_location = timer_location
     self.alarm_location = alarm_location
     self.use_python3 = use_python3
+    self.use_emotion_representation_reduced = use_emotion_representation_reduced
 
     self.emotion_detection_model_num = emotion_detection_model_num
     self.emotion_detection_location = emotion_detection_location
@@ -101,7 +103,7 @@ class SpeechSpeak:
       if self.emotion_detection_class is not None and self.emotion_representation_class is not None:
         print("[DEBUG] Initializing Emotion Detection + Representation.")
         self.emotion_detection = self.emotion_detection_class(model_num=self.emotion_detection_model_num)
-        self.emotion_representation = self.emotion_representation_class(use_python3=self.use_python3)
+        self.emotion_representation = self.emotion_representation_class(use_python3=self.use_python3, use_emotion_representation_reduced = self.use_emotion_representation_reduced)
         # Successful initialization.
         self.emotion_detection_representation_enabled = True
       else:
@@ -111,7 +113,7 @@ class SpeechSpeak:
     self.initialize_speak_thrd()
 
     # Submit a request to ourselves to display idle animation.
-    if self.emotion_detection_representation_enabled:
+    if self.emotion_detection_representation_enabled and (use_emotion_representation_reduced is False):
       self.background_speak_event(event_type="emote_stop")
 
     print("[DEBUG] Speech Server initialization complete.")
