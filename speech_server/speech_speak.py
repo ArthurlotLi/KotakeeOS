@@ -29,7 +29,7 @@ import sys
 
 class SpeechSpeak:
   # We use multiprocessing to output pyttsx3 text.
-  subprocess_location = "speech_speak_pyttsx3.py"
+  subprocess_location = "speech_speak_subprocess.py"
   subprocess_address = "localhost"
   subprocess_port = 0 # OS Selected - we expect this from the subprocess on startup. 
   subprocess_key = b"speech_speak"
