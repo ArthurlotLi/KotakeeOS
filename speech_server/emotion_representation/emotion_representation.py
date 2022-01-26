@@ -98,11 +98,11 @@ class EmotionRepresentation:
   #
   # A sunset time will be set at the middle of the duration.
   sunset_default_time_hours = 17
-  sunset_default_time_minutes = 30
+  sunset_default_time_minutes = 00
   
   # Same deal for sunrise. 
   sunrise_default_time_hours = 6
-  sunrise_default_time_minutes = 0
+  sunrise_default_time_minutes = 30
 
   sunset_sunrise_duration = 60
 
@@ -308,19 +308,19 @@ class EmotionRepresentation:
     sunrise_ceiling = sunrise_time_ceiling_hours*100 + sunrise_time_ceiling_minutes
     sunrise_floor = sunrise_time_floor_hours*100 + sunrise_time_floor_minutes
 
-    print("[DEBUG] Emotion Representation - Current: " + str(current_time) + " sunset: " + str(sunset_ceiling) + "/" + str(sunset_floor) + " sunrise: " + str(sunrise_ceiling) + "/" + str(sunrise_floor))
+    #print("[DEBUG] Emotion Representation - Current: " + str(current_time) + " sunset: " + str(sunset_ceiling) + "/" + str(sunset_floor) + " sunrise: " + str(sunrise_ceiling) + "/" + str(sunrise_floor))
 
     if current_time < sunset_floor and current_time > sunrise_ceiling:
       # Daylight. 
-      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in daylight.")
+      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in daylight.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_sunlight[emotion_category]
     elif current_time > sunset_ceiling or current_time < sunrise_floor:
       # Night time.
-      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in nightlight.")
+      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in nightlight.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_nightlight[emotion_category]
     else:
       # current time is either sunrise or sunset. 
-      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in sunset/sunrise.")
+      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in sunset/sunrise.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_sunset[emotion_category]
     
     # For windows, convert all slashes appropriately. OS.startfile

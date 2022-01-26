@@ -72,7 +72,7 @@ class SpeechSpeak:
   # enabled) so that daylight may tick over to sunset and to
   # night, etc. If the video is the same location in the subprocess,
   # the subprocess will not make any further action. 
-  emotion_representation_update_idle_duration = 3
+  emotion_representation_update_idle_duration = 60
 
   emotion_detection_class = None
   emotion_representation_class = None
@@ -233,7 +233,6 @@ class SpeechSpeak:
           # Only update if it's time AND the emotion
           current_time = time.time()
           if current_time >= time_next_idle_update :
-            print("[DEBUG] Speech Thread routinely updating idle animation.")
             if self.emotion_representation.subprocess_emotion_state == "idle1":
               self.emote_stop()
             time_next_idle_update = current_time + self.emotion_representation_update_idle_duration
