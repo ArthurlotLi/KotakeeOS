@@ -36,6 +36,10 @@ class EmotionRepresentation:
   subprocess_instance = None
   subprocess_shutdown_code = "SHUTDOWN" # No incoming text should be uppercase. 
   subprocess_stop_video_code = "STOP_VIDEO" # Stop a playing video.
+  
+  # Maintained so we know what we're currently showing (if any)
+  subprocess_current_video = None
+  subprocess_emotion_state = None
 
   # Addressing the command line call to execute the subprocess.
   # Try using python3 first, and if that fails, remember and use
@@ -218,7 +222,7 @@ class EmotionRepresentation:
         sunset_sunrise_duration = sunset_sunrise_duration)
 
       # We have the filename. Send the subprocess the video to play. 
-      self.send_video_to_subprocess(video_location=video_location)
+      self.send_video_to_subprocess(video_location=video_location, emotion_category = emotion_category)
       # The process has the video and is playing it now. 
     else:
       print("[ERROR] Emotion Representation does not support emotion '"+ str(emotion_category) + "'!")
@@ -237,24 +241,36 @@ class EmotionRepresentation:
         sunset_minutes = sunset_minutes,
         sunset_sunrise_duration = sunset_sunrise_duration)
       
-      self.send_video_to_subprocess(video_location=video_location)
+      self.send_video_to_subprocess(video_location=video_location, emotion_category="idle1")
 
   def clear_display_emotion(self):
     self.send_video_to_subprocess(video_location=self.subprocess_stop_video_code)
 
   # Given a video location, give it to the subprocess. 
-  def send_video_to_subprocess(self, video_location):
+  def send_video_to_subprocess(self, video_location, emotion_category = None):
     if video_location is not None and video_location != "":
-      print("[DEBUG] Emotion Representation submitting video string: " + video_location + ".")
-      try:
-        # Socket interaction using multiprocessing library. 
-        address = (self.subprocess_address, self.subprocess_port)
-        connection = Client(address, authkey=self.subprocess_key)
-        connection.send(video_location)
-        connection.close()
-      except Exception as e:
-        print("[ERROR] Emotion Representation failed to play video! Exception: ")
-        print(e)
+      if self.subprocess_current_video is None or video_location != self.subprocess_current_video:
+        # Save the emotion category so we can use it to determine if
+        # we can safely override the idle animation or not. (i.e. if
+        # we're talking, don't give us the regular updates.)
+        self.subprocess_emotion_state = emotion_category
+
+        print("[DEBUG] Emotion Representation submitting video string: " + video_location + ".")
+        try:
+          # Socket interaction using multiprocessing library. 
+          address = (self.subprocess_address, self.subprocess_port)
+          connection = Client(address, authkey=self.subprocess_key)
+          connection.send(video_location)
+          connection.close()
+
+          # Update our local knowledge of the current video. 
+          if video_location == self.subprocess_stop_video_code or video_location == self.subprocess_shutdown_code:
+            self.subprocess_current_video = None
+          else:
+            self.subprocess_current_video = video_location
+        except Exception as e:
+          print("[ERROR] Emotion Representation failed to play video! Exception: ")
+          print(e)
 
   # Given the emotion category as well as optionally the sunset
   # and sunrise times for today, return a video correlated to the

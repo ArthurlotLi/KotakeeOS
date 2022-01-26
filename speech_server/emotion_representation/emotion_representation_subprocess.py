@@ -90,8 +90,11 @@ class EmotionRepresentationSubprocess:
     else:
       # Start the video (or override it)
       print("[DEBUG] Emotion Representation Subprocess received video location '" + input_text + "'.")
-      self.video_location = input_text
-      self.new_video = True
+      if self.video_location is None or self.video_location != input_text:
+        # Do not replace video if location is the exact same as the
+        # current playing video. 
+        self.video_location = input_text
+        self.new_video = True
     
     # All done. End the interaction. 
     connection.close()

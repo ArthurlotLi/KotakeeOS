@@ -67,6 +67,12 @@ class SpeechSpeak:
   emotion_representation_location = None
   emotion_detection_class_name = None
   emotion_representation_class_name = None
+  # Time in seconds to process and send the subprocess a new video 
+  # location - this allows us to update the idle animation (if
+  # enabled) so that daylight may tick over to sunset and to
+  # night, etc. If the video is the same location in the subprocess,
+  # the subprocess will not make any further action. 
+  emotion_representation_update_idle_duration = 3
 
   emotion_detection_class = None
   emotion_representation_class = None
@@ -199,6 +205,7 @@ class SpeechSpeak:
   # The Speak thread. Loops every 'tick' seconds and checks if any 
   # events needs to occur. 
   def speak_thrd(self):
+    time_next_idle_update = time.time() + self.emotion_representation_update_idle_duration
     try:
       while self.speak_thrd_stop is False:
 
@@ -220,6 +227,16 @@ class SpeechSpeak:
         for i in range(len(indices_to_drop)-1, -1, -1):
           del self.speak_thrd_event_types[indices_to_drop[i]]
           del self.speak_thrd_event_contents[indices_to_drop[i]]
+
+        # Handle idle animation update.
+        if self.emotion_detection_representation_enabled:
+          # Only update if it's time AND the emotion
+          current_time = time.time()
+          if current_time >= time_next_idle_update :
+            print("[DEBUG] Speech Thread routinely updating idle animation.")
+            if self.emotion_representation.subprocess_emotion_state == "idle1":
+              self.emote_stop()
+            time_next_idle_update = current_time + self.emotion_representation_update_idle_duration
         
         time.sleep(self.speak_thrd_tick)
     except Exception as e:
