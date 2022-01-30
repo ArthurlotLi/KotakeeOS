@@ -75,29 +75,35 @@ class EmotionRepresentationSubprocess:
     while self.stop_process is False:
       self.listen_for_connection()
 
-  # Listen for an incoming message from the main process. 
+  # Listen for an incoming message from the main process. Use a try
+  # except for whack behavior of running a multiprocessing recv for
+  # prolonged periods of time (i.e. hours/days).
   def listen_for_connection(self):
-    connection = self.listener.accept()
-    # Connection accepted. Execute the video. 
-    input_text = connection.recv()
-    if input_text == self.shutdown_code:
-      print("[DEBUG] Emotion Representation Subprocess received SHUTDOWN request.")
-      self.stop_process = True
-    elif input_text == self.stop_video_code:
-      # Stop the video.
-      print("[DEBUG] Emotion Representation Subprocess clearing video location.")
-      self.video_location = None
-    else:
-      # Start the video (or override it)
-      print("[DEBUG] Emotion Representation Subprocess received video location '" + input_text + "'.")
-      if self.video_location is None or self.video_location != input_text:
-        # Do not replace video if location is the exact same as the
-        # current playing video. 
-        self.video_location = input_text
-        self.new_video = True
-    
-    # All done. End the interaction. 
-    connection.close()
+    try:
+      connection = self.listener.accept()
+      # Connection accepted. Execute the video. 
+      input_text = connection.recv()
+      if input_text == self.shutdown_code:
+        print("[DEBUG] Emotion Representation Subprocess received SHUTDOWN request.")
+        self.stop_process = True
+      elif input_text == self.stop_video_code:
+        # Stop the video.
+        print("[DEBUG] Emotion Representation Subprocess clearing video location.")
+        self.video_location = None
+      else:
+        # Start the video (or override it)
+        print("[DEBUG] Emotion Representation Subprocess received video location '" + input_text + "'.")
+        if self.video_location is None or self.video_location != input_text:
+          # Do not replace video if location is the exact same as the
+          # current playing video. 
+          self.video_location = input_text
+          self.new_video = True
+      
+      # All done. End the interaction. 
+      connection.close()
+    except Exception as e:
+      print("[ERROR] Emotion Representation Subprocess listen for connection ran into an exception:" )
+      print(e)
     
   # Indefinite video loop. 
   def run_video_indefinitely(self):
@@ -133,7 +139,7 @@ class EmotionRepresentationSubprocess:
             if ret:
                 cv2.imshow(self.video_window_text, frame)
             else:
-              # No video was found. End. 
+              # End of the video reached - repeat the video. 
               cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
               continue
 

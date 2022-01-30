@@ -26,6 +26,8 @@ class HotwordTriggerWord:
   silence_threshold = 100
   feed_duration = 10 # Each model input data duration in seconds, need to be an integer numbers of chunk_duration
   feed_samples = int(fs * feed_duration)
+  
+  activation_threshold = 0.5 # Lower values allow for more uncertain predictions to count as activated. 
 
   active_loop = True
   q = Queue() # Queue to communiate between the audio callback and main thread
@@ -97,7 +99,7 @@ class HotwordTriggerWord:
         data = self.q.get()
         spectrum = self.get_spectrogram(data)
         preds = self.detect_triggerword_spectrum(spectrum)
-        new_trigger = self.has_new_triggerword(preds, self.chunk_duration, self.feed_duration)
+        new_trigger = self.has_new_triggerword(preds, self.chunk_duration, self.feed_duration, self.activation_threshold)
         if new_trigger:
           print('1')
           # Plunges code into server logic loop. 
