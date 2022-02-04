@@ -11,6 +11,10 @@ const Home = require("./Home.js");
 const Room = require("./Room.js");
 const Module = require("./Module.js");
 
+// OSX only (might break elsewhere). Used for shell commands via 
+// moduleInput handling. 
+const { exec } = require('child_process');
+
 /*
   Enums to keep constant with client logic. 
 */
@@ -127,6 +131,10 @@ if(args.length > 0){
 
 const openweathermapApiKey = "47ad011b1eb24c37b31f2805da701cc4";
 const updateWeatherWait = 120000; // Once every 2 minutes (1 min = 60000 ms)
+
+// Used to kick off the piano subprocess (requres arguments to be added
+// during runtime.)
+const subprocessUsbPianoPlayerCommand = "python3 ./subprocesses/usb_piano_player/usb_piano_player.py"
 
 // Create the app
 const app = express();
@@ -642,6 +650,24 @@ app.get('/moduleSwitch/:roomId/:actionId', (req, res) => {
     }
   }
   return res.status(400).send();
+});
+
+app.post('/pianoPlayMidi', (req, res) => {
+  console.log("[DEBUG] /pianoPlayMidi POST request received. Body: " + JSON.stringify(req.body));
+  if(req.body.song_name != null && req.body.midi_contents != "null"){
+    var song_name = req.body.song_name;
+    var midi_contents = req.body.midi_contents;
+    if(song_name != null && midi_contents != null){
+
+      // Execute subprocess to play the piano song via USB. 
+      command = subprocessUsbPianoPlayerCommand + " " + song_name + " " + midi_contents
+      console.log("[DEBUG] Executing command: " + command);
+      exec(command, null)
+      
+      return res.status(200).send();
+    }
+    return res.status(400).send();
+  }
 });
 
 // TODO: Abstract this so that we could potentially have 
