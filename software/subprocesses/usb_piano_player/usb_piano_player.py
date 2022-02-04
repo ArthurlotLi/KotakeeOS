@@ -85,6 +85,7 @@ class UsbPianoPlayer:
   # Given a base 64 encoded string, decode it and create a midi
   # file. Then load it. 
   def decode_midi_string(self, base_64_string, song_name):
+    song_name = song_name.replace(" ", "") # Replace all spaces. 
     new_file_location = self.piano_songs_location + "/" + song_name + ".mid"
     print("[DEBUG] UsbPianoPlayer Writing base 64 string and song name to file: " + new_file_location)
     decoded_midi_file = base64.b64decode(base_64_string)
