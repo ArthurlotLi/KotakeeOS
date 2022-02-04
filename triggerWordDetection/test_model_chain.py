@@ -22,7 +22,7 @@ class TestModelChain:
   chain_test_results_acc_map = {}
   test_model_location = None
 
-  minibatch_size = 8
+  minibatch_size = 3
 
   def __init__(self, location):
     self.test_model_location = location
@@ -58,7 +58,7 @@ class TestModelChain:
       if len(minibatch) == self.minibatch_size or j == len(files)-1:
         try:
           print("[INFO] Processing minibatch: " + str(minibatch))
-          ret_dict = {"acc0":None,"acc1":None,"acc2":None,"acc3":None}
+          ret_dict = {}
           queue = multiprocessing.Queue()
           queue.put(ret_dict)
 
@@ -116,8 +116,9 @@ class TestModelChain:
         except Exception as e:
           # Use a try/except so that we still write the remaining stuff 
           # to file in case of a failure or the user cancels the rest.
-          print("[ERROR] Failed to process model " + str(filename) + "! Exception:")
+          print("\n\n[ERROR] !!!! Failed to process model " + str(filename) + "! Exception:")
           print(e)
+          print("\n")
         minibatch = []
 
     if(filename_uid == 0):

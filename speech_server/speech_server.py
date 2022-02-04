@@ -125,8 +125,8 @@ class SpeechServer:
   # assistant. Initialize all components - return False if failure
   # occurs.
   def initialize_components_full(self):
-    if self.initialize_speech_speak() is False: return False
     if self.initialize_web_server_status() is False: return False
+    if self.initialize_speech_speak() is False: return False
     if self.initialize_speech_listen() is False: return False
     if self.initialize_passive_interaction() is False: return False
     if self.initialize_active_interaction() is False: return False
@@ -136,16 +136,25 @@ class SpeechServer:
   # Only initialize components relevant to active interactions. Do
   # not initialize hotword_trigger_word.
   def initialize_components_query(self):
-    if self.initialize_speech_speak() is False: return False
     if self.initialize_web_server_status() is False: return False
+    if self.initialize_speech_speak() is False: return False
     if self.initialize_speech_listen() is False: return False
     if self.initialize_passive_interaction() is False: return False
     if self.initialize_active_interaction() is False: return False
     return True
 
-  # Initialize Speak handler.
+  # Initialize Web Server Status handler. 
+  def initialize_web_server_status(self):
+    self.web_server_status = WebServerStatus(ip_address=self.web_server_ip_address)
+    if self.web_server_status is None: 
+      print("[ERROR] Failed to initialize Web Server Status handler.") 
+      return False
+    return True
+
+  # Initialize Speak handler. Requires Web Server Status component.
   def initialize_speech_speak(self):
     self.speech_speak = SpeechSpeak(
+      web_server_status = self.web_server_status,
       chime_location=self.speech_speak_chime_location, 
       startup_location=self.speech_speak_startup_location, 
       shutdown_location=self.speech_speak_shutdown_location,
@@ -158,17 +167,9 @@ class SpeechServer:
       use_python3=self.speech_speak_use_python3,
       emotion_detection_model_num = self.speech_speak_emotion_detection_model_num,
       use_emotion_representation = self.speech_speak_use_emotion_representation,
-      use_emotion_representation_reduced = self.speech_speak_use_emotion_representation_reduced)
+      use_emotion_representation_reduced = self.speech_speak_use_emotion_representation_reduced,)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
-      return False
-    return True
-
-  # Initialize Web Server Status handler. 
-  def initialize_web_server_status(self):
-    self.web_server_status = WebServerStatus(ip_address=self.web_server_ip_address)
-    if self.web_server_status is None: 
-      print("[ERROR] Failed to initialize Web Server Status handler.") 
       return False
     return True
   

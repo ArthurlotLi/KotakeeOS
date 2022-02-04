@@ -81,6 +81,33 @@ class WebServerStatus:
     self.online_status = connection_status
     return connection_status
 
+  # Returns time of sunset and sunrise, but only if we're connected 
+  # to the web server (which is our source for openweathermap API 
+  # information).
+  #
+  # Converts from float time (since the beginning of time) to a more
+  # tractable hours/minutes format. 
+  def get_sunrise_sunset_time(self):
+    if self.web_server_status is True:
+      sunrise_hours = None
+      sunrise_minutes = None
+      sunset_hours = None
+      sunset_minutes = None
+      try:
+        if self.home_status is not None:
+          sunset_time = float(self.web_server_status.home_status["weatherData"]["sys"]["sunset"])
+          sunrise_time = float(self.web_server_status.home_status["weatherData"]["sys"]["sunrise"])
+
+          # Convert into seconds starting from 12:00am today. 
+          # There are 86400 seconds in a day. 
+          sunset_time_today = sunset_time%86400
+          # TODO! This is not right! 
+
+        return sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes
+      except:
+        print("[ERROR] Web Server Status was unable to correctly parse sunset/sunrise time!")
+    return None, None, None, None
+
   # Creates a thread that queries server to turn speech server signal 
   # light on/off. 
   def query_speech_server_module_toggle(self, toState, roomId, actionId):

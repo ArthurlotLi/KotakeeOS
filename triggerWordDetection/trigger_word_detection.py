@@ -68,7 +68,7 @@ class TriggerWordDetection:
   force_create = False # We'll overwrite an existing dataset if exists. 
 
   # Model parameters. 
-  model_learning_rate = 0.0002
+  model_learning_rate = 0.0001
   model_loss_function = 'binary_crossentropy'
   model_epochs = 5
   model_batch_size = 32
@@ -491,7 +491,9 @@ class TriggerWordDetection:
 
     opt = None
     if(self.use_adam_instead_of_rmsprop):
-      if (self.adam_beta_1 is not None and self.adam_beta_2 is not None and self.adam_decay is not None):
+      if (self.adam_beta_1 is not None and self.adam_beta_2 is not None):
+        opt = Adam(learning_rate=self.model_learning_rate, beta_1=self.adam_beta_1, beta_2=self.adam_beta_2)
+      elif(self.adam_beta_1 is not None and self.adam_beta_2 is not None and self.adam_decay is not None):
         opt = Adam(learning_rate=self.model_learning_rate, beta_1=self.adam_beta_1, beta_2=self.adam_beta_2, decay=self.adam_decay)
       else:
         opt = Adam(learning_rate=self.model_learning_rate)
@@ -600,15 +602,16 @@ if __name__ == "__main__":
   stopGpu = args.g
   generateDevSetOnly = args.t
 
+  """
   model_parameters = {
     "dataset_size": datasetSize
   }
+  """
 
   # For Manual one-off creation like for dev sets. keep this commented
   # out for defaults otherwise. 
   #
   # Ex) python trigger_word_detection.py 800 10 -t (iternum is ignored.)
-  """
   model_parameters = {
       "dataset_size": datasetSize,
       "max_positives" : 4,
@@ -617,7 +620,6 @@ if __name__ == "__main__":
       "min_negatives" : 0,
       "force_create" : True,
   }
-  """
 
   trigger_word_detection = TriggerWordDetection(model_parameters)
   trigger_word_detection.main(iternum, stopGpu = stopGpu, generateDevSetOnly = generateDevSetOnly)

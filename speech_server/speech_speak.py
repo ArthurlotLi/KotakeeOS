@@ -74,12 +74,16 @@ class SpeechSpeak:
   # the subprocess will not make any further action. 
   emotion_representation_update_idle_duration = 60
 
+  web_server_status = None
+
   emotion_detection_class = None
   emotion_representation_class = None
   emotion_detection = None
   emotion_representation = None
 
-  def __init__(self, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1, use_emotion_representation = True, use_emotion_representation_reduced = False):
+  def __init__(self, web_server_status, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1, use_emotion_representation = True, use_emotion_representation_reduced = False):
+    self.web_server_status = web_server_status
+
     self.chime_location = chime_location
     self.startup_location = startup_location
     self.shutdown_location = shutdown_location
