@@ -37,4 +37,4 @@ opencv-contrib-python
 # PianoPlayer reqs:
 mido
 pygame
-rtmidi
+python-rtmidi

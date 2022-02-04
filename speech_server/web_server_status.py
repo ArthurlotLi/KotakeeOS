@@ -125,6 +125,10 @@ class WebServerStatus:
     query = self.web_server_ip_address + "/moduleInputModify"
     request_thread = threading.Thread(target=self.execute_post_query, args=(query,data_to_send), daemon=True).start()
 
+  def query_speech_server_piano_play(self, data_to_send):
+    query = self.web_server_ip_address + "/pianoPlayMidi"
+    request_thread = threading.Thread(target=self.execute_post_query, args=(query,data_to_send), daemon=True).start()
+
   # Executes a simple GET query and expects the status code to be 200. 
   def execute_get_query(self, query):
     print("[DEBUG] Executing GET query: " + query)
@@ -135,8 +139,9 @@ class WebServerStatus:
       else:
         print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
       self.web_server_status = True
-    except:
-      print("[WARNING] execute_get_query unable to connect to server.")
+    except Exception as e:
+      print("[WARNING] execute_get_query unable to connect to server. Exception:")
+      print(e)
       self.web_server_status = False
   
   # Executes a simple POST query and expects the status code to be 200. 
@@ -150,8 +155,9 @@ class WebServerStatus:
       else:
         print("[WARNING] Server rejected request with status code " + str(response.status_code) + ".")
       self.web_server_status = True
-    except:
-      print("[WARNING] execute_get_query unable to connect to server.")
+    except Exception as e:
+      print("[WARNING] execute_post_query unable to connect to server. Exception:")
+      print(e)
       self.web_server_status = False
 
   # Given the possible command string, roomId, actionId, and 

@@ -88,7 +88,7 @@ class UsbPianoPlayer:
   def decode_midi_string(self, base_64_string, song_name):
     new_file_location = self.piano_songs_location + "/" + song_name + ".mid"
     print("[DEBUG] UsbPianoPlayer Writing base 64 string and song name to file: " + new_file_location)
-    decoded_midi_file = base64.b64decode(base_64_string)
+    decoded_midi_file = base64.b64decode(base_64_string.decode("utf-8"))
     new_song_file = open(new_file_location, "wb")
     new_song_file.write(decoded_midi_file)
     new_song_file.close()

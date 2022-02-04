@@ -58,14 +58,12 @@ class PianoPlayer:
         with open(location, "rb") as midi_file:
           # Encode the midi as a base 64 string so that it can be sent over POST.
           encoded_midi_file = base64.b64encode(midi_file.read())
-
-          query = self.web_server_status.web_server_ip_address + "/pianoPlayMidi"
           data_to_send = {
             "song_name":location.rsplit("/",1)[1].replace(".mid", ""), # Just leave the complete song name. 
-            "midi_contents":encoded_midi_file
+            "midi_contents":str(encoded_midi_file, "utf-8")
           }
 
-          self.web_server_status.execute_post_query(query=query, data_to_send=data_to_send)
+          self.web_server_status.query_speech_server_piano_play(data_to_send=data_to_send)
       except Exception as e:
         print("[ERROR] PianoPlayer was unable to transmit song from location '" + str(location) + "'. Exception: ")
         print(e)
