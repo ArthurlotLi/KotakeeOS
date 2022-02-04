@@ -60,7 +60,7 @@ class PianoPlayer:
           # Encode the midi as a base 64 string so that it can be sent over POST.
           encoded_midi_file = base64.b64encode(midi_file.read())
           data_to_send = {
-            "song_name":location.rsplit("/",1)[1].replace(".mid", ""), # Just leave the complete song name. 
+            "song_name":location.rsplit("/",1)[1].replace(".mid", "").replace(" ", "_"), # Just leave the complete song name. Replace all spaces.
             "midi_contents":str(encoded_midi_file, "utf-8")
           }
 
