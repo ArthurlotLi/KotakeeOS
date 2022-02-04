@@ -21,3 +21,4 @@
 /speech_server/emotion_detection_ai/datasets
 /speech_server/emotion_detection_ai/models
 /speech_server/emotion_representation/__pycache__
+/speech_server/piano_player/__pycache__
