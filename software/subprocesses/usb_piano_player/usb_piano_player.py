@@ -15,9 +15,8 @@ import argparse
 import os
 
 class UsbPianoPlayer:
-  # Relative to the location of usb_piano_player.py. Base 64 strings
-  # received will be written to song files in this location. 
-  piano_songs_location = "./piano_songs"
+  # Relative to the location of server.js.
+  piano_songs_location = "./subprocesses/usb_piano_player/piano_songs"
 
   port = None
 
