@@ -33,3 +33,7 @@ nltk
 # Emotion Representaiton reqs:
 opencv-python
 opencv-contrib-python 
+
+# PianoPlayer reqs:
+mido
+pygame
