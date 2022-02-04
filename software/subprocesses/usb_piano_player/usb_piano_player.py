@@ -97,7 +97,7 @@ class UsbPianoPlayer:
     return self.load_midi_file(location = new_file_location), new_file_location
 
 if __name__ == "__main__":
-  debug = True
+  debug = False
   
   location = None
   base_64_string = None
