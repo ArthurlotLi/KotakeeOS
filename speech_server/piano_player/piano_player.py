@@ -50,7 +50,8 @@ class PianoPlayer:
   # Yamaha. 
   def send_midi_to_web_server(self, location):
     if self.web_server_status.web_server_status is False:
-      print("[WARNING] PianoPlayer unable to send song to web server - web server not connected.")
+      print("[WARNING] PianoPlayer unable to send song to web server - web server not connected. Using virtual play.")
+      self.local_load_and_play(location)
     else:
       print("[INFO] PianoPlayer sending song located at: "+ str(location) + " to web server.")
 
