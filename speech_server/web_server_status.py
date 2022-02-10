@@ -8,6 +8,7 @@
 import threading
 import requests
 import json
+import datetime
 
 class WebServerStatus:
   web_server_ip_address = None
@@ -95,17 +96,25 @@ class WebServerStatus:
       sunset_minutes = None
       try:
         if self.home_status is not None:
-          sunset_time = float(self.web_server_status.home_status["weatherData"]["sys"]["sunset"])
-          sunrise_time = float(self.web_server_status.home_status["weatherData"]["sys"]["sunrise"])
+          sunset_time = float(self.home_status["weatherData"]["sys"]["sunset"])
+          sunrise_time = float(self.home_status["weatherData"]["sys"]["sunrise"])
 
           # Convert into seconds starting from 12:00am today. 
-          # There are 86400 seconds in a day. 
-          sunset_time_today = sunset_time%86400
-          # TODO! This is not right! 
+          sunset_datetime = datetime.datetime.fromtimestamp(sunset_time)
+          sunrise_datetime = datetime.datetime.fromtimestamp(sunrise_time)
+
+          sunset_hours = int(sunset_datetime.strftime("%H"))
+          sunset_minutes = int(sunset_datetime.strftime("%M"))
+
+          sunrise_hours = int(sunrise_datetime.strftime("%H"))
+          sunrise_minutes = int(sunrise_datetime.strftime("%M"))
+
+          print("[DEBUG] Web Server Status Sunset: " + str(sunset_hours) + ":" + str(sunset_minutes) + " Sunrise: " + str(sunrise_hours) + ":" + str(sunset_minutes) + ".")
 
         return sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes
-      except:
-        print("[ERROR] Web Server Status was unable to correctly parse sunset/sunrise time!")
+      except Exception as e:
+        print("[ERROR] Web Server Status was unable to correctly parse sunset/sunrise time! Exception:")
+        print(e)
     return None, None, None, None
 
   # Creates a thread that queries server to turn speech server signal 

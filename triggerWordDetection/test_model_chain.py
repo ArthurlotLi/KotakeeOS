@@ -15,14 +15,14 @@ import numpy as np
 class TestModelChain:
   X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
   Y_dev_location = "./XY_dev_kotakee/Y_dev_kotakee.npy"
-  use_gpu = False # Change to True if your test set is huge. 
 
   chain_test_results_location = "./chain_test_results"
   chain_test_results = {}
   chain_test_results_acc_map = {}
   test_model_location = None
 
-  minibatch_size = 3
+  minibatch_size = 2
+  use_gpu = True # If using GPU, the minbatch will automatically be set to 1. 
 
   def __init__(self, location):
     self.test_model_location = location
@@ -49,6 +49,10 @@ class TestModelChain:
     minibatch = []
     
     files = os.listdir(self.test_model_location)
+
+    # If using GPU, the minbatch will automatically be set to 1. 
+    if self.use_gpu:
+      self.minibatch_size = 1
 
     for j in range(0, len(files)):
       filename = files[j]

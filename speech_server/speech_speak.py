@@ -293,8 +293,15 @@ class SpeechSpeak:
       # of the text (if enabled)
       if self.emotion_detection_representation_enabled:
         start_time = time.time()
+        # Pass in sunrise/sunset info from web server. 
+        sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes = self.web_server_status.get_sunrise_sunset_time()
         emotion_category = self.emotion_detection.predict_emotion(text=output_text)
-        self.emotion_representation.start_display_emotion(emotion_category=emotion_category)
+        self.emotion_representation.start_display_emotion(
+          emotion_category=emotion_category, 
+          sunrise_hours=sunrise_hours, 
+          sunrise_minutes=sunrise_minutes, 
+          sunset_hours=sunset_hours, 
+          sunset_minutes=sunset_minutes)
         end_time = time.time()
         print("[DEBUG] Speech Speak Emotion Detection + Representation routine duration: " + str(end_time-start_time) + " seconds.")
 
@@ -316,7 +323,14 @@ class SpeechSpeak:
   def emote(self, emotion_category):
     if self.emotion_detection_representation_enabled:
       start_time = time.time()
-      self.emotion_representation.start_display_emotion(emotion_category=emotion_category)
+      # Pass in sunrise/sunset info from web server. 
+      sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes = self.web_server_status.get_sunrise_sunset_time()
+      self.emotion_representation.start_display_emotion(
+          emotion_category=emotion_category, 
+          sunrise_hours=sunrise_hours, 
+          sunrise_minutes=sunrise_minutes, 
+          sunset_hours=sunset_hours, 
+          sunset_minutes=sunset_minutes)
       end_time = time.time()
       print("[DEBUG] Speech Speak Emotion Representation routine duration: " + str(end_time-start_time) + " seconds.")
 

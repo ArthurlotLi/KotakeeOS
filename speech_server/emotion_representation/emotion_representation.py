@@ -283,6 +283,8 @@ class EmotionRepresentation:
   def derive_video_location(self, emotion_category, sunrise_hours = None, sunrise_minutes = None, sunset_hours = None, sunset_minutes = None, sunset_sunrise_duration = None):
     video_location = None
 
+    print("[DEBUG] Emotion Representation - Got Sunset, sunrise: " + str(sunset_hours) + ":" + str(sunset_minutes) + ", " + str(sunrise_hours) + ":" + str(sunrise_minutes))
+
     # Get the current time relative to daylight/sunset/nightlight
     # in 24 hr format. 
     current_hours = int(time.strftime("%H", time.localtime()))
@@ -313,19 +315,19 @@ class EmotionRepresentation:
     sunrise_ceiling = sunrise_time_ceiling_hours*100 + sunrise_time_ceiling_minutes
     sunrise_floor = sunrise_time_floor_hours*100 + sunrise_time_floor_minutes
 
-    #print("[DEBUG] Emotion Representation - Current: " + str(current_time) + " sunset: " + str(sunset_ceiling) + "/" + str(sunset_floor) + " sunrise: " + str(sunrise_ceiling) + "/" + str(sunrise_floor))
+    print("[DEBUG] Emotion Representation - Current: " + str(current_time) + " sunset: " + str(sunset_ceiling) + "/" + str(sunset_floor) + " sunrise: " + str(sunrise_ceiling) + "/" + str(sunrise_floor))
 
     if current_time < sunset_floor and current_time > sunrise_ceiling:
       # Daylight. 
-      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in daylight.")
+      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in daylight.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_sunlight[emotion_category]
     elif current_time > sunset_ceiling or current_time < sunrise_floor:
       # Night time.
-      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in nightlight.")
+      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in nightlight.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_nightlight[emotion_category]
     else:
       # current time is either sunrise or sunset. 
-      #print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in sunset/sunrise.")
+      print("[DEBUG] Emotion Representation: Current time " + str(current_time) + " falls in sunset/sunrise.")
       video_location = self.emotion_videos_location + "/" + self.emotion_video_map_sunset[emotion_category]
     
     # For windows, convert all slashes appropriately. OS.startfile

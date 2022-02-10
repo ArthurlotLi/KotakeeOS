@@ -616,7 +616,7 @@ if __name__ == "__main__":
       "dataset_size": datasetSize,
       "max_positives" : 4,
       "min_positives" : 0,
-      "max_negatives" : 2,
+      "max_negatives" : 4,
       "min_negatives" : 0,
       "force_create" : True,
   }

@@ -80,7 +80,7 @@ class HomeAutomation:
           confirmation_prompt = "Enabling automatic server actions."
         else:
           confirmation_prompt = "Disabling automatic server actions."
-    elif("server" in command and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
+    elif(("server" in command or "service" in command) and ("off" in command or "on" in command or "enable" in command or "disable" in command)):
       if(self.web_server_status.home_status is not None and self.web_server_status.home_status["serverDisabled"] is not None):
         newState = "true"
         if("activate" in command or "turn on" in command or "enable" in command):

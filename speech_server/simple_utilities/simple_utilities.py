@@ -126,7 +126,7 @@ class SimpleUtilities:
       current_hours = int(time.strftime("%H", time.localtime()))
       current_minutes = time.strftime("%M", time.localtime())
       am_pm = "a.m."
-      if current_hours > 12:
+      if current_hours > 11:
         current_hours = current_hours - 12
         am_pm = "p.m."
       time_string = "It is currently " + str(current_hours) + ":" + str(current_minutes).zfill(2) + " " + am_pm +"."
@@ -151,7 +151,7 @@ class SimpleUtilities:
         else:
           am_pm = "a.m."
           alarm_hours = alarm_module.additional_data["alarm_hour"]
-          if alarm_hours > 12:
+          if alarm_hours > 11:
             alarm_hours = alarm_hours - 12
             am_pm = "p.m."
           alarm_list_prompt = alarm_list_prompt + ", " + str(alarm_module.additional_data["alarm_name"]) + ", at " + str(alarm_hours) + ":" + str(alarm_module.additional_data["alarm_minute"]).zfill(2) + " " + am_pm + ", "
