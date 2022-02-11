@@ -109,7 +109,7 @@ class WebServerStatus:
           sunrise_hours = int(sunrise_datetime.strftime("%H"))
           sunrise_minutes = int(sunrise_datetime.strftime("%M"))
 
-          print("[DEBUG] Web Server Status Sunset: " + str(sunset_hours) + ":" + str(sunset_minutes) + " Sunrise: " + str(sunrise_hours) + ":" + str(sunset_minutes) + ".")
+          print("[DEBUG] Web Server Status Sunset: " + str(sunset_hours) + ":" + str(sunset_minutes) + " Sunrise: " + str(sunrise_hours) + ":" + str(sunrise_minutes) + ".")
 
         return sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes
       except Exception as e:
