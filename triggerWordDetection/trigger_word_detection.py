@@ -80,6 +80,11 @@ class TriggerWordDetection:
   model_gru_4 = 0
   model_gru_5 = 0
 
+  # For whatever reason, the original model creators used 0.8 for all
+  # layers. Suggest setting the hidden dropout to the standard 0.5.
+  model_hidden_dropout = 0.8
+  model_input_dropout = 0.8 
+
   # Additional parameters
   mcp_save_best_only = False
   use_adam_instead_of_rmsprop = True
@@ -111,6 +116,8 @@ class TriggerWordDetection:
       if "model_gru_3" in model_parameters: self.model_gru_3 = model_parameters["model_gru_3"]
       if "model_gru_4" in model_parameters: self.model_gru_4 = model_parameters["model_gru_4"]
       if "model_gru_5" in model_parameters: self.model_gru_5 = model_parameters["model_gru_5"]
+      if "model_hidden_dropout" in model_parameters: self.model_hidden_dropout = model_parameters["model_hidden_dropout"]
+      if "model_input_dropout" in model_parameters: self.model_input_dropout = model_parameters["model_input_dropout"]
 
       if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
       if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
@@ -535,41 +542,41 @@ class TriggerWordDetection:
       X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input) 
       X = BatchNormalization()(X)
       X = Activation('relu')(X) 
-      X = Dropout(0.8)(X)
+      X = Dropout(self.model_input_dropout)(X)
 
       # First GRU Layer
       if(self.model_gru_1 is not None and self.model_gru_1 > 0):
         X = GRU(units = self.model_gru_1, return_sequences = True)(X)
-        X = Dropout(0.8)(X)
+        X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
       
       # Second GRU Layer
       if(self.model_gru_2 is not None and self.model_gru_2 > 0):
         X = GRU(units = self.model_gru_2, return_sequences = True)(X)
-        X = Dropout(0.8)(X)
+        X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
 
       # Third GRU Layer
       if(self.model_gru_3 is not None and self.model_gru_3 > 0):
         X = GRU(units = self.model_gru_3, return_sequences = True)(X)
-        X = Dropout(0.8)(X)
+        X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
     
       # Fourth GRU Layer
       if(self.model_gru_4 is not None and self.model_gru_4 > 0):
         X = GRU(units = self.model_gru_4, return_sequences = True)(X)
-        X = Dropout(0.8)(X)
+        X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
 
       # Fifth GRU Layer
       if(self.model_gru_5 is not None and self.model_gru_5 > 0):
         X = GRU(units = self.model_gru_5, return_sequences = True)(X)
-        X = Dropout(0.8)(X)
+        X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
         
       # Add a final dropout before we get to the final layer
       # that applies to the previous.
-      X = Dropout(0.8)(X)
+      X = Dropout(self.model_hidden_dropout)(X)
       X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
 
       model = Model(inputs = X_input, outputs = X)
