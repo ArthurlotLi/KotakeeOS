@@ -27,7 +27,7 @@ class HotwordTriggerWord:
   feed_duration = 10 # Each model input data duration in seconds, need to be an integer numbers of chunk_duration
   feed_samples = int(fs * feed_duration)
   
-  activation_threshold = 0.4 # Lower values allow for more uncertain predictions to count as activated. 
+  activation_threshold = 0.3 # Lower values allow for more uncertain predictions to count as activated. 
 
   active_loop = True
   q = Queue() # Queue to communiate between the audio callback and main thread
