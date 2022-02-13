@@ -165,12 +165,14 @@ class InteractionPassive:
 
   # Allows other classes to ask for certain modules by id. If they
   # do not exist, None will be returned. Otherwise, the module object
-  # will be returned. 
+  # will be returned, alongside the time when it will be activated.
+  # (Since epoch in seconds.)
   def get_module_by_id(self, id):
     for i in range(0, len(self.passive_module_events)):
       if id == self.passive_module_ids[i]:
-        return self.passive_module_list[i]
-    return None 
+        # Return the module object + when it will be activated. 
+        return self.passive_module_list[i], self.passive_module_events[i]
+    return None, None
 
   # Given an id, clears an event (if it hasn't been executed yet)
   # from the queue. Returns status of deletion (if it was found)

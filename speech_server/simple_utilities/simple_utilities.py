@@ -57,11 +57,12 @@ class SimpleUtilities:
       # any afterwards. 
       for i in range(len(self.timer_ids)-1,-1,-1):
         # Check if it exists. If not, delete it. 
-        timer_module = self.interaction_passive.get_module_by_id(self.timer_ids[i])
+        timer_module, timer_activation_time = self.interaction_passive.get_module_by_id(self.timer_ids[i])
         if timer_module is None:
           del self.timer_ids[i]
         else:
-          timer_list_prompt = timer_list_prompt + " " + str(timer_module.additional_data["timer_duration"]) + " " + str(timer_module.additional_data["timer_units"]) + ", "
+          timer_time_left = timer_activation_time - time.time()
+          timer_list_prompt = timer_list_prompt + "The " + str(timer_module.additional_data["timer_duration"]) + " " + str(timer_module.additional_data["timer_units"]) + " timer has " + str(timer_time_left) + " seconds remaining" + ", "
       
       if timer_list_prompt == "":
         self.speech_speak.blocking_speak_event(event_type="speak_text", event_content="There are currently no active timers.")
@@ -71,9 +72,9 @@ class SimpleUtilities:
         num_timers = len(self.timer_ids)
         timer_list_prompt = timer_list_prompt + ". Would you like to clear all timers?"  
         if num_timers == 1:
-          timer_list_prompt = "There is a single active timer. It's duration is: " + timer_list_prompt
+          timer_list_prompt = "There is a single active timer. " + timer_list_prompt
         else:  
-          timer_list_prompt = "There are " + str(num_timers) + " active timers. Their durations are: " + timer_list_prompt
+          timer_list_prompt = "There are " + str(num_timers) + " active timers. " + timer_list_prompt
         user_response = self.speech_listen.listen_response(prompt=timer_list_prompt, execute_chime = True)
 
         if user_response is not None and any(x in user_response for x in self.user_confirmation_words):
