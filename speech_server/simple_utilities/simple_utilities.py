@@ -61,7 +61,7 @@ class SimpleUtilities:
         if timer_module is None:
           del self.timer_ids[i]
         else:
-          timer_time_left = timer_activation_time - time.time()
+          timer_time_left = int(timer_activation_time - time.time())
           timer_list_prompt = timer_list_prompt + "The " + str(timer_module.additional_data["timer_duration"]) + " " + str(timer_module.additional_data["timer_units"]) + " timer has " + str(timer_time_left) + " seconds remaining" + ", "
       
       if timer_list_prompt == "":
