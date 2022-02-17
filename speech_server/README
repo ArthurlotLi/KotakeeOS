@@ -109,15 +109,7 @@ representation.
 To use EmotionDetectionAI, you need to make sure you do some manual steps to allow your
 local environment to function correctly.
 
-1. Install pytorch to train the model. Training the model requires CUDA, 
-   for which you must go to pytorch.org. 
+1. Manually acquire trained model variant place inside the following
+   path: 
 
-2. Install everything required by EmotionDetectionAI. Run:
-
-   pip install -r requirements.txt 
-
-3. Manually acquire roberta-large_fine-tuned and insert it inside the 
-   ./emotion_detection_ai/models folder. 
-
-4. Note that for Mac devices relating to Emotion Representation, videos
-   can be played by VLC - VLC must be installed first. 
+   ../emotion_detection/models

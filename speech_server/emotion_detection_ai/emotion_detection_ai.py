@@ -16,6 +16,9 @@
 #  4 Disgust
 #  5 Surprise
 #  6 Neutral
+#
+# Expects models to have been placed in ../emotion_detection/models,
+# relative to the speech_server.py location.
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
@@ -23,7 +26,7 @@ import torch
 class EmotionDetectionAi:
   # Default is based off the speech_server level. May be 
   # overridden during initialization.
-  model_variants_location = "./emotion_detection_ai/models"
+  model_variants_location = "../emotion_detection/models"
 
   model = None
   tokenizer = None
