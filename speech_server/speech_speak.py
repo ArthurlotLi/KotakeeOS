@@ -337,7 +337,13 @@ class SpeechSpeak:
   # Returns to Idle animation
   def emote_stop(self):
     if self.emotion_detection_representation_enabled:
-      self.emotion_representation.stop_display_emotion()
+      # Pass in sunrise/sunset info from web server. 
+      sunrise_hours, sunrise_minutes, sunset_hours, sunset_minutes = self.web_server_status.get_sunrise_sunset_time()
+      self.emotion_representation.stop_display_emotion(
+          sunrise_hours=sunrise_hours, 
+          sunrise_minutes=sunrise_minutes, 
+          sunset_hours=sunset_hours, 
+          sunset_minutes=sunset_minutes)
 
   # Stops animation and closes window (does not close subprocess)
   def emote_clear(self):
