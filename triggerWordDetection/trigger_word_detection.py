@@ -509,7 +509,7 @@ class TriggerWordDetection:
 
     model.compile(optimizer=opt, loss = self.model_loss_function, metrics=["accuracy"])
 
-    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=self.mcp_save_best_only)
+    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{val_accuracy:.5f}_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=self.mcp_save_best_only)
     
     history = model.fit(X, Y, shuffle=True, epochs=self.model_epochs, callbacks=[mcp], validation_split=self.model_validation_split, verbose=verbose, batch_size=self.model_batch_size)
 
