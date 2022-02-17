@@ -60,6 +60,8 @@ class SpeechSpeak:
   timer_location = None
   alarm_location = None
 
+  web_server_status = None
+
   # Emotion detection + representation classes and instances. 
   emotion_detection_representation_enabled = False
   emotion_detection_model_num = None
@@ -73,15 +75,31 @@ class SpeechSpeak:
   # night, etc. If the video is the same location in the subprocess,
   # the subprocess will not make any further action. 
   emotion_representation_update_idle_duration = 60
-
-  web_server_status = None
-
   emotion_detection_class = None
   emotion_representation_class = None
   emotion_detection = None
   emotion_representation = None
 
-  def __init__(self, web_server_status, chime_location, startup_location, shutdown_location, timer_location, alarm_location, emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, use_python3 = True, emotion_detection_model_num = -1, use_emotion_representation = True, use_emotion_representation_reduced = False):
+  # Multispeaker Text To Speech Synthesis calsses and instances.
+  multispeaker_synthesis_enabled = False
+  multispeaker_synthesis = None
+  multispeaker_synthesis_class = None
+  multispeaker_synthesis_location = None
+  multispeaker_synthesis_class_name = None
+  multispeaker_synthesis_model_num = None
+  multispeaker_synthesis_speaker = None
+
+  def __init__(self, web_server_status, chime_location, startup_location, shutdown_location, timer_location, alarm_location, 
+               emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, 
+               multispeaker_synthesis_location, multispeaker_synthesis_class_name,
+               use_python3 = True, 
+               emotion_detection_model_num = -1, 
+               use_emotion_representation = True, 
+               use_emotion_representation_reduced = False, 
+               use_multispeaker_synthesis = True,
+               multispeaker_synthesis_model_num = -1,
+               multispeaker_synthesis_speaker = None):
+
     self.web_server_status = web_server_status
 
     self.chime_location = chime_location
@@ -98,10 +116,16 @@ class SpeechSpeak:
     self.emotion_representation_location = emotion_representation_location
     self.emotion_representation_class_name = emotion_representation_class_name
 
+    self.multispeaker_synthesis_location = multispeaker_synthesis_location
+    self.multispeaker_synthesis_class_name = multispeaker_synthesis_class_name
+    self.multispeaker_synthesis_model_num = multispeaker_synthesis_model_num
+    self.multispeaker_synthesis_speaker = multispeaker_synthesis_speaker
+
     if self.initialize_subprocess() is False:
       print("[ERROR] Failed to initialize subprocess. Speech Server initialization failed.")  
       return
 
+    # Emotion Detection + Representation.
     if (self.intTryParse(self.emotion_detection_model_num) and int(self.emotion_detection_model_num) < 0) or use_emotion_representation is False:
       # Disable emotion detection.
       print("[DEBUG] Emotion Detection + Representation disabled for Speech Server.")
@@ -117,6 +141,21 @@ class SpeechSpeak:
         self.emotion_detection_representation_enabled = True
       else:
         print("[ERROR] Failed to import Emotion Detection + Representation.")
+
+    # Multispeaker Text-To-Speech Synthesis
+    if use_multispeaker_synthesis is False or (self.intTryParse(self.multispeaker_synthesis_model_num) and int(self.multispeaker_synthesis_model_num) < 0):
+      # Disable multispeaker synthesis
+      print("[DEBUG] Multispeaker Synthesis disabled for Speech Server.")
+    else:
+      print("[DEBUG] Importing Multispeaker Synthesis class.")
+      self.multispeaker_synthesis_class = self.load_class(module_name=self.multispeaker_synthesis_location, class_name=self.multispeaker_synthesis_class_name)
+      if self.multispeaker_synthesis_class is not None:
+        print("[DEBUG] Initializing Multispeaker Synthesis.")
+        self.multispeaker_synthesis = self.multispeaker_synthesis_class(model_num=self.multispeaker_synthesis_model_num)
+        # Successful initialization.
+        self.multispeaker_synthesis_enabled = True
+      else:
+        print("[ERROR] Failed to import Multispeaker Synthesis.")
 
     # Get the show on the road!
     self.initialize_speak_thrd()

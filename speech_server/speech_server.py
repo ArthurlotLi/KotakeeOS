@@ -24,6 +24,11 @@
 # Note: To disable Emotion Representation (in the interest of compute
 # intensity), add the -e flag:
 # python speech_server.py 13781 -e
+#
+# Note: To disable Multispeaker Text To Speech Synthesis and use the
+# less interesting pyttsx3 multiprocessing functionality, add the 
+# -t flag:
+# python speech_server.py 13941 -t
 
 from web_server_status import WebServerStatus
 from speech_speak import SpeechSpeak
@@ -49,12 +54,18 @@ class SpeechServer:
   # attached to the speech speak module. If the value is negative, 
   # Emotion Detection + Representation will be disabled. 
   speech_speak_emotion_detection_model_num = 2
-  speech_speak_emotion_detection_location = "./emotion_detection_ai/emotion_detection_ai"
-  speech_speak_emotion_detection_class_name = "EmotionDetectionAi"
+  speech_speak_emotion_detection_location = "./emotion_detection_utility/emotion_detection_utility"
+  speech_speak_emotion_detection_class_name = "EmotionDetectionUtility"
   speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"
   speech_speak_emotion_representation_class_name = "EmotionRepresentation" 
   speech_speak_use_emotion_representation = None
   speech_speak_use_emotion_representation_reduced = None
+
+  speech_speak_multispeaker_synthesis_location = "./multispeaker_synthesis_utility/multispeaker_synthesis_utility"
+  speech_speak_multispeaker_synthesis_class_name = "MultispeakerSynthesisUtility"
+  speech_speak_use_multispeaker_synthesis = None
+  speech_speak_multispeaker_synthesis_model_num = 1
+  speech_speak_multispeaker_synthesis_speaker = "TODO"
 
   speech_listen_led_state_on = 1
   speech_listen_led_state_off = 0
@@ -74,11 +85,20 @@ class SpeechServer:
   interaction_active = None
   hotword_trigger_word = None
 
-  def __init__(self, trigger_word_iternum, speech_speak_use_python3 = True, speech_speak_use_emotion_representation = True, speech_speak_use_emotion_representation_reduced = False):
+  def __init__(self, trigger_word_iternum, 
+               speech_speak_use_python3 = True, 
+               speech_speak_use_emotion_representation = True, 
+               speech_speak_use_emotion_representation_reduced = False, 
+               use_multispeaker_synthesis = True):
     self.trigger_word_iternum = trigger_word_iternum
     self.speech_speak_use_python3 = speech_speak_use_python3
     self.speech_speak_use_emotion_representation = speech_speak_use_emotion_representation
     self.speech_speak_use_emotion_representation_reduced = speech_speak_use_emotion_representation_reduced
+
+    # TODO: Once this is ready, remove this hard-coded line.
+    use_multispeaker_synthesis = False
+
+    self.speech_speak_use_multispeaker_synthesis = use_multispeaker_synthesis
 
   #
   # Runtime functions
@@ -92,7 +112,7 @@ class SpeechServer:
     if self.initialize_components_full() is False:
       print("[ERROR] Initialization failed. Unable to execute speech server correctly. Exiting...")
       return
-    self.speech_speak.background_speak_event(event_type="speak_text", event_content="Kotakee AI: model iteration " + str(self.trigger_word_iternum) + ".")
+    self.speech_speak.background_speak_event(event_type="speak_text", event_content="Kotakee AI Online: Trigger word model " + str(self.trigger_word_iternum) + ".")
     
     # Initialization succeeded. Execute runtime functions. 
     self.hotword_trigger_word.listen_hotword()
@@ -160,14 +180,24 @@ class SpeechServer:
       shutdown_location=self.speech_speak_shutdown_location,
       timer_location=self.speech_speak_timer_location,
       alarm_location=self.speech_speak_alarm_location,
+
       emotion_detection_location=self.speech_speak_emotion_detection_location,
       emotion_detection_class_name = self.speech_speak_emotion_detection_class_name,
       emotion_representation_location=self.speech_speak_emotion_representation_location,
       emotion_representation_class_name = self.speech_speak_emotion_representation_class_name,
+
+      multispeaker_synthesis_location = self.speech_speak_multispeaker_synthesis_location,
+      multispeaker_synthesis_class_name = self.speech_speak_multispeaker_synthesis_class_name,
+
       use_python3=self.speech_speak_use_python3,
+
       emotion_detection_model_num = self.speech_speak_emotion_detection_model_num,
       use_emotion_representation = self.speech_speak_use_emotion_representation,
-      use_emotion_representation_reduced = self.speech_speak_use_emotion_representation_reduced,)
+      use_emotion_representation_reduced = self.speech_speak_use_emotion_representation_reduced,
+
+      use_multispeaker_synthesis = self.speech_speak_use_multispeaker_synthesis,
+      multispeaker_synthesis_model_num = self.speech_speak_multispeaker_synthesis_model_num,
+      multispeaker_synthesis_speaker = self.speech_speak_multispeaker_synthesis_speaker)
     if self.speech_speak is None: 
       print("[ERROR] Failed to initialize Speak handler.") 
       return False
@@ -238,14 +268,21 @@ if __name__ == "__main__":
   parser.add_argument('-p', action='store_true', default=False)
   parser.add_argument('-e', action='store_true', default=False)
   parser.add_argument('-er', action='store_true', default=False)
+  parser.add_argument('-t', action='store_true', default=False)
   args = parser.parse_args()
 
   trigger_word_iternum = int(args.iternum)
   use_python3 = not args.p == True
   use_emotion_representation = not args.e == True
   use_emotion_representation_reduced = args.er
+  use_multispeaker_synthesis = not args.t == True
 
-  speech_server = SpeechServer(trigger_word_iternum=trigger_word_iternum, speech_speak_use_python3=use_python3, speech_speak_use_emotion_representation = use_emotion_representation, speech_speak_use_emotion_representation_reduced = use_emotion_representation_reduced)
+  speech_server = SpeechServer(
+    trigger_word_iternum=trigger_word_iternum, 
+    speech_speak_use_python3=use_python3, 
+    speech_speak_use_emotion_representation = use_emotion_representation, 
+    speech_speak_use_emotion_representation_reduced = use_emotion_representation_reduced, 
+    use_multispeaker_synthesis = use_multispeaker_synthesis)
 
   # If a negative number is passed, execute as a direct query. 
   if (trigger_word_iternum < 0):

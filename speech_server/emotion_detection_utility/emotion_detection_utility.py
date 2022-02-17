@@ -1,5 +1,5 @@
 #
-# emotion_detection_ai.py
+# emotion_detection_utility.py
 #
 # "Production" utilization of generated emotion detection models.
 # Utilizes models saved in the local "model" folder to predict
@@ -23,7 +23,7 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-class EmotionDetectionAi:
+class EmotionDetectionUtility:
   # Default is based off the speech_server level. May be 
   # overridden during initialization.
   model_variants_location = "../emotion_detection/models"
