@@ -112,7 +112,7 @@ class SpeechServer:
     if self.initialize_components_full() is False:
       print("[ERROR] Initialization failed. Unable to execute speech server correctly. Exiting...")
       return
-    self.speech_speak.background_speak_event(event_type="speak_text", event_content="Kotakee AI Online: Trigger word model " + str(self.trigger_word_iternum) + ".")
+    self.speech_speak.background_speak_event(event_type="speak_text", event_content="Kotakee AI Online: TW model " + str(self.trigger_word_iternum) + ".")
     
     # Initialization succeeded. Execute runtime functions. 
     self.hotword_trigger_word.listen_hotword()

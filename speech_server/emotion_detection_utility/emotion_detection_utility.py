@@ -48,7 +48,7 @@ class EmotionDetectionUtility:
   # Upon initialization, attempt to load the model specified.
   # Allow user to provide model location and override the default.
   def __init__(self, model_num, use_cpu = True, model_variants_location = None):
-    print("[DEBUG] Initializing EmotionDetectionAI with model number "+str(model_num)+"...")
+    print("[DEBUG] Initializing EmotionDetectionUtility with model number "+str(model_num)+"...")
 
     # Override the default location if provided. This is because
     # the default is based off the speech_server level. 
@@ -63,7 +63,7 @@ class EmotionDetectionUtility:
       self.model = model
       self.tokenizer = tokenizer
       self.device = device
-      print("[DEBUG] EmotionDetectionAI initialized successfully.")
+      print("[DEBUG] EmotionDetectionUtility initialized successfully.")
 
   # Given a model_num, return the tokenizer and model stored at the
   # expected location. Loads the device to run it on if it is not 
@@ -121,12 +121,12 @@ class EmotionDetectionUtility:
   def predict_emotion(self, text):
     # In case of a failed initialization, just use neutral.
     if self.model is None or self.tokenizer is None or self.device is None:
-      print("[WARNING] EmotionDetectionAI failed initialization - defaulting to neutral emotion.")
+      print("[WARNING] EmotionDetectionUtility failed initialization - defaulting to neutral emotion.")
       return "neutral"
 
     # TODO: Remove stop words?
 
-    print("[INFO] EmotionDetectionAI processing given text of length "+str(len(text))+"...")
+    print("[INFO] EmotionDetectionUtility processing given text of length "+str(len(text))+"...")
 
     # Encode the text with the tokenizer we loaded.
     encoded_text = self.tokenizer.encode_plus(
@@ -202,5 +202,5 @@ if __name__ == "__main__":
   text = "I hate you!"
   model_variants_location = "./models"
 
-  emotion_detection = EmotionDetectionAi(model_num=model_num, model_variants_location = model_variants_location)
+  emotion_detection = EmotionDetectionUtility(model_num=model_num, model_variants_location = model_variants_location)
   emotion_detection.predict_emotion(text = text)
