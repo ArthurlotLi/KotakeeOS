@@ -311,8 +311,7 @@ class SpeechSpeak:
       start_time = time.time()
       _ = connection.recv()
       # Stop the thread immediately. 
-      if self.emotion_detection_representation_enabled:
-        self.emotion_representation.stop_display_emotion()
+      self.emote_stop()
       connection.close()
       end_time = time.time()
       print("[DEBUG] Speak Speak text output complete. Blocking duration: " + str(end_time-start_time) + " seconds.")
