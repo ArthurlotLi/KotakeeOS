@@ -1,13 +1,17 @@
 /software/node_modules
 /software/public/static/libs/dist
+
 /kotakeeosModule/arduino_secrets.h
+
 /triggerWordDetection/XY_train
 /triggerWordDetection/XY_dev
 /triggerWordDetection/XY_dev_kotakee
 /triggerWordDetection/train.wav
 /triggerWordDetection/__pycache__
 /triggerWordDetection/model_checkpoints
+
 /satelliteServer/node_modules
+
 /speech_server/old_code
 /speech_server/quest_ai/quest_ai_dependencies/roberta-large_fine-tuned
 /speech_server/chat_ai/chat_ai_dependencies/gpt_personachat_cache
@@ -17,12 +21,17 @@
 /speech_server/quest_ai/__pycache__
 /speech_server/simple_utilities/__pycache__
 /speech_server/__pycache__
+
 /speech_server/emotion_detection_ai/__pycache__
 /speech_server/emotion_detection_ai/datasets
 /speech_server/emotion_detection_ai/models
+
 /speech_server/emotion_representation/__pycache__
+
 /speech_server/piano_player/__pycache__
 
 /emotion_detection/__pycache__
 /emotion_detection/datasets
 /emotion_detection/models
+
+/multispeaker_synthesis/__pycache__

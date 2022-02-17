@@ -108,7 +108,7 @@ kotakeeosModule (dir)      : Firmware for Arduino microcontroller modules
 satelliteServer (dir)      : Remote server controllable by web server.
 software (dir)             : Primary directory of web server files as well
                              as web application files.
-speechServer (dir)         : Voice control programs intended to interface 
+speech_server (dir)        : Voice control programs intended to interface 
                              with the primary web server.
 triggerWordDetection (dir) : AI/ML endeavor to implement personal "hot word" 
                              detection, utilized with speechserver components. 
