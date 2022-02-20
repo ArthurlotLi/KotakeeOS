@@ -35,6 +35,7 @@
 /emotion_detection/models
 
 /multispeaker_synthesis/__pycache__
+/multispeaker_synthesis/datasets
 /multispeaker_synthesis/speaker_encoder/data
 /multispeaker_synthesis/speaker_encoder/__pycache__
 /multispeaker_synthesis/synthesizer/data

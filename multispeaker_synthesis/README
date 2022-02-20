@@ -22,12 +22,18 @@ Contains three independently trained components:
 3) Vocoder - Given the log mel spectogram output by (2), generates the output 
    waveform file. Auto-regressive WaveNet-based. 
 
+Datasets utilized:
+
+VoxCeleb (1 and 2): https://www.robots.ox.ac.uk/~vgg/data/voxceleb/ 
+LibriSpeech: https://www.openslr.org/12/
+VCTK: https://datashare.ed.ac.uk/handle/10283/2950
+
 ------------------------------------------------------------------------------
 References:
 ------------------------------------------------------------------------------
 
 [1] Jia, Ye, et al. "Transfer learning from speaker verification to multispeaker 
-    text-to-speech synthesis." Advances in neural information processing systems
+    text-to-speech synthesis." Advances in neural information processing systems 
     31 (2018). https://arxiv.org/abs/1806.04558 
 
 [2] Jemine, C. "Master thesis : Real-Time Voice Cloning. (Unpublished 

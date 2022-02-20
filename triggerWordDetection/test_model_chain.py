@@ -22,7 +22,7 @@ class TestModelChain:
   test_model_location = None
 
   minibatch_size = 2
-  use_gpu = True # If using GPU, the minbatch will automatically be set to 1. 
+  use_gpu = False # If using GPU, the minbatch will automatically be set to 1. 
 
   def __init__(self, location):
     self.test_model_location = location
