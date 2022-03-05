@@ -64,6 +64,7 @@ class SpeechServer:
 
   speech_speak_multispeaker_synthesis_location = "./multispeaker_synthesis_utility/multispeaker_synthesis_utility"
   speech_speak_multispeaker_synthesis_class_name = "MultispeakerSynthesisUtility"
+  # TODO: pass in multispeaker location. 
   speech_speak_use_multispeaker_synthesis = None
   speech_speak_multispeaker_synthesis_model_num = 1
   speech_speak_multispeaker_synthesis_speaker = "TODO"

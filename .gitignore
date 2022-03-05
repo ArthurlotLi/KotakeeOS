@@ -29,11 +29,3 @@
 /speech_server/emotion_representation/__pycache__
 
 /speech_server/piano_player/__pycache__
-
-/multispeaker_synthesis/__pycache__
-/multispeaker_synthesis/datasets
-/multispeaker_synthesis/speaker_encoder/data
-/multispeaker_synthesis/speaker_encoder/__pycache__
-/multispeaker_synthesis/synthesizer/data
-/multispeaker_synthesis/synthesizer/__pycache__
-/multispeaker_synthesis/vocoder/__pycache__
