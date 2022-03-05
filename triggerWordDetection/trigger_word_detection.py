@@ -32,8 +32,9 @@ from tensorflow.keras.layers import Dense, Activation, Dropout, Input, TimeDistr
 from tensorflow.keras.layers import GRU, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.regularizers import l2
 
-from tensorflow.keras.callbacks import ModelCheckpoint
+from matplotlib import pyplot as plt
 
 
 class TriggerWordDetection:
@@ -49,7 +50,9 @@ class TriggerWordDetection:
   data_writing_x_attempts = 10 # For attempting to write X to file.
   data_writing_y_attempts = 2 # For attempting to write y to file.
 
-  # File sources
+  # Directories
+  models_location = "./models"
+  model_history_location = "./model_histories"
   raw_data_folder = "./raw_data"
   raw_data_dev_folder = "./raw_data_dev"
   dataset_output_folder = "./XY_train"
@@ -67,7 +70,7 @@ class TriggerWordDetection:
   max_negatives = 2
   force_create = False # We'll overwrite an existing dataset if exists. 
 
-  # Model parameters. 
+  # Model hyperparameters + architecture
   model_learning_rate = 0.0001
   model_loss_function = 'binary_crossentropy'
   model_epochs = 5
@@ -80,12 +83,13 @@ class TriggerWordDetection:
   model_gru_4 = 0
   model_gru_5 = 0
 
-  # For whatever reason, the original model creators used 0.8 for all
-  # layers. Suggest setting the hidden dropout to the standard 0.5.
+  # Model (additional) regularization
   model_hidden_dropout = 0.8
   model_input_dropout = 0.8 
+  model_l2 = False # False means no penalty is applied. 
+  model_l2_influence = 0.01 # Default modifier multiplied by regularizer. 
 
-  # Additional parameters
+  # Optimization
   mcp_save_best_only = False
   use_adam_instead_of_rmsprop = True
   adam_beta_1 = None 
@@ -116,8 +120,11 @@ class TriggerWordDetection:
       if "model_gru_3" in model_parameters: self.model_gru_3 = model_parameters["model_gru_3"]
       if "model_gru_4" in model_parameters: self.model_gru_4 = model_parameters["model_gru_4"]
       if "model_gru_5" in model_parameters: self.model_gru_5 = model_parameters["model_gru_5"]
+
       if "model_hidden_dropout" in model_parameters: self.model_hidden_dropout = model_parameters["model_hidden_dropout"]
       if "model_input_dropout" in model_parameters: self.model_input_dropout = model_parameters["model_input_dropout"]
+      if "model_l2" in model_parameters: self.model_l2 = model_parameters["model_l2"]
+      if "model_l2_influence" in model_parameters: self.model_l2_influence = model_parameters["model_l2_influence"]
 
       if "mcp_save_best_only" in model_parameters: self.mcp_save_best_only = model_parameters["mcp_save_best_only"]
       if "use_adam_instead_of_rmsprop" in model_parameters: self.use_adam_instead_of_rmsprop = model_parameters["use_adam_instead_of_rmsprop"]
@@ -150,19 +157,20 @@ class TriggerWordDetection:
         outputnum = iternum
 
       model = None
-      model, best_accuracy, acc = self.train_model(X=x, Y=y, modelnum = outputnum, iternum=iternum)
+      model, best_accuracy, acc, history = self.train_model(X=x, Y=y, modelnum = outputnum, iternum=iternum)
 
       if model is not None:
         result = self.save_model(model, outputnum)
-        if result:
-          print("[INFO] Program finished successfully! Goodnight...")
-          return best_accuracy, acc
-        else:
-          print("[ERROR] Unable to save the model! Execution failed.")
+
+        self.graph_model_history(iternum=outputnum, history=history)
+
+        print("[INFO] Training all done! Goodnight...")
+        return best_accuracy, acc
       else:
         print("[ERROR] model was None! Execution failed.")
     else:
-        print("[ERROR] datasets x and/or y was None! Execution failed.")
+      print("[ERROR] datasets x and/or y was None! Execution failed.")
+    return None, None
 
   #
   # A) DATASET CREATION AND PROCESSING
@@ -487,15 +495,26 @@ class TriggerWordDetection:
   # B) MODEL CREATION AND TRAINING
   #
 
-  # 3. Train the model with the generated model.
+  # 3. Train the model with the generated model. Returns the model, 
+  # best train acc, test acc, and model history. 
   def train_model(self, X, Y, modelnum, iternum):
     print("[INFO] Running train_model...")
 
+    # L2 regularization (weight decay)
+    if(self.model_l2 is True):
+      print("[DEBUG] L2 Regularization enabled with weight " + str(self.model_l2_influence) + ".")
+      l2(l2=self.model_l2_influence)
+
+    # Define the model. 
     model = self.define_model(input_shape = (self.Tx, self.n_freq))
 
+    # Output number of parameters. 
     model.summary()
+
+    # TODO: Hard coded verbose. 
     verbose = True
 
+    # Optimizer cration
     opt = None
     if(self.use_adam_instead_of_rmsprop):
       if (self.adam_beta_1 is not None and self.adam_beta_2 is not None):
@@ -507,16 +526,25 @@ class TriggerWordDetection:
     else:
       opt = RMSprop(learning_rate=self.model_learning_rate)
 
+    # Compile the model. 
     model.compile(optimizer=opt, loss = self.model_loss_function, metrics=["accuracy"])
 
-    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{val_accuracy:.5f}_{accuracy:.5f}_{epoch:02d}' + ".h5", monitor='accuracy', verbose=1, save_best_only=self.mcp_save_best_only)
-    
-    history = model.fit(X, Y, shuffle=True, epochs=self.model_epochs, callbacks=[mcp], validation_split=self.model_validation_split, verbose=verbose, batch_size=self.model_batch_size)
+    # Apply MCP
+    mcp = ModelCheckpoint(filepath='./model_checkpoints/tr_model_'+str(modelnum)+'_{val_accuracy:.5f}_{accuracy:.5f}_{epoch:02d}' + ".h5", 
+                          monitor='accuracy', 
+                          verbose=1, 
+                          save_best_only=self.mcp_save_best_only)
+    # Train. 
+    history = model.fit(X, Y, shuffle=True, 
+                        epochs=self.model_epochs, 
+                        callbacks=[mcp], 
+                        validation_split=self.model_validation_split, 
+                        verbose=verbose, 
+                        batch_size=self.model_batch_size)
 
+    # Output best accuracy and attempt to test it with the test set. 
     best_accuracy = max(history.history['accuracy'])
-
     print("\nModel training complete. Best accuracy: " + str(best_accuracy))
-
     try:
       print("[INFO] Loading dev dataset X file " + self.X_dev_location + "...")
       X_dev = np.load(self.X_dev_location)
@@ -524,13 +552,12 @@ class TriggerWordDetection:
       Y_dev = np.load(self.Y_dev_location)
       print("[DEBUG] X_dev.shape is:", X_dev.shape)  
       print("[DEBUG] Y_dev.shape is:", Y_dev.shape) 
-
       loss, acc = model.evaluate(X_dev, Y_dev)
       print("[INFO] Dev set accuracy is: ", acc) 
     except:
       print("[WARN] Error loading X_dev and/or Y/dev.")
 
-    return model, best_accuracy, acc
+    return model, best_accuracy, acc, history
 
   # Model definition. Class variables dictate the number of neurons in the 
   # layers for chain train configuration. 
@@ -538,49 +565,66 @@ class TriggerWordDetection:
       X_input = Input(shape = input_shape)
       X = None
       
-      # CONV Layer 
-      X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input) 
+      # Convolutional Layer 
+      if(self.model_l2 is True):
+        X = Conv1D(self.model_conv1d, kernel_size=15, strides=4, kernel_regularizer='l2')(X_input) 
+      else:
+        X = Conv1D(self.model_conv1d, kernel_size=15, strides=4)(X_input) 
       X = BatchNormalization()(X)
       X = Activation('relu')(X) 
       X = Dropout(self.model_input_dropout)(X)
 
       # First GRU Layer
       if(self.model_gru_1 is not None and self.model_gru_1 > 0):
-        X = GRU(units = self.model_gru_1, return_sequences = True)(X)
+        if(self.model_l2 is True):
+          X = GRU(units = self.model_gru_1, kernel_regularizer='l2', return_sequences = True)(X)
+        else:
+          X = GRU(units = self.model_gru_1, return_sequences = True)(X)
         X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
       
       # Second GRU Layer
       if(self.model_gru_2 is not None and self.model_gru_2 > 0):
-        X = GRU(units = self.model_gru_2, return_sequences = True)(X)
+        if(self.model_l2 is True):
+          X = GRU(units = self.model_gru_2, kernel_regularizer='l2', return_sequences = True)(X)
+        else:
+          X = GRU(units = self.model_gru_2, return_sequences = True)(X)
         X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
 
       # Third GRU Layer
       if(self.model_gru_3 is not None and self.model_gru_3 > 0):
-        X = GRU(units = self.model_gru_3, return_sequences = True)(X)
+        if(self.model_l2 is True):
+          X = GRU(units = self.model_gru_3, kernel_regularizer='l2', return_sequences = True)(X)
+        else:
+          X = GRU(units = self.model_gru_3, return_sequences = True)(X)
         X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
     
       # Fourth GRU Layer
       if(self.model_gru_4 is not None and self.model_gru_4 > 0):
-        X = GRU(units = self.model_gru_4, return_sequences = True)(X)
+        if(self.model_l2 is True):
+          X = GRU(units = self.model_gru_4, kernel_regularizer='l2', return_sequences = True)(X)
+        else:
+          X = GRU(units = self.model_gru_4, return_sequences = True)(X)
         X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
 
       # Fifth GRU Layer
       if(self.model_gru_5 is not None and self.model_gru_5 > 0):
-        X = GRU(units = self.model_gru_5, return_sequences = True)(X)
+        if(self.model_l2 is True):
+          X = GRU(units = self.model_gru_5, kernel_regularizer='l2', return_sequences = True)(X)
+        else:
+          X = GRU(units = self.model_gru_5, return_sequences = True)(X)
         X = Dropout(self.model_hidden_dropout)(X)
         X = BatchNormalization()(X)
         
-      # Add a final dropout before we get to the final layer
-      # that applies to the previous.
+      # Add a final dropout before we get to the final layer.
       X = Dropout(self.model_hidden_dropout)(X)
-      X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) # time distributed  (sigmoid)
+      # Sigmoid output layer. 
+      X = TimeDistributed(Dense(1, activation = "sigmoid"))(X) 
 
       model = Model(inputs = X_input, outputs = X)
-      
       return model 
 
   # 4. Save the model.
@@ -588,13 +632,72 @@ class TriggerWordDetection:
   # Returns true or false depending on execution status. 
   def save_model(self, model, iternum):
     print("[INFO] Running save_model...")
+    try:
+      location = self.models_location + '/tr_model_'+str(iternum)+'.h5'
+      model.save(location)
+      print('[INFO] model successfully saved at: ' + location + '.')
+      return True
+    except Exception as e:
+      print("[ERROR] Exception occurred when saving model: ")
+      print(e)
+    return False
 
-    model.save('./models/tr_model_'+str(iternum)+'.h5')
+  # 5. Graph History
+  #
+  # Graphs and saves training history. Two graphs are generated and
+  # saved - one for accuracy, the other for loss. 
+  def graph_model_history(self, iternum, history):
+    print("[INFO] Generating model history graph for model " + str(iternum) + ".")
 
-    print('[INFO] model successfully saved at ./models/tr_model_'+str(iternum)+'.h5.')
+    # Constants for both graphs.
+    graph_width_inches = 13
+    graph_height_inches = 7
+    print("DEBNUGGGGE: ")
+    print(history.history)
 
-    return True
+    # Generate accuracy graph
+    title = "Iternum " + str(iternum) + " Training History [Accuracy]"
+    fig = plt.figure(1)
+    fig.suptitle(title)
+    fig.set_size_inches(graph_width_inches,graph_height_inches)
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['train', 'val'], loc="upper left")
 
+    # Save the graph. 
+    location = self.model_history_location + "/" + str(iternum) + "_acc"
+    try:
+      fig.savefig(location)
+      print("[DEBUG] Graph successfully saved to: " + str(location) + ".")
+    except Exception as e:
+      print("[ERROR] Unable to save graph at location: " + str(location) + ". Exception:")
+      print(e)
+    
+    plt.close("all")
+
+    # Generate loss graph
+    title = "Iternum " + str(iternum) + " Training History [Loss]"
+    fig = plt.figure(1)
+    fig.suptitle(title)
+    fig.set_size_inches(graph_width_inches,graph_height_inches)
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['train', 'val'], loc="upper left")
+
+    # Save the graph. 
+    location = self.model_history_location + "/" + str(iternum) + "_loss"
+    try:
+      fig.savefig(location)
+      print("[DEBUG] Graph successfully saved to: " + str(location) + ".")
+    except Exception as e:
+      print("[ERROR] Unable to save graph at location: " + str(location) + ". Exception:")
+      print(e)
+    
+    plt.close("all")
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

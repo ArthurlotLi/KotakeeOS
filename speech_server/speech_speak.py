@@ -69,6 +69,7 @@ class SpeechSpeak:
   emotion_representation_location = None
   emotion_detection_class_name = None
   emotion_representation_class_name = None
+  emotion_detection_model_variants_location = None
   # Time in seconds to process and send the subprocess a new video 
   # location - this allows us to update the idle animation (if
   # enabled) so that daylight may tick over to sunset and to
@@ -90,7 +91,8 @@ class SpeechSpeak:
   multispeaker_synthesis_speaker = None
 
   def __init__(self, web_server_status, chime_location, startup_location, shutdown_location, timer_location, alarm_location, 
-               emotion_detection_location, emotion_detection_class_name, emotion_representation_location, emotion_representation_class_name, 
+               emotion_detection_location, emotion_detection_class_name, emotion_detection_model_variants_location,
+               emotion_representation_location, emotion_representation_class_name, 
                multispeaker_synthesis_location, multispeaker_synthesis_class_name,
                use_python3 = True, 
                emotion_detection_model_num = -1, 
@@ -115,6 +117,7 @@ class SpeechSpeak:
     self.emotion_detection_class_name = emotion_detection_class_name
     self.emotion_representation_location = emotion_representation_location
     self.emotion_representation_class_name = emotion_representation_class_name
+    self.emotion_detection_model_variants_location = emotion_detection_model_variants_location
 
     self.multispeaker_synthesis_location = multispeaker_synthesis_location
     self.multispeaker_synthesis_class_name = multispeaker_synthesis_class_name
@@ -135,7 +138,7 @@ class SpeechSpeak:
       self.emotion_representation_class = self.load_class(module_name=self.emotion_representation_location, class_name=self.emotion_representation_class_name)
       if self.emotion_detection_class is not None and self.emotion_representation_class is not None:
         print("[DEBUG] Initializing Emotion Detection + Representation.")
-        self.emotion_detection = self.emotion_detection_class(model_num=self.emotion_detection_model_num)
+        self.emotion_detection = self.emotion_detection_class(model_num=self.emotion_detection_model_num, model_variants_location=emotion_detection_model_variants_location)
         self.emotion_representation = self.emotion_representation_class(use_python3=self.use_python3, use_emotion_representation_reduced = self.use_emotion_representation_reduced)
         # Successful initialization.
         self.emotion_detection_representation_enabled = True

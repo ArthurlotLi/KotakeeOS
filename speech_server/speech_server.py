@@ -56,6 +56,7 @@ class SpeechServer:
   speech_speak_emotion_detection_model_num = 2
   speech_speak_emotion_detection_location = "./emotion_detection_utility/emotion_detection_utility"
   speech_speak_emotion_detection_class_name = "EmotionDetectionUtility"
+  speech_speak_emotion_detection_model_variants_location = "../../emotion_detection/models"
   speech_speak_emotion_representation_location = "./emotion_representation/emotion_representation"
   speech_speak_emotion_representation_class_name = "EmotionRepresentation" 
   speech_speak_use_emotion_representation = None
@@ -183,6 +184,7 @@ class SpeechServer:
 
       emotion_detection_location=self.speech_speak_emotion_detection_location,
       emotion_detection_class_name = self.speech_speak_emotion_detection_class_name,
+      emotion_detection_model_variants_location= self.speech_speak_emotion_detection_model_variants_location,
       emotion_representation_location=self.speech_speak_emotion_representation_location,
       emotion_representation_class_name = self.speech_speak_emotion_representation_class_name,
 

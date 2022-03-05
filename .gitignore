@@ -30,10 +30,6 @@
 
 /speech_server/piano_player/__pycache__
 
-/emotion_detection/__pycache__
-/emotion_detection/datasets
-/emotion_detection/models
-
 /multispeaker_synthesis/__pycache__
 /multispeaker_synthesis/datasets
 /multispeaker_synthesis/speaker_encoder/data

@@ -26,7 +26,7 @@ import torch
 class EmotionDetectionUtility:
   # Default is based off the speech_server level. May be 
   # overridden during initialization.
-  model_variants_location = "../emotion_detection/models"
+  model_variants_location = "../../emotion_detection/models"
 
   model = None
   tokenizer = None

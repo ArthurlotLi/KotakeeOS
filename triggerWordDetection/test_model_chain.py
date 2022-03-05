@@ -5,12 +5,17 @@
 # given the class defined in test_model. 
 
 from struct import pack_into
+
+from cv2 import drawFrameAxes
 from test_model import TestModel
  
 import os
 import multiprocessing
 import argparse
 import numpy as np
+
+from matplotlib import pyplot as plt
+import pandas as pd
 
 class TestModelChain:
   X_dev_location = "./XY_dev_kotakee/X_dev_kotakee.npy"
@@ -21,8 +26,8 @@ class TestModelChain:
   chain_test_results_acc_map = {}
   test_model_location = None
 
-  minibatch_size = 2
-  use_gpu = False # If using GPU, the minbatch will automatically be set to 1. 
+  minibatch_size = 1
+  use_gpu = True # If using GPU, the minbatch will automatically be set to 1. 
 
   def __init__(self, location):
     self.test_model_location = location
@@ -173,9 +178,100 @@ class TestModelChain:
         f.write(self.chain_test_results[self.chain_test_results_acc_map[key]])
 
       f.close()
-      print("[INFO] Write complete. Have a good night...")
     except:
       print("[ERROR] Failed to write results to file!")
+    
+    self.graph_history(filename=filename)
+
+    print("[INFO] Write complete. Have a good night...")
+
+  # Given all the test accuracies that we've generated, let's 
+  # graph every single one. Note that we expect a very specific
+  # file name structure for these model iterations:
+  #
+  # tr_model_'+str(modelnum)+'_{val_accuracy:.5f}_{accuracy:.5f}_{epoch:02d}' + ".h5"
+  # Ex) tr_model_14100_0.99662_0.99613_502.h5
+  #
+  # Expects full location of the file that has been written -
+  # the suffix will be stripped but otherwise the graph will be
+  # written to file with that exact name. 
+  def graph_history(self, filename):
+    print("[INFO] Generating test acc history graph.")
+
+    graph_width_inches = 13
+    graph_height_inches = 7
+    
+    graph_location = filename.replace(".txt", "")
+
+    title = "Chain Test Accuracy History"
+    fig = plt.figure(1)
+    fig.suptitle(title)
+    fig.set_size_inches(graph_width_inches,graph_height_inches)
+
+    # Gather points. Every point should be indexed by epoch. 
+    indices = []
+    test_accs = []
+    val_accs = []
+    train_accs = []
+
+    # Each item should be structured as such:
+    # 99.69913960 - tr_model_14060_0.99860_0.99981_2076.h5
+    for key in self.chain_test_results_acc_map: 
+      string = self.chain_test_results[self.chain_test_results_acc_map[key]]
+      try:
+        epoch = None
+        test_acc = None
+        val_acc = None
+        train_acc = None
+
+        string_split_apos = string.split(" - ")
+        test_acc = float(string_split_apos[0].strip())
+
+        result_string_split = string_split_apos[1].split("_")
+        epoch = int(result_string_split[5].split(".h")[0].strip())
+        val_acc = float(result_string_split[3].strip())*100
+        train_acc = float(result_string_split[4].strip())*100
+        
+        indices.append(epoch)
+        test_accs.append(test_acc)
+        val_accs.append(val_acc)
+        train_accs.append(train_acc)
+      except Exception as e:
+        print("[WARNING] Encountered an exception while parsing string " + str(string) + ":")
+        print(e)
+
+    # We now have everything in our arrays. Combine them to graph 
+    # them.   
+    data= []
+    for i in range(0, len(indices)):
+      data.append([indices[i], test_accs[i], val_accs[i], train_accs[i]])
+
+    df = pd.DataFrame(data, columns = ["epoch", "test_acc", "val_acc", "train_acc"])
+
+    # Sort the dataframe by epoch first so lines are drawn properly.
+    df.sort_values("epoch", axis=0, inplace=True)
+
+    df.set_index("epoch", drop=True, inplace=True)
+    df = df.astype(float)
+
+    # With our dataframe, we can finally graph the history. 
+    plt.plot(df["val_acc"])
+    plt.plot(df["test_acc"])
+    plt.plot(df["train_acc"])
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    plt.legend(["val_acc", "test_acc", "train_acc"], loc="upper left")
+
+    # Save the graph. 
+    try:
+      fig.savefig(graph_location)
+      print("[DEBUG] Graph successfully saved to: " + str(graph_location) + ".")
+    except Exception as e:
+      print("[ERROR] Unable to save graph at location: " + str(graph_location) + ". Exception:")
+      print(e)
+    
+    plt.close("all")
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
