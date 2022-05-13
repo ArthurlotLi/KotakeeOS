@@ -136,7 +136,7 @@ class PianoPlayerWebServer:
     api = Api(app)
 
     # Starting new songs (and replacing existing songs)
-    def post_start_song(self):
+    def post_start_song(self, player=player):
       """
       Parses all arguments as Unicode strings. 
       """
@@ -145,14 +145,14 @@ class PianoPlayerWebServer:
       parser.add_argument("midi_contents", type=str)
       args = parser.parse_args()
 
-      if self.player.playing is True:
+      if player.playing is True:
         # Stop the current song. 
-        self.player.stop_song = False
+        player.stop_song = False
 
-      while self.player.playing is True:
+      while player.playing is True:
         time.sleep(1)
 
-      self.player.play_midi(location = None, base_64_string = args.midi_contents, song_name = args.song_name)
+      player.play_midi(location = None, base_64_string = args.midi_contents, song_name = args.song_name)
 
     endpoint_class = type("startSong", (Resource,), {
       "post": post_start_song,
@@ -160,10 +160,10 @@ class PianoPlayerWebServer:
     api.add_resource(endpoint_class, '/%s' % "startSong")
 
     # Stopping playing songs.
-    def get_stop_song(self):
-      if self.player.playing is True:
+    def get_stop_song(self, player=player):
+      if player.playing is True:
         # Stop the current song. 
-        self.player.stop_song = False
+        player.stop_song = False
     
     endpoint_class = type("stopSong", (Resource,), {
       "get": get_stop_song,
