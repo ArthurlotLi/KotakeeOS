@@ -128,6 +128,8 @@ class PianoPlayerWebServer:
     # Define the application.
     app = Flask(__name__)
 
+    application_port = int(application_port)
+
     self.player = player
 
     # Define the API, which we will add our endpoints onto. 
