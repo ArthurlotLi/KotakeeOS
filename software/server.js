@@ -707,6 +707,7 @@ findPort().then(port => {
   pianoPort = port;
   let command = subprocessUsbPianoPlayerCommand + " " + port
   console.log("[DEBUG] Creating Usb Piano Player subprocess with command: " + command);
+  exec(command)
 });
 
 // Start the server to listen on this port.
