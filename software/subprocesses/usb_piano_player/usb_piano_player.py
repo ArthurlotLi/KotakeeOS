@@ -14,11 +14,22 @@ import base64
 import argparse
 import os
 
+from flask import Flask
+from flask_restful import Resource, Api, reqparse
+from gevent.pywsgi import WSGIServer
+import time
+
+# How many seconds to wait for the web server to send the song to
+# play over HTTP before perishing. 
+_recieve_song_timeout = 20
+
 class UsbPianoPlayer:
   # Relative to the location of server.js.
   piano_songs_location = "./subprocesses/usb_piano_player/piano_songs"
 
   port = None
+  playing = False
+  stop_song = False
 
   def __init__(self):
     available_ports = mido.get_output_names()
@@ -39,6 +50,7 @@ class UsbPianoPlayer:
       print("[ERROR] UsbPianoPlayer is unable to play with a closed output port. Cancelling...")
       return
 
+    self.playing = True
     midi_song = None
     created_song_location = None
     if location is not None:
@@ -51,8 +63,11 @@ class UsbPianoPlayer:
         # Play it. 
         print("[INFO] UsbPianoPlayer Now Playing!")
         for msg in midi_song.play():
+          if self.stop_song is True:
+            break
           self.port.send(msg)
         print("[INFO] UsbPianoPlayer song complete!")
+        self.stop_song = False
       except Exception as e:
         print("[ERROR] UsbPianoPlayer ran into an exception while playing!")
 
@@ -60,6 +75,7 @@ class UsbPianoPlayer:
     # created.
     if created_song_location is not None:
       self.delete_midi_file(created_song_location)
+    self.playing = False
     print("[INFO] UsbPianoPlayer Complete. Closing.")
 
   # Given a file location, load a file. 
@@ -95,20 +111,78 @@ class UsbPianoPlayer:
     # Now load the file. 
     return self.load_midi_file(location = new_file_location), new_file_location
 
-if __name__ == "__main__":
-  debug = False
-  
-  location = None
-  base_64_string = None
-  song_name = None
+class PianoPlayerWebServer:
+  """
+  A Mayflower web server. In order to communicate between the web
+  server and the main process (in a manner that avoid complicated
+  stuff), prop up a HTTP restful API for managing playing a single
+  song. 
 
-  if not debug:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("song_name")
-    parser.add_argument("base_64_string")
-    args = parser.parse_args()
-    song_name = args.song_name
-    base_64_string = args.base_64_string
+  During playing of a song, the following abnormal actions may take
+  place given instruction from the web server:
+
+  1. Stop the song - just terminate the web server here. 
+  2. Replace the song - start playing something else. 
+  """
+  def __init__(self, application_port, player):
+    # Define the application.
+    app = Flask(__name__)
+
+    self.player = player
+
+    # Define the API, which we will add our endpoints onto. 
+    api = Api(app)
+
+    # Starting new songs (and replacing existing songs)
+    def post_start_song(self):
+      """
+      Parses all arguments as Unicode strings. 
+      """
+      parser = reqparse.RequestParser()
+      parser.add_argument("song_name", type=str)
+      parser.add_argument("midi_contents", type=str)
+      args = parser.parse_args()
+
+      if self.player.playing is True:
+        # Stop the current song. 
+        self.player.stop_song = False
+
+      while self.player.playing is True:
+        time.sleep(1)
+
+      self.player.play_midi(location = None, base_64_string = args.midi_contents, song_name = args.song_name)
+
+    endpoint_class = type("startSong", (Resource,), {
+      "post": post_start_song,
+    })
+    api.add_resource(endpoint_class, '/%s' % "startSong")
+
+    # Stopping playing songs.
+    def get_stop_song(self):
+      if self.player.playing is True:
+        # Stop the current song. 
+        self.player.stop_song = False
+    
+    endpoint_class = type("stopSong", (Resource,), {
+      "get": get_stop_song,
+    })
+    api.add_resource(endpoint_class, '/%s' % "stopSong")
+
+    print("[INFO] Server is now online at http://%s:%d." % ("localhost", application_port))
+    app.debug = True 
+    http_server = WSGIServer(("localhost", application_port), app)
+    http_server.serve_forever() 
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("application_port")
+  args = parser.parse_args()
+  application_port = args.application_port
+
+  player = UsbPianoPlayer()
+  PianoPlayerWebServer(application_port, player)
+
+  """
   else:
     #location = "./piano_songs/westworld.mid" 
     song_name = "test"
@@ -116,4 +190,5 @@ if __name__ == "__main__":
 
   player = UsbPianoPlayer()
   player.play_midi(location = location, base_64_string = base_64_string, song_name = song_name)
+  """
   

@@ -1,0 +1,4 @@
+mido==1.2.10
+flask==2.0.3
+flask-restful==0.3.9
+gevent==21.12.0

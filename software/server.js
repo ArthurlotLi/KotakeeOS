@@ -6,6 +6,7 @@
 const express = require("express");
 const path = require("path");
 const fetch = require("node-fetch");
+const findPort = require('find-open-port');
 
 const Home = require("./Home.js");
 const Room = require("./Room.js");
@@ -116,6 +117,8 @@ const rooms = {
 */
 
 const listeningPort = 8080;
+
+var pianoPort = null;
 
 // Open Weather Map stuff. Use the boolean to provide canned data
 // if you're just testing stuff. (If you're restarting the app
@@ -656,20 +659,34 @@ app.get('/moduleSwitch/:roomId/:actionId', (req, res) => {
 
 app.post('/pianoPlayMidi', (req, res) => {
   console.log("[DEBUG] /pianoPlayMidi POST request received. Body: " + JSON.stringify(req.body));
+  if(pianoPort== null){
+    return res.status(400).send();
+  }
   if(req.body.song_name != null && req.body.midi_contents != "null"){
     var song_name = req.body.song_name;
     var midi_contents = req.body.midi_contents;
     if(song_name != null && midi_contents != null){
 
-      // Execute subprocess to play the piano song via USB. 
-      command = subprocessUsbPianoPlayerCommand + " " + song_name + " " + midi_contents
-      console.log("[DEBUG] Executing command: " + command);
-      exec(command, null)
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ "song_name": song_name, "midi_contents" : midi_contents })
+      };
+      fetch(`http://localhost:${pianoPort}/startSong`, requestOptions);
       
       return res.status(200).send();
     }
     return res.status(400).send();
   }
+});
+
+app.get('/pianoStopMidi', (req, res) => {
+  console.log("[DEBUG] /pianoStopMidi GET request received.");
+  if(pianoPort== null){
+    return res.status(400).send();
+  }
+  fetch(`http://localhost:${pianoPort}/stopSong`);
+  return res.status(200).send();
 });
 
 // TODO: Abstract this so that we could potentially have 
@@ -683,6 +700,13 @@ app.get('/toggleSpeechServerSatellite', (req, res) => {
   console.log("[DEBUG] /toggleSpeechServerSatellite GET request received.");
   fetch("http://" + satellite1 + "/toggleSpeechServer");
   return res.status(200).send();
+});
+
+// Execute subprocess to play the piano song via USB. 
+findPort().then(port => {
+  pianoPort = port;
+  let command = subprocessUsbPianoPlayerCommand + " " + port
+  console.log("[DEBUG] Creating Usb Piano Player subprocess with command: " + command);
 });
 
 // Start the server to listen on this port.
