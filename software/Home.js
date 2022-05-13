@@ -833,6 +833,9 @@ class Home {
   // is held by the server. Also given doNotQuery boolean which
   // is default to false. If given it to true, we just provide
   // bunk data to prevent spamming the server. 
+  //
+  // For every single live query, submits the data into the home
+  // relational database server for machine learning inference. 
   async updateWeather(openweathermapApiKey, doNotQuery = false){
     if(doNotQuery){
       this.weatherData = cannedWeatherData;
