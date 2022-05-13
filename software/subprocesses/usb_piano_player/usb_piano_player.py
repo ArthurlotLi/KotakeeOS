@@ -13,6 +13,7 @@ from mido import MidiFile
 import base64
 import argparse
 import os
+import threading
 
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
@@ -147,12 +148,16 @@ class PianoPlayerWebServer:
 
       if player.playing is True:
         # Stop the current song. 
-        player.stop_song = False
+        player.stop_song = True
 
       while player.playing is True:
         time.sleep(1)
 
-      player.play_midi(location = None, base_64_string = args.midi_contents, song_name = args.song_name)
+      try:
+        _ = threading.Thread(target=player.play_midi, args=(None, args.song_name, args.midi_contents), daemon=True).start()
+      except Exception as e:
+        print("WARNING: Error playing! Exception:")
+        print(e)
 
     endpoint_class = type("startSong", (Resource,), {
       "post": post_start_song,
@@ -163,7 +168,7 @@ class PianoPlayerWebServer:
     def get_stop_song(self, player=player):
       if player.playing is True:
         # Stop the current song. 
-        player.stop_song = False
+        player.stop_song = True
     
     endpoint_class = type("stopSong", (Resource,), {
       "get": get_stop_song,
