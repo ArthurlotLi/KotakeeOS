@@ -153,8 +153,8 @@ const satellite1 = "192.168.0.114:8080"
 // Arduino 1 Bedroom 
 const module1BRId = 1; // Internal server use only. 
 const module1BRRoomId = rooms.BEDROOM; 
-const module1BRActions = [actions.LIGHTING1, actions.TEMP1];
-const module1BRPins = [12, 16];
+const module1BRActions = [actions.LIGHTING1, actions.TEMP1, actions.LEDSTRIP1];
+const module1BRPins = [12, 16, "14.060"];
 const module1BRIpAddress = "192.168.0.186";
 const module1BR = new Module(module1BRId, module1BRRoomId, module1BRActions, module1BRPins, module1BRIpAddress);
 
