@@ -191,12 +191,12 @@ const module5BAIpAddress = "192.168.0.101";
 const module5BA = new Module(module5BAId, module5BARoomId, module5BAActions, module5BAPins, module5BAIpAddress);
 
 // Arduino 6 LR
-const module6BRId = 6; // Internal server use only. 
-const module6RRoomId = rooms.BEDROOM; 
-const module6BRActions = [actions.LEDSTRIP1];
-const module6BRPins = ["14.060"];
-const module6BRIpAddress = "192.168.0.198";
-const module6BR = new Module(module6BRId, module6RRoomId, module6BRActions, module6BRPins, module6BRIpAddress);
+const module6LRId = 6; // Internal server use only. 
+const module6LRRoomId = rooms.LIVINGROOM; 
+const module6LRActions = [actions.KNOB1];
+const module6LRPins = [12];
+const module6LRIpAddress = "192.168.0.198";
+const module6LR = new Module(module6LRId, module6LRRoomId, module6LRActions, module6LRPins, module6LRIpAddress);
 
 const module7LRId = 7; // Internal server use only. 
 const module7LRRoomId = rooms.LIVINGROOM; 
@@ -208,11 +208,11 @@ const module7LRIpAddress = "192.168.0.146";
 const module7LR = new Module(module7LRId, module7LRRoomId, module7LRActions, module7LRPins, module7LRIpAddress);
 
 // Rooms (add objects here)
-const bedroomModules = [module1BR, module6BR];
+const bedroomModules = [module1BR];
 const bedroomInputActions = {};
 const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 
-const livingRoomModules = [module2LR, module3LR, module4LR, module7LR];
+const livingRoomModules = [module2LR, module3LR, module4LR, module7LR, module6LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
   350: [3, 0, 19, 00], // These arrays must be multiples of 4. 
