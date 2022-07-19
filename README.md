@@ -1,39 +1,28 @@
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
-KotakeeOS - Home Management System
-MAIN REPOSITORY
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
 
-Description:
+# KotakeeOS - Home Management System
 
 Home-brewed smart home management software; home assistant platform. Mean to
 be hosted on a home local network (not exposed to the internet) as a
 centralized control panel. A platform with immense potential for personal
 AI/ML solution development. 
 
-Development Notes:
-Transpilied Typescript has been set up to run whenever npm start is run. To 
-avoid automatic transpiling (nothing changed), just run "node server.js"
-instead of npm start. To transpile only (i.e. server is already running), 
-use the following command in the software directory level:
+![KotakeeOS Diagram](https://i.imgur.com/FYIG3EB.png "KotakeeOS Diagram")
 
-node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js
+![KotakeeOS Diagram](https://i.imgur.com/wb1CFzl.png "KotakeeOS Diagram")
 
-To run only, use the following command:
+![KotakeeOS Diagram](https://i.imgur.com/m3n26FX.png "KotakeeOS Diagram")
 
-node server.js
+![KotakeeOS Diagram](https://i.imgur.com/G04JNw6.png "KotakeeOS Diagram")
 
-When working on the server (starting it over and over again) on a machine that
-is not the active web server, make sure to provide an argument to stop the
-server from providing real API data through any of the following methods:
+---
 
-node server.js feoijafeiof (any argument will do.)
-npm run-script debug (also executes webpack like npm start)
+For more information, please see [Hobby Automation](http://hobbyautomation.com/).
 
-------------------------------------------------------------------------------
-Prerequisites
-------------------------------------------------------------------------------
+[![Hobby Automation Website](https://i.imgur.com/BMUoGOi.png "Hobby Automation Website")](http://hobbyautomation.com/)
+
+---
+
+### Prerequisites
 
 1. Python3 must be installed - version 3.8.X
 2. Node.js must be installed. (with appropriate dependencies)
@@ -48,18 +37,17 @@ with that, reference the following to delete and redownload xcode tools:
 
 https://stackoverflow.com/questions/34617452/how-to-update-xcode-from-command-line
 
+---
 
-------------------------------------------------------------------------------
- Setup - Web Application (webApp)
-------------------------------------------------------------------------------
+### Setup - Web Application (webApp)
 
 1) Navigate inside of software directory
 2) Execute "npm install"
 3) Execute "npm start"
 
-------------------------------------------------------------------------------
- Setup - Home Automation Microcontroller Modules
-------------------------------------------------------------------------------
+---
+
+### Setup - Home Automation Microcontroller Modules
 
 The KotakeeOS system architecture manipulates "actions" that may take place 
 within various "rooms" of a home. Each action is associated with specific
@@ -99,17 +87,24 @@ When developing further functionality, care should be taken in order to
 maintain the existing server-centric design of the system architecture
 in the future.
 
---------------------------------<Files>--------------------------------------
+---
 
-dependencies (dir)         : Assorted modified open-source distributable 
-                             libraries.
-kotakeeosModule (dir)      : Firmware for Arduino microcontroller modules 
-                             intended to interface with primary web server.
-satelliteServer (dir)      : Remote server controllable by web server.
-software (dir)             : Primary directory of web server files as well
-                             as web application files.
-speech_server (dir)        : Voice control programs intended to interface 
-                             with the primary web server.
-triggerWordDetection (dir) : AI/ML endeavor to implement personal "hot word" 
-                             detection, utilized with speechserver components. 
+### Development Notes:
 
+Transpilied Typescript has been set up to run whenever npm start is run. To 
+avoid automatic transpiling (nothing changed), just run "node server.js"
+instead of npm start. To transpile only (i.e. server is already running), 
+use the following command in the software directory level:
+
+node_modules/.bin/webpack ./public/static/libs/app.tsx --config webpack-config.js
+
+To run only, use the following command:
+
+node server.js
+
+When working on the server (starting it over and over again) on a machine that
+is not the active web server, make sure to provide an argument to stop the
+server from providing real API data through any of the following methods:
+
+node server.js feoijafeiof (any argument will do.)
+npm run-script debug (also executes webpack like npm start)
