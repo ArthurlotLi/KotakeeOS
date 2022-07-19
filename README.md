@@ -106,4 +106,6 @@ npm run-script debug (also executes webpack like npm start)
 
 ---
 
+For more information, please see [Hobby Automation](http://hobbyautomation.com/).
+
 [![Hobby Automation Website](https://i.imgur.com/BMUoGOi.png "Hobby Automation Website")](http://hobbyautomation.com/)
