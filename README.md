@@ -6,15 +6,13 @@ be hosted on a home local network (not exposed to the internet) as a
 centralized control panel. A platform with immense potential for personal
 AI/ML solution development. 
 
+For more information, please see [Hobby Automation](http://hobbyautomation.com/).
+
 ![KotakeeOS Diagram](https://i.imgur.com/wb1CFzl.png "KotakeeOS Diagram")
 
 ![KotakeeOS Diagram](https://i.imgur.com/m3n26FX.png "KotakeeOS Diagram")
 
 ![KotakeeOS Diagram](https://i.imgur.com/G04JNw6.png "KotakeeOS Diagram")
-
----
-
-For more information, please see [Hobby Automation](http://hobbyautomation.com/).
 
 [![Hobby Automation Website](https://i.imgur.com/BMUoGOi.png "Hobby Automation Website")](http://hobbyautomation.com/)
 
