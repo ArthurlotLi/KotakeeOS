@@ -6,8 +6,6 @@ be hosted on a home local network (not exposed to the internet) as a
 centralized control panel. A platform with immense potential for personal
 AI/ML solution development. 
 
-![KotakeeOS Diagram](https://i.imgur.com/FYIG3EB.png "KotakeeOS Diagram")
-
 ![KotakeeOS Diagram](https://i.imgur.com/wb1CFzl.png "KotakeeOS Diagram")
 
 ![KotakeeOS Diagram](https://i.imgur.com/m3n26FX.png "KotakeeOS Diagram")
