@@ -12,10 +12,6 @@ For more information, please see [Hobby Automation](http://hobbyautomation.com/)
 
 ![KotakeeOS Diagram](https://i.imgur.com/m3n26FX.png "KotakeeOS Diagram")
 
-![KotakeeOS Diagram](https://i.imgur.com/G04JNw6.png "KotakeeOS Diagram")
-
-[![Hobby Automation Website](https://i.imgur.com/BMUoGOi.png "Hobby Automation Website")](http://hobbyautomation.com/)
-
 ---
 
 ### Prerequisites
@@ -49,6 +45,8 @@ The KotakeeOS system architecture manipulates "actions" that may take place
 within various "rooms" of a home. Each action is associated with specific
 interactions between Arduino microcontrollers and assorted components. These
 actions may be associated with one or more pins. 
+
+![KotakeeOS Diagram](https://i.imgur.com/G04JNw6.png "KotakeeOS Diagram")
 
 In order to implement smart home capability with KotakeeOS, desired actions 
 must first be decided upon, allocated to specific rooms. All actions will thus
@@ -104,3 +102,7 @@ server from providing real API data through any of the following methods:
 
 node server.js feoijafeiof (any argument will do.)
 npm run-script debug (also executes webpack like npm start)
+
+---
+
+[![Hobby Automation Website](https://i.imgur.com/BMUoGOi.png "Hobby Automation Website")](http://hobbyautomation.com/)
