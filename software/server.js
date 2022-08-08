@@ -215,7 +215,7 @@ const bedroom = new Room(rooms.BEDROOM,bedroomModules, bedroomInputActions);
 const livingRoomModules = [module2LR, module3LR, module4LR, module7LR, module6LR];
 const livingRoomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
-  350: [3, 20, 18, 20], // These arrays must be multiples of 4. 
+  350: [3, 05, 17, 50], // These arrays must be multiples of 4. 
 }
 const airConditioningOn = 81; // How hot it must be to turn on the air conditioner. 
 const airConditioningOff = 79; // How hot it must be to turn off the air conditioner. 
@@ -291,8 +291,8 @@ const livingRoom = new Room(rooms.LIVINGROOM,livingRoomModules, livingRoomInputA
 const bathroomModules = [module5BA];
 const bathroomInputActionsTimeBounds = {
   // MinHr, MinMin, MaxHr, MaxMin
-  350: [3, 20, 18, 20], // These arrays must be multiples of 4. 
-  50: [18, 21, 23, 59, 0, 0, 3, 19],
+  350: [3, 05, 17, 50], // These arrays must be multiples of 4. 
+  50: [17, 51, 23, 59, 0, 0, 3, 04],
 }
 const fanOnHumidity = 85;
 const fanOffHumidity = 84; // Not used. 
