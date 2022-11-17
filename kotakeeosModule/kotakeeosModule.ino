@@ -130,7 +130,7 @@ SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, sinelon, 
 uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 
 // IP of the web server.
-IPAddress webServerIpAddress(192,168,0,197);
+IPAddress webServerIpAddress(192,168,86,197);
 const int webServerPort = 8080;
 
 int status = WL_DISCONNECTED;

@@ -400,7 +400,7 @@ const bathroom = new Room(rooms.BATHROOM,bathroomModules, bathroomInputActions);
 
 // Home
 const homeRooms = [bedroom, livingRoom, bathroom];
-const homeZipCode = "95051"
+const homeZipCode = "92618"
 const home = new Home(homeRooms, homeZipCode, {}); // Start with no weather data. 
 
 /*
