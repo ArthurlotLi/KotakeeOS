@@ -14,6 +14,7 @@ import base64
 import argparse
 import os
 import threading
+import http
 
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
@@ -174,6 +175,14 @@ class PianoPlayerWebServer:
       "get": get_stop_song,
     })
     api.add_resource(endpoint_class, '/%s' % "stopSong")
+
+    # Return current status.
+    def get_status(self, player=player):
+      return {"playing" : player.playing}, http.HTTPStatus.OK
+    endpoint_class = type("status", (Resource,), {
+      "get": get_status,
+    })
+    api.add_resource(endpoint_class, '/%s' % "status")
 
     print("[INFO] Server is now online at http://%s:%d." % ("localhost", application_port))
     app.debug = True 

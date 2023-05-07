@@ -689,6 +689,26 @@ app.get('/pianoStopMidi', (req, res) => {
   return res.status(200).send();
 });
 
+app.get('/pianoStatus', async (req, res) => {
+  console.log("[DEBUG] /pianoStatus GET request received.");
+  if(pianoPort== null){
+    console.log("[WARNING] /pianoStatus pianoPort is null!");
+    return res.status(400).send();
+  }
+  let apiResponse = await fetch(`http://localhost:${pianoPort}/status`);
+  if(apiResponse.status == 200){
+    data = await apiResponse.json();
+    if (data.playing == true){
+      return res.status(200).send();
+    }
+    else{
+      return res.status(204).send();
+    }
+  }
+  console.log("[WARNING] /pianoStatus pianoPort is null!");
+  return res.status(400).send();
+});
+
 // TODO: Abstract this so that we could potentially have 
 // multiple satellites. 
 app.get('/toggleHotwordNoneSatellite', (req, res) => {
